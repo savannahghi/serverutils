@@ -15,6 +15,12 @@ Configure GIT to rewrite requests to our Gitlab to occur over SSH:
 
 - `git config --global url."git@gitlab.slade360emr.com:".insteadOf "https://gitlab.slade360emr.com/"`
 
+Add this module to the `GOPRIVATE` list e.g 
+
+```
+export GOPRIVATE="gitlab.slade360emr.com/go/api-client"
+```
+
 If you have SSH for Gitlab configured correctly, this should work. If you run
 into problems, see https://stackoverflow.com/a/45936697 for some more ideas.
 
