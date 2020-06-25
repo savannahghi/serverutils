@@ -7,12 +7,452 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestMergeURLValues(t *testing.T) {
+	val1 := url.Values{}
+	val1.Add("a", "1")
+
+	val2 := url.Values{}
+	val2.Add("b", "2")
+
+	expected := url.Values{}
+	expected.Add("a", "1")
+	expected.Add("b", "2")
+
+	type args struct {
+		values []url.Values
+	}
+	tests := []struct {
+		name string
+		args args
+		want url.Values
+	}{
+		{
+			name: "empty values",
+			args: args{
+				values: nil,
+			},
+			want: url.Values{},
+		},
+		{
+			name: "non empty values",
+			args: args{
+				values: []url.Values{val1, val2},
+			},
+			want: expected,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := MergeURLValues(tt.args.values...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("MergeURLValues() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetAPIPaginationParams(t *testing.T) {
+	lastPage := url.Values{}
+	lastPage.Add("page_size", "10")
+	lastPage.Add("page", "1")
+
+	firstPage := url.Values{}
+	firstPage.Add("page_size", "10")
+	firstPage.Add("page", "1")
+
+	beforePage := url.Values{}
+	beforePage.Add("page_size", "100")
+	beforePage.Add("page", "1")
+
+	afterPage := url.Values{}
+	afterPage.Add("page_size", "100")
+	afterPage.Add("page", "1")
+
+	type args struct {
+		pagination *PaginationInput
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    url.Values
+		wantErr bool
+	}{
+		{
+			name: "nil pagination params",
+			args: args{
+				pagination: nil,
+			},
+			want:    url.Values{},
+			wantErr: false,
+		},
+		{
+			name: "pagination last set",
+			args: args{
+				pagination: &PaginationInput{
+					Last: 10,
+				},
+			},
+			want:    lastPage,
+			wantErr: false,
+		},
+		{
+			name: "pagination first set",
+			args: args{
+				pagination: &PaginationInput{
+					First: 10,
+				},
+			},
+			want:    firstPage,
+			wantErr: false,
+		},
+		{
+			name: "pagination before set",
+			args: args{
+				pagination: &PaginationInput{
+					Before: "12",
+				},
+			},
+			want:    beforePage,
+			wantErr: false,
+		},
+		{
+			name: "pagination after set",
+			args: args{
+				pagination: &PaginationInput{
+					After: "12",
+				},
+			},
+			want:    afterPage,
+			wantErr: false,
+		},
+		{
+			name: "pagination - wrong after format",
+			args: args{
+				pagination: &PaginationInput{
+					After: "this is not an int",
+				},
+			},
+			want:    url.Values{},
+			wantErr: true,
+		},
+		{
+			name: "pagination - wrong before format",
+			args: args{
+				pagination: &PaginationInput{
+					Before: "this is not an int",
+				},
+			},
+			want:    url.Values{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetAPIPaginationParams(tt.args.pagination)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetAPIPaginationParams() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetAPIPaginationParams() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestServerClient_IsInitialized(t *testing.T) {
+	type fields struct {
+		isInitialized bool
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   bool
+	}{
+		{
+			name: "initialized client",
+			fields: fields{
+				isInitialized: true,
+			},
+			want: true,
+		},
+		{
+			name: "uninitialized client",
+			fields: fields{
+				isInitialized: false,
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &ServerClient{
+				isInitialized: tt.fields.isInitialized,
+			}
+			if got := c.IsInitialized(); got != tt.want {
+				t.Errorf("ServerClient.IsInitialized() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestServerClient_AuthServerDomain(t *testing.T) {
+	type fields struct {
+		authServerDomain string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "auth server domain set",
+			fields: fields{
+				authServerDomain: "https://auth.healthcloud.co.ke",
+			},
+			want: "https://auth.healthcloud.co.ke",
+		},
+		{
+			name: "auth server domain not set",
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &ServerClient{
+				authServerDomain: tt.fields.authServerDomain,
+			}
+			if got := c.AuthServerDomain(); got != tt.want {
+				t.Errorf("ServerClient.IsInitialized() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNewServerClient(t *testing.T) {
+	// see the README for more guidance on these env vars
+	clientID := MustGetEnvVar("CLIENT_ID")
+	clientSecret := MustGetEnvVar("CLIENT_SECRET")
+	username := MustGetEnvVar("USERNAME")
+	password := MustGetEnvVar("PASSWORD")
+	grantType := MustGetEnvVar("GRANT_TYPE")
+	apiScheme := MustGetEnvVar("API_SCHEME")
+	apiTokenURL := MustGetEnvVar("TOKEN_URL")
+	apiHost := MustGetEnvVar("HOST")
+	customHeader := MustGetEnvVar("DEFAULT_WORKSTATION_ID")
+
+	type args struct {
+		clientID     string
+		clientSecret string
+		apiTokenURL  string
+		apiHost      string
+		apiScheme    string
+		grantType    string
+		username     string
+		password     string
+		extraHeaders map[string]string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name:    "invalid credentials (missing)",
+			wantErr: true,
+		},
+		{
+			name: "valid credentials, NO custom header",
+			args: args{
+				clientID:     clientID,
+				clientSecret: clientSecret,
+				apiTokenURL:  apiTokenURL,
+				apiHost:      apiHost,
+				apiScheme:    apiScheme,
+				grantType:    grantType,
+				username:     username,
+				password:     password,
+				extraHeaders: nil,
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid credentials, WITH custom header",
+			args: args{
+				clientID:     clientID,
+				clientSecret: clientSecret,
+				apiTokenURL:  apiTokenURL,
+				apiHost:      apiHost,
+				apiScheme:    apiScheme,
+				grantType:    grantType,
+				username:     username,
+				password:     password,
+				extraHeaders: map[string]string{
+					"X-WORKSTATION": customHeader,
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NewServerClient(tt.args.clientID, tt.args.clientSecret, tt.args.apiTokenURL, tt.args.apiHost, tt.args.apiScheme, tt.args.grantType, tt.args.username, tt.args.password, tt.args.extraHeaders)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NewServerClient() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr {
+				assert.NotNil(t, got)
+				assert.True(t, got.IsInitialized())
+
+				if tt.args.extraHeaders != nil {
+					url := fmt.Sprintf("%s://%s/api/branches/workstationusers/?format=json", apiScheme, apiHost)
+					resp, err := got.MakeRequest("GET", url, nil)
+					assert.Nil(t, err)
+					assert.NotNil(t, resp)
+				}
+			}
+		})
+	}
+}
+
+func Test_boolEnv(t *testing.T) {
+	type args struct {
+		envVarName string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "env var that exists",
+			args: args{
+				envVarName: "DEBUG",
+			},
+			want: true,
+		},
+		{
+			name: "env var that does not exist",
+			args: args{
+				envVarName: "this is not a real env var name",
+			},
+			want: false,
+		},
+		{
+			name: "env var in the wrong format",
+			args: args{
+				envVarName: "GRANT_TYPE",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := boolEnv(tt.args.envVarName); got != tt.want {
+				t.Errorf("boolEnv() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsRunningTests(t *testing.T) {
+	tests := []struct {
+		name string
+		want bool
+	}{
+		{
+			name: "default case",
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsRunningTests(); got != tt.want {
+				t.Errorf("IsRunningTests() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetEnvVar(t *testing.T) {
+	type args struct {
+		envVarName string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "existing var",
+			args: args{
+				envVarName: "GRANT_TYPE",
+			},
+			want:    "password",
+			wantErr: false,
+		},
+		{
+			name: "non existent var",
+			args: args{
+				envVarName: "this is not a valid env var name",
+			},
+			want:    "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetEnvVar(tt.args.envVarName)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetEnvVar() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetEnvVar() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMustGetEnvVar(t *testing.T) {
+	type args struct {
+		envVarName string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "existing var",
+			args: args{
+				envVarName: "GRANT_TYPE",
+			},
+			want: "password",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := MustGetEnvVar(tt.args.envVarName); got != tt.want {
+				t.Errorf("MustGetEnvVar() = %v, want %v", got, tt.want)
+			}
+
+			assert.Panics(t, func() {
+				MustGetEnvVar("this does not exist as an env var")
+			})
+		})
+	}
+}
 
 func TestNewEDIClient_Invalid_Domain(t *testing.T) {
 	c := ServerClient{

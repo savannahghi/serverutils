@@ -43,4 +43,32 @@ git push --tags
 Continous integration tests *must* pass on Gitlab CI. Our coverage threshold
 for small libraries is 90% i.e you *must* keep coverage above 90%.
 
-# TODO Small CI container
+## Environment variables
+
+In order to run tests, you need to have an `env.sh` file similar to this one:
+
+```bash
+# Application settings
+export DEBUG=true
+export IS_RUNNING_TESTS=true
+export IS_CI=false
+
+# Test API settings
+export HOST=<a host>
+export API_SCHEME=https
+export TOKEN_URL=<a Slade auth server token URL>
+export CLIENT_ID=<an OAUTh client ID>
+export CLIENT_SECRET=<an OAuth2 client secret>
+export USERNAME=<an email to log in with>
+export PASSWORD=<a valid password>
+export GRANT_TYPE=password
+export DEFAULT_WORKSTATION_ID=<an example of a custom header>
+```
+
+This file *must not* be committed to version control.
+
+It is important to _export_ the environment variables. If they are not exported,
+they will not be visible to child processes e.g `go test ./...`.
+
+These environment variables should also be set up on CI e.g at 
+https://gitlab.slade360emr.com/go/api-client/-/settings/ci_cd .
