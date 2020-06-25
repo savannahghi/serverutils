@@ -14,6 +14,7 @@ package client
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -26,7 +27,6 @@ import (
 	"time"
 
 	"github.com/asaskevich/govalidator"
-	"github.com/pkg/errors"
 	"moul.io/http2curl"
 )
 
@@ -145,12 +145,6 @@ func IsDebug() bool {
 // IsRunningTests returns true if debug has been turned on in the environment
 func IsRunningTests() bool {
 	return boolEnv(IsRunningTestsEnvVarName)
-}
-
-// IsCI returns true when running in CI environments that set the CI env var
-// e.g Gitlab CI, Github Actions, CircleCI etc
-func IsCI() bool {
-	return boolEnv(CIEnvVarName)
 }
 
 // GetEnvVar retrieves the environment variable with the supplied name and fails
@@ -297,7 +291,7 @@ func (c *ServerClient) updateAuth(authResp *OAUTHResponse) {
 // and update stored credentials
 func (c *ServerClient) Authenticate() error {
 	if err := CheckAPIClientPreconditions(c); err != nil {
-		return errors.Wrap(err, "Authenticate_CheckEDIClientPreconditions")
+		return fmt.Errorf("failing API client preconditions: %w", err)
 	}
 	credsData := url.Values{}
 	credsData.Set("client_id", c.clientID)
@@ -613,7 +607,7 @@ func decodeOauthResponseFromJSON(resp *http.Response) (*OAUTHResponse, error) {
 // offset based pagination e.g Slade 360 APIS
 func GetAPIPaginationParams(pagination *PaginationInput) (url.Values, error) {
 	if pagination == nil {
-		return nil, nil
+		return url.Values{}, nil
 	}
 
 	// Treat first or last, when set, literally as page sizes
@@ -636,13 +630,13 @@ func GetAPIPaginationParams(pagination *PaginationInput) (url.Values, error) {
 	if pagination.Before != "" {
 		offset, err = strconv.Atoi(pagination.Before)
 		if err != nil {
-			return nil, fmt.Errorf("expected `before` to be parseable as an int; got %s", pagination.Before)
+			return url.Values{}, fmt.Errorf("expected `before` to be parseable as an int; got %s", pagination.Before)
 		}
 	}
 	if pagination.After != "" {
 		offset, err = strconv.Atoi(pagination.After)
 		if err != nil {
-			return nil, fmt.Errorf("expected `after` to be parseable as an int; got %s", pagination.After)
+			return url.Values{}, fmt.Errorf("expected `after` to be parseable as an int; got %s", pagination.After)
 		}
 	}
 	page := int(offset/pageSize) + 1 // page numbers are one based
