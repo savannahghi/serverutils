@@ -1329,3 +1329,60 @@ func TestEDIAPIClient_MakeRequest_Invalid_URL(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "net/url: invalid control character in URL")
 }
+
+func TestComposeAPIURL(t *testing.T) {
+
+	clientID := MustGetEnvVar("CLIENT_ID")
+	clientSecret := MustGetEnvVar("CLIENT_SECRET")
+	username := MustGetEnvVar("USERNAME")
+	password := MustGetEnvVar("PASSWORD")
+	grantType := MustGetEnvVar("GRANT_TYPE")
+	apiScheme := MustGetEnvVar("API_SCHEME")
+	apiTokenURL := MustGetEnvVar("TOKEN_URL")
+	apiHost := MustGetEnvVar("HOST")
+	customHeader := MustGetEnvVar("DEFAULT_WORKSTATION_ID")
+	extraHeaders := map[string]string{
+		"X-WORKSTATION": customHeader,
+	}
+	client, err := NewServerClient(
+		clientID,
+		clientSecret,
+		apiTokenURL,
+		apiHost,
+		apiScheme,
+		grantType,
+		username,
+		password,
+		extraHeaders,
+	)
+	assert.Nil(t, err)
+	assert.NotNil(t, client)
+
+	type args struct {
+		client Client
+		path   string
+		query  string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "good case",
+			args: args{
+				client: client,
+				path:   "/api/branches/workstations",
+				query:  "format=json",
+			},
+			want: "https://erp-api-staging.healthcloud.co.ke/api/branches/workstations?format=json",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ComposeAPIURL(tt.args.client, tt.args.path, tt.args.query); got != tt.want {
+				t.Errorf("ComposeAPIURL() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
