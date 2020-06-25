@@ -24,6 +24,20 @@ export GOPRIVATE="gitlab.slade360emr.com/go/api-client"
 If you have SSH for Gitlab configured correctly, this should work. If you run
 into problems, see https://stackoverflow.com/a/45936697 for some more ideas.
 
+An alternative:
+
+```
+git config \
+  --global \
+  url."https://oauth2:${GITLAB_REPOSITORY_PERSONAL_ACCESS_TOKEN}@gitlab.slade360emr.com".insteadOf \
+  "https://gitlab.slade360emr.com.com"
+```
+
+You can create your personal access token at: https://gitlab.slade360emr.com/profile/personal_access_tokens .
+This personal access token should be granted the `read_repository` permission.
+On CI, this should be set up as a _masked_ environment variable, under the name
+`GITLAB_REPOSITORY_PERSONAL_ACCESS_TOKEN`.
+
 ### Installing it
 
 To install:
