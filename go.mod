@@ -1,4 +1,4 @@
-module gitlab.slade360emr.com/go/api-client
+module gitlab.slade360emr.com/go/base
 
 go 1.14
 

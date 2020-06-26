@@ -27,12 +27,3 @@ lint_and_test:
       - $CI_PROJECT_DIR/coverage_report.txt
   tags:
     - healthcloud-multi
-
-include:
-  - template: Code-Quality.gitlab-ci.yml
-
-code_quality:
-  tags:
-    - healthcloud-multi
-  artifacts:
-    paths: [gl-code-quality-report.json]
