@@ -1,4 +1,4 @@
-// Package client provides general purpose facilities for interaction with Slade 360 APIs.
+// Package base provides general purpose facilities for interaction with Slade 360 APIs.
 // These APIs include but are not limited to:
 //
 // - Slade 360 EDI
@@ -10,7 +10,7 @@
 //
 // It also provides some shared (cross-server) infrastructure and authentication (auth server)
 // support.
-package client
+package base
 
 import (
 	"encoding/json"

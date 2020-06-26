@@ -1,11 +1,11 @@
-# SIL API Client
+# SIL Base Library
 
-[![pipeline status](https://gitlab.slade360emr.com/go/api-client/badges/master/pipeline.svg)](https://gitlab.slade360emr.com/go/api-client/-/commits/master)
+[![pipeline status](https://gitlab.slade360emr.com/go/base/badges/master/pipeline.svg)](https://gitlab.slade360emr.com/go/base/-/commits/master)
 
-[![coverage report](https://gitlab.slade360emr.com/go/api-client/badges/master/coverage.svg)](https://gitlab.slade360emr.com/go/api-client/-/commits/master)
+[![coverage report](https://gitlab.slade360emr.com/go/base/badges/master/coverage.svg)](https://gitlab.slade360emr.com/go/base/-/commits/master)
 
-This package provides an API client that works with Slade 360 REST APIs and
-Slade 360 auth server.
+This package provides common utilities for our Go servers e.g an API client 
+that works with Slade 360 REST APIs and Slade 360 auth server.
 
 ## Installing
 
@@ -18,7 +18,7 @@ Configure GIT to rewrite requests to our Gitlab to occur over SSH:
 Add this module to the `GOPRIVATE` list e.g 
 
 ```
-export GOPRIVATE="gitlab.slade360emr.com/go/api-client"
+export GOPRIVATE="gitlab.slade360emr.com/go/base"
 ```
 
 If you have SSH for Gitlab configured correctly, this should work. If you run
@@ -43,7 +43,7 @@ On CI, this should be set up as a _masked_ environment variable, under the name
 To install:
 
 ```
-go get -u gitlab.slade360emr.com/go/api-client
+go get -u gitlab.slade360emr.com/go/base
 ```
 
 The package name is `client`.
@@ -91,4 +91,4 @@ It is important to _export_ the environment variables. If they are not exported,
 they will not be visible to child processes e.g `go test ./...`.
 
 These environment variables should also be set up on CI e.g at 
-https://gitlab.slade360emr.com/go/api-client/-/settings/ci_cd .
+https://gitlab.slade360emr.com/go/base/-/settings/ci_cd .
