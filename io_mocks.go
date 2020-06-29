@@ -1,7 +1,7 @@
 package base
 
 import (
-	"errors"
+	"fmt"
 	"net/http"
 )
 
@@ -9,7 +9,7 @@ import (
 type BlowUpOnClose struct{}
 
 // Close on this mock always returns an error
-func (rc BlowUpOnClose) Close() error { return errors.New("ka-boom") }
+func (rc BlowUpOnClose) Close() error { return fmt.Errorf("ka-boom") }
 
 // Read on this mock always reads 0 bytes and returns no error
 func (rc BlowUpOnClose) Read(_ []byte) (n int, err error) {
@@ -23,7 +23,7 @@ type BlowUpOnRead struct{}
 func (rc BlowUpOnRead) Close() error { return nil }
 
 // Read on this mock always returns an error
-func (rc BlowUpOnRead) Read(_ []byte) (n int, err error) { return 0, errors.New("boom") }
+func (rc BlowUpOnRead) Read(_ []byte) (n int, err error) { return 0, fmt.Errorf("boom") }
 
 // MockHTTPTransportFunc defines the signature of a function that can be assigned to a HTTP client Transport value
 type MockHTTPTransportFunc func(req *http.Request) (*http.Response, error)

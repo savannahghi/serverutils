@@ -14,7 +14,6 @@ package base
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -153,7 +152,7 @@ func GetEnvVar(envVarName string) (string, error) {
 	envVar := os.Getenv(envVarName)
 	if envVar == "" {
 		envErrMsg := fmt.Sprintf("the environment variable '%s' is not set", envVarName)
-		return "", errors.New(envErrMsg)
+		return "", fmt.Errorf(envErrMsg)
 	}
 	return envVar, nil
 }
@@ -249,7 +248,7 @@ func (c *ServerClient) MeURL() (string, error) {
 // Refresh uses the refresh token to obtain a fresh access token
 func (c *ServerClient) Refresh() error {
 	if !c.IsInitialized() {
-		return errors.New("cannot Refresh API tokens on an uninitialized client")
+		return fmt.Errorf("cannot Refresh API tokens on an uninitialized client")
 	}
 	refreshData := url.Values{}
 	refreshData.Set("client_id", c.clientID)
@@ -263,7 +262,7 @@ func (c *ServerClient) Refresh() error {
 	}
 	if resp != nil && (resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices) {
 		msg := fmt.Sprintf("server error status: %d", resp.StatusCode)
-		return errors.New(msg)
+		return fmt.Errorf(msg)
 	}
 	authResp, decodeErr := decodeOauthResponseFromJSON(resp)
 	if decodeErr != nil {
@@ -307,7 +306,7 @@ func (c *ServerClient) Authenticate() error {
 	}
 	if authResp != nil && (authResp.StatusCode < http.StatusOK || authResp.StatusCode >= http.StatusMultipleChoices) {
 		msg := fmt.Sprintf("server error status: %d", authResp.StatusCode)
-		return errors.New(msg)
+		return fmt.Errorf(msg)
 	}
 	decodedAuthResp, decodeErr := decodeOauthResponseFromJSON(authResp)
 	if decodeErr != nil {
@@ -354,7 +353,7 @@ func (c *ServerClient) MakeRequest(method string, url string, body io.Reader) (*
 		bs, err := ioutil.ReadAll(resp.Body)
 		log.Printf("Mismatched content type error: %s\n", err)
 		log.Printf("Mismatched content type body: %s\b", string(bs))
-		return nil, errors.New("expected application/json Content-Type, got " + contentType)
+		return nil, fmt.Errorf("expected application/json Content-Type, got " + contentType)
 	}
 	return resp, nil
 }
@@ -479,47 +478,47 @@ func CheckAPIClientPreconditions(client Client) error {
 	clientID := client.ClientID()
 	if !govalidator.IsAlphanumeric(clientID) || len(clientID) < tokenMinLength {
 		errMsg := fmt.Sprintf("%s is not a valid clientId, expected a non-blank alphanumeric string of at least %d characters", clientID, tokenMinLength)
-		return errors.New(errMsg)
+		return fmt.Errorf(errMsg)
 	}
 
 	clientSecret := client.ClientSecret()
 	if !govalidator.IsAlphanumeric(clientSecret) || len(clientSecret) < tokenMinLength {
 		errMsg := fmt.Sprintf("%s is not a valid clientSecret, expected a non-blank alphanumeric string of at least %d characters", clientSecret, tokenMinLength)
-		return errors.New(errMsg)
+		return fmt.Errorf(errMsg)
 	}
 
 	apiTokenURL := client.APITokenURL()
 	if !govalidator.IsRequestURL(apiTokenURL) {
 		errMsg := fmt.Sprintf("%s is not a valid apiTokenURL, expected an http(s) URL", apiTokenURL)
-		return errors.New(errMsg)
+		return fmt.Errorf(errMsg)
 	}
 
 	apiHost := client.APIHost()
 	if !govalidator.IsHost(apiHost) {
 		errMsg := fmt.Sprintf("%s is not a valid apiHost, expected a valid IP or domain name", apiHost)
-		return errors.New(errMsg)
+		return fmt.Errorf(errMsg)
 	}
 
 	apiScheme := client.APIScheme()
 	if apiScheme != "http" && apiScheme != "https" {
 		errMsg := fmt.Sprintf("%s is not a valid apiScheme, expected http or https", apiScheme)
-		return errors.New(errMsg)
+		return fmt.Errorf(errMsg)
 	}
 
 	grantType := client.GrantType()
 	if grantType != "password" {
-		return errors.New("the only supported OAuth grant type for now is 'password'")
+		return fmt.Errorf("the only supported OAuth grant type for now is 'password'")
 	}
 
 	username := client.Username()
 	if !govalidator.IsEmail(username) {
-		return errors.New("the Username should be a valid email address")
+		return fmt.Errorf("the Username should be a valid email address")
 	}
 
 	password := client.Password()
 	if len(password) < apiPasswordMinLength {
 		msg := fmt.Sprintf("the Password should be a string of at least %d characters", apiPasswordMinLength)
-		return errors.New(msg)
+		return fmt.Errorf(msg)
 	}
 
 	return nil
@@ -529,32 +528,32 @@ func CheckAPIClientPreconditions(client Client) error {
 func CheckAPIClientPostConditions(client Client) error {
 	accessToken := client.AccessToken()
 	if !govalidator.IsAlphanumeric(accessToken) || len(accessToken) < tokenMinLength {
-		return errors.New("invalid access token after EDIAPIClient initialization")
+		return fmt.Errorf("invalid access token after EDIAPIClient initialization")
 	}
 
 	tokenType := client.TokenType()
 	if tokenType != "Bearer" {
-		return errors.New("invalid token type after EDIAPIClient initialization, expected 'Bearer'")
+		return fmt.Errorf("invalid token type after EDIAPIClient initialization, expected 'Bearer'")
 	}
 
 	refreshToken := client.RefreshToken()
 	if !govalidator.IsAlphanumeric(refreshToken) || len(refreshToken) < tokenMinLength {
-		return errors.New("invalid Refresh token after EDIAPIClient initialization")
+		return fmt.Errorf("invalid Refresh token after EDIAPIClient initialization")
 	}
 
 	accessScope := client.AccessScope()
 	if !govalidator.IsASCII(accessScope) || len(accessScope) < tokenMinLength {
-		return errors.New("invalid access scope text after EDIAPIClient initialization")
+		return fmt.Errorf("invalid access scope text after EDIAPIClient initialization")
 	}
 
 	expiresIn := client.ExpiresIn()
 	if expiresIn < 1 {
-		return errors.New("invalid expiresIn after EDIAPIClient initialization")
+		return fmt.Errorf("invalid expiresIn after EDIAPIClient initialization")
 	}
 
 	refreshAt := client.RefreshAt()
 	if refreshAt.UnixNano() < time.Now().UnixNano() {
-		return errors.New("invalid past refreshAt after EDIAPIClient initialization")
+		return fmt.Errorf("invalid past refreshAt after EDIAPIClient initialization")
 	}
 
 	return nil // no errors found
@@ -563,7 +562,7 @@ func CheckAPIClientPostConditions(client Client) error {
 // CheckAPIInitialization returns and error if the EDI httpClient was not correctly initialized by calling `.Initialize()`
 func CheckAPIInitialization(client Client) error {
 	if client == nil || !client.IsInitialized() {
-		return errors.New("the EDI httpClient is not correctly initialized. Please use the `.Initialize` constructor")
+		return fmt.Errorf("the EDI httpClient is not correctly initialized. Please use the `.Initialize` constructor")
 	}
 	return nil
 }

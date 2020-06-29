@@ -3,8 +3,14 @@ image: eu.gcr.io/savannah-emr/golang-ci-image:0.0.2
 stages:
   - test
 
+variables:
+  GOOGLE_APPLICATION_CREDENTIALS: $CI_PROJECT_DIR/bewell-app-ci.json
+
 lint_and_test:
   stage: test
+  before_script:
+    - bash decrypt_service_account.sh
+    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.slade360emr.com".insteadOf "https://gitlab.slade360emr.com"
   script:
     - staticcheck ./...
     - go fmt $(go list ./... | grep -v /vendor/)

@@ -1,7 +1,6 @@
 package base
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -646,14 +645,14 @@ func TestCheckEDIClientPostConditions(t *testing.T) {
 			input: &ServerClient{
 				accessToken: "invalid",
 			},
-			want: errors.New("invalid access token after EDIAPIClient initialization"),
+			want: fmt.Errorf("invalid access token after EDIAPIClient initialization"),
 		},
 		"invalid_token_type": {
 			input: &ServerClient{
 				accessToken: "hjhjkhkjhjkhklhkhkhjhkjh",
 				tokenType:   "Bogus",
 			},
-			want: errors.New("invalid token type after EDIAPIClient initialization, expected 'Bearer'"),
+			want: fmt.Errorf("invalid token type after EDIAPIClient initialization, expected 'Bearer'"),
 		},
 		"invalid_refresh_token": {
 			input: &ServerClient{
@@ -661,7 +660,7 @@ func TestCheckEDIClientPostConditions(t *testing.T) {
 				tokenType:    "Bearer",
 				refreshToken: "bad",
 			},
-			want: errors.New("invalid Refresh token after EDIAPIClient initialization"),
+			want: fmt.Errorf("invalid Refresh token after EDIAPIClient initialization"),
 		},
 		"invalid_access_scope": {
 			input: &ServerClient{
@@ -670,7 +669,7 @@ func TestCheckEDIClientPostConditions(t *testing.T) {
 				refreshToken: "jfdahfdjafhdjfhdalkfjdhkfhasdk",
 				accessScope:  "bad",
 			},
-			want: errors.New("invalid access scope text after EDIAPIClient initialization"),
+			want: fmt.Errorf("invalid access scope text after EDIAPIClient initialization"),
 		},
 		"invalid_expires_in": {
 			input: &ServerClient{
@@ -680,7 +679,7 @@ func TestCheckEDIClientPostConditions(t *testing.T) {
 				accessScope:  "scope blah blah blah more blah blah blah",
 				expiresIn:    -1,
 			},
-			want: errors.New("invalid expiresIn after EDIAPIClient initialization"),
+			want: fmt.Errorf("invalid expiresIn after EDIAPIClient initialization"),
 		},
 		"invalid_refresh_at": {
 			input: &ServerClient{
@@ -691,7 +690,7 @@ func TestCheckEDIClientPostConditions(t *testing.T) {
 				expiresIn:    3600,
 				refreshAt:    time.Unix(0, 0),
 			},
-			want: errors.New("invalid past refreshAt after EDIAPIClient initialization"),
+			want: fmt.Errorf("invalid past refreshAt after EDIAPIClient initialization"),
 		},
 		"passing_case": {
 			input: &ServerClient{
@@ -706,7 +705,7 @@ func TestCheckEDIClientPostConditions(t *testing.T) {
 		},
 		"invalid_credentials": {
 			input: &MockClient{
-				authErr:      errors.New("mock auth error"),
+				authErr:      fmt.Errorf("mock auth error"),
 				accessToken:  "hjhjkhkjhjkhklhkhkhjhkjh",
 				tokenType:    "Bearer",
 				refreshToken: "jfdahfdjafhdjfhdalkfjdhkfhasdk",
@@ -714,7 +713,7 @@ func TestCheckEDIClientPostConditions(t *testing.T) {
 				expiresIn:    3600,
 				refreshAt:    time.Now().Add(time.Second * 3600),
 			},
-			want: errors.New("mock auth error"),
+			want: fmt.Errorf("mock auth error"),
 		},
 	}
 	for name, tc := range tests {

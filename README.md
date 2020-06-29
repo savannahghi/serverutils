@@ -71,18 +71,27 @@ In order to run tests, you need to have an `env.sh` file similar to this one:
 # Application settings
 export DEBUG=true
 export IS_RUNNING_TESTS=true
-export IS_CI=false
+export SENTRY_DSN=<a Sentry Data Source Name>
+
+# Google Cloud credentials
+export GOOGLE_APPLICATION_CREDENTIALS="<path to a service account JSON file"
+export GOOGLE_CLOUD_PROJECT=bewell-app-ci
+export FIREBASE_WEB_API_KEY="<a web API key that corresponds to the project named above>"
+
+# Link shortening
+export FIREBASE_DYNAMIC_LINKS_DOMAIN=https://bwlci.page.link
+export SERVER_PUBLIC_DOMAIN=https://api-gateway-test.healthcloud.co.ke
 
 # Test API settings
-export HOST=<a host>
+export HOST=erp-api-staging.healthcloud.co.ke
 export API_SCHEME=https
-export TOKEN_URL=<a Slade auth server token URL>
-export CLIENT_ID=<an OAUTh client ID>
-export CLIENT_SECRET=<an OAuth2 client secret>
-export USERNAME=<an email to log in with>
-export PASSWORD=<a valid password>
+export TOKEN_URL=https://auth.healthcloud.co.ke/oauth2/token/
+export CLIENT_ID="<a valid OAUTH2 client ID>"
+export CLIENT_SECRET="<a valid OAUTH2 client secret>"
+export USERNAME="<a valid username on Slade 360 auth server>"
+export PASSWORD="<a valid password on Slade 360 auth server>"
 export GRANT_TYPE=password
-export DEFAULT_WORKSTATION_ID=<an example of a custom header>
+export DEFAULT_WORKSTATION_ID="<a workstation ID from Slade 360 ERP that has been linked to the user above>"
 ```
 
 This file *must not* be committed to version control.
