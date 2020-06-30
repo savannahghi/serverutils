@@ -10,8 +10,7 @@ import (
 // WARNING: int inputs are converted to floats in the output map. This is an
 // unintended consequence of converting through JSON.
 //
-// Deprecated: the unintended co-ercing of ints to floats means that this
-// function should be used with caution. If possible, use a different utility.
+// In future, this should be deprecated.
 func StructToMap(item interface{}) (map[string]interface{}, error) {
 	bs, err := json.Marshal(item)
 	if err != nil {
