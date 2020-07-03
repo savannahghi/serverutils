@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"firebase.google.com/go/auth"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,6 +21,21 @@ const AuthTokenContextKey = ContextKey("UID")
 // GetAuthenticatedContext returns a logged in context, useful for test purposes
 func GetAuthenticatedContext(t *testing.T) context.Context {
 	ctx := context.Background()
+	authToken := getAuthToken(ctx, t)
+	authenticatedContext := context.WithValue(ctx, AuthTokenContextKey, authToken)
+	return authenticatedContext
+}
+
+// GetAuthenticatedContextAndToken returns a logged in context and ID token.
+// It is useful for test purposes
+func GetAuthenticatedContextAndToken(t *testing.T) (context.Context, *auth.Token) {
+	ctx := context.Background()
+	authToken := getAuthToken(ctx, t)
+	authenticatedContext := context.WithValue(ctx, AuthTokenContextKey, authToken)
+	return authenticatedContext, authToken
+}
+
+func getAuthToken(ctx context.Context, t *testing.T) *auth.Token {
 	fc := &FirebaseClient{}
 	firebaseApp, err := fc.InitFirebase()
 	assert.Nil(t, err)
@@ -42,6 +58,5 @@ func GetAuthenticatedContext(t *testing.T) context.Context {
 	assert.Nil(t, err)
 	assert.NotNil(t, authToken)
 
-	authenticatedContext := context.WithValue(ctx, AuthTokenContextKey, authToken)
-	return authenticatedContext
+	return authToken
 }

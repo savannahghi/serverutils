@@ -221,3 +221,18 @@ func UpdateRecordOnFirestore(
 func GenerateSafeIdentifier() string {
 	return shortuuid.New()
 }
+
+// GetUserTokenFromContext retrieves a Firebase *auth.Token from the supplied context
+func GetUserTokenFromContext(ctx context.Context) (*auth.Token, error) {
+	val := ctx.Value(AuthTokenContextKey)
+	if val == nil {
+		return nil, fmt.Errorf(
+			"unable to get auth token from context with key %#v", AuthTokenContextKey)
+	}
+
+	token, ok := val.(*auth.Token)
+	if !ok {
+		return nil, fmt.Errorf("wrong auth token type, got %#v, expected a Firebase *auth.Token", val)
+	}
+	return token, nil
+}

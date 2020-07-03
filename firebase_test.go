@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"testing"
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"firebase.google.com/go/auth"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -259,6 +261,48 @@ func TestUpdateRecordOnFirestore(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := UpdateRecordOnFirestore(tt.args.firestoreClient, tt.args.collection, tt.args.id, tt.args.data); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateRecordOnFirestore() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestGetUserTokenFromContext(t *testing.T) {
+	authenticatedContext, authToken := GetAuthenticatedContextAndToken(t)
+	type args struct {
+		ctx context.Context
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *auth.Token
+		wantErr bool
+	}{
+		{
+			name: "good case - authenticated context",
+			args: args{
+				ctx: authenticatedContext,
+			},
+			want:    authToken,
+			wantErr: false,
+		},
+		{
+			name: "unauthenticated context",
+			args: args{
+				ctx: context.Background(),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetUserTokenFromContext(tt.args.ctx)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetUserTokenFromContext() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetUserTokenFromContext() = %v, want %v", got, tt.want)
 			}
 		})
 	}
