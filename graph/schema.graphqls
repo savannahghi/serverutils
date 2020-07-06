@@ -1,0 +1,27 @@
+scalar Map
+
+input PaginationInput {
+  first: Int
+  last: Int
+  after: String
+  before: String
+}
+
+enum SortOrder {
+  ASC
+  DESC
+}
+
+# Relay spec page info
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+# Node is needed by the Relay spec
+# This server attempts to be Relay spec compliant
+interface Node {
+  id: ID!
+}

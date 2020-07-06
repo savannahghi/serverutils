@@ -655,16 +655,3 @@ func MergeURLValues(values ...url.Values) url.Values {
 	}
 	return merged
 }
-
-// QueryParam is an interface used for filter and sort parameters
-type QueryParam interface {
-	ToURLValues() (values url.Values)
-}
-
-// PaginationInput represents paging parameters
-type PaginationInput struct {
-	First  int    `json:"first"`
-	Last   int    `json:"last"`
-	After  string `json:"after"`
-	Before string `json:"before"`
-}
