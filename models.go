@@ -57,3 +57,16 @@ type EmailOptIn struct {
 	Email   string `json:"email" firestore:"optedIn"`
 	OptedIn bool   `json:"optedIn" firestore:"optedIn"`
 }
+
+// SladeAPIListRespBase defines the fields that are common on list endpoints
+// for Slade 360 APIs
+type SladeAPIListRespBase struct {
+	Count       int    `json:"count,omitempty"`
+	Next        string `json:"next,omitempty"`
+	Previous    string `json:"previous,omitempty"`
+	PageSize    int    `json:"page_size,omitempty"`
+	CurrentPage int    `json:"current_page,omitempty"`
+	TotalPages  int    `json:"total_pages,omitempty"`
+	StartIndex  int    `json:"start_index,omitempty"`
+	EndIndex    int    `json:"end_index,omitempty"`
+}
