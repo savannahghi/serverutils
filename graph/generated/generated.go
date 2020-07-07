@@ -145,7 +145,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	&ast.Source{Name: "graph/schema.graphqls", Input: `scalar Map
+	&ast.Source{Name: "graph/base.graphql", Input: `
 
 input PaginationInput {
   first: Int

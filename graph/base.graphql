@@ -1,4 +1,4 @@
-scalar Map
+
 
 input PaginationInput {
   first: Int
