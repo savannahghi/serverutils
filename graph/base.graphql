@@ -1,3 +1,6 @@
+scalar Map
+scalar Any
+
 # Relay spec page info
 type PageInfo {
   hasNextPage: Boolean!
@@ -5,11 +8,6 @@ type PageInfo {
   startCursor: String
   endCursor: String
 }
-
-"""
-Any is a pre-defined gqlgen scalar for Go's interface{}.
-"""
-scalar Any
 
 input PaginationInput {
   first: Int

@@ -12,9 +12,9 @@ require (
 	github.com/99designs/gqlgen v0.11.3
 	github.com/agnivade/levenshtein v1.1.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535
-	github.com/aws/aws-sdk-go v1.33.2 // indirect
+	github.com/aws/aws-sdk-go v1.33.3 // indirect
 	github.com/getsentry/sentry-go v0.6.1
-	github.com/google/pprof v0.0.0-20200630070148-6609db78bf68 // indirect
+	github.com/google/pprof v0.0.0-20200708004538-1a94d8640e99 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/kevinburke/go.uuid v1.2.0
 	github.com/lithammer/shortuuid v3.0.0+incompatible
@@ -26,13 +26,13 @@ require (
 	github.com/vektah/gqlparser/v2 v2.0.1
 	github.com/vmihailenco/msgpack v4.0.4+incompatible
 	go.opencensus.io v0.22.4
-	golang.org/x/net v0.0.0-20200625001655-4c5254603344 // indirect
+	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208 // indirect
 	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae // indirect
 	golang.org/x/text v0.3.3 // indirect
-	golang.org/x/tools v0.0.0-20200706180831-95bc2bdf7e31 // indirect
+	golang.org/x/tools v0.0.0-20200708003708-134513de8882 // indirect
 	google.golang.org/api v0.28.0
-	google.golang.org/genproto v0.0.0-20200706141556-5779274c8e96 // indirect
+	google.golang.org/genproto v0.0.0-20200707001353-8e8330bf89df // indirect
 	google.golang.org/grpc v1.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 	moul.io/http2curl v1.0.0

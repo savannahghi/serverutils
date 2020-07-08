@@ -145,18 +145,16 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	&ast.Source{Name: "graph/base.graphql", Input: `# Relay spec page info
+	&ast.Source{Name: "graph/base.graphql", Input: `scalar Map
+scalar Any
+
+# Relay spec page info
 type PageInfo {
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
   startCursor: String
   endCursor: String
 }
-
-"""
-Any is a pre-defined gqlgen scalar for Go's interface{}.
-"""
-scalar Any
 
 input PaginationInput {
   first: Int
