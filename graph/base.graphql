@@ -1,4 +1,15 @@
+# Relay spec page info
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
 
+"""
+Any is a pre-defined gqlgen scalar for Go's interface{}.
+"""
+scalar Any
 
 input PaginationInput {
   first: Int
@@ -7,17 +18,48 @@ input PaginationInput {
   before: String
 }
 
+input FilterInput {
+  search: String
+  filterBy: [FilterParam]
+}
+
+input FilterParam {
+  fieldName: String!
+  fieldType: FieldType!
+  comparisonOperation: Operation!
+  fieldValue: Any!
+}
+
 enum SortOrder {
   ASC
   DESC
 }
 
-# Relay spec page info
-type PageInfo {
-  hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
-  startCursor: String
-  endCursor: String
+enum FieldType {
+  BOOLEAN
+  TIMESTAMP
+  NUMBER
+  INTEGER
+  STRING
+}
+
+input SortInput {
+  sortBy: [SortParam]
+}
+
+input SortParam {
+  fieldName: String!
+  sortOrder: SortOrder!
+}
+
+enum Operation {
+  LESS_THAN
+  LESS_THAN_OR_EQUAL_TO
+  EQUAL
+  GREATER_THAN
+  GREATER_THAN_OR_EQUAL_TO
+  IN
+  CONTAINS
 }
 
 # Node is needed by the Relay spec
