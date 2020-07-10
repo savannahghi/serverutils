@@ -147,6 +147,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 var sources = []*ast.Source{
 	&ast.Source{Name: "graph/base.graphql", Input: `scalar Map
 scalar Any
+scalar Time
 
 # Relay spec page info
 type PageInfo {
