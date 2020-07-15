@@ -19,6 +19,18 @@ scalar URI
 scalar UUID
 scalar XHTML
 
+# supported content types
+enum ContentType {
+  PNG
+  JPG
+  PDF
+}
+
+enum Language {
+  en
+  sw
+}
+
 # Relay spec page info
 type PageInfo {
   hasNextPage: Boolean!

@@ -3,6 +3,7 @@ package base
 import (
 	"fmt"
 	"io"
+	"log"
 	"strconv"
 )
 
@@ -243,4 +244,118 @@ func (e *SortOrder) UnmarshalGQL(v interface{}) error {
 // MarshalGQL writes the sort order to the supplied writer as a quoted string
 func (e SortOrder) MarshalGQL(w io.Writer) {
 	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+// ContentType defines accepted content types
+type ContentType string
+
+// Constants used to map to allowed MIME types
+const (
+	ContentTypePng ContentType = "PNG"
+	ContentTypeJpg ContentType = "JPG"
+	ContentTypePdf ContentType = "PDF"
+)
+
+// AllContentType is a list of all acceptable content types
+var AllContentType = []ContentType{
+	ContentTypePng,
+	ContentTypeJpg,
+	ContentTypePdf,
+}
+
+// IsValid ensures that the content type value is valid
+func (e ContentType) IsValid() bool {
+	switch e {
+	case ContentTypePng, ContentTypeJpg, ContentTypePdf:
+		return true
+	}
+	return false
+}
+
+func (e ContentType) String() string {
+	return string(e)
+}
+
+// UnmarshalGQL turns the supplied value into a content type value
+func (e *ContentType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ContentType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ContentType", str)
+	}
+	return nil
+}
+
+// MarshalGQL writes the value of this enum to the supplied writer
+func (e ContentType) MarshalGQL(w io.Writer) {
+	_, err := fmt.Fprint(w, strconv.Quote(e.String()))
+	if err != nil {
+		log.Printf("%v\n", err)
+	}
+}
+
+// Language defines allowed languages for uploads
+type Language string
+
+// Constants used to map to allowed languages
+const (
+	LanguageEn Language = "en"
+	LanguageSw Language = "sw"
+)
+
+// LanguageCodingSystem is the FHIR language coding system
+const LanguageCodingSystem = "urn:ietf:bcp:47"
+
+// LanguageCodingVersion is the FHIR language value
+const LanguageCodingVersion = ""
+
+// LanguageNames is a map of language codes to language names
+var LanguageNames = map[Language]string{
+	LanguageEn: "English",
+	LanguageSw: "Swahili",
+}
+
+// AllLanguage is a list of all allowed languages
+var AllLanguage = []Language{
+	LanguageEn,
+	LanguageSw,
+}
+
+// IsValid ensures that the supplied language value is correct
+func (e Language) IsValid() bool {
+	switch e {
+	case LanguageEn, LanguageSw:
+		return true
+	}
+	return false
+}
+
+func (e Language) String() string {
+	return string(e)
+}
+
+// UnmarshalGQL translates the input to a language type value
+func (e *Language) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Language(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Language", str)
+	}
+	return nil
+}
+
+// MarshalGQL writes the value of this enum to the supplied writer
+func (e Language) MarshalGQL(w io.Writer) {
+	_, err := fmt.Fprint(w, strconv.Quote(e.String()))
+	if err != nil {
+		log.Printf("%v\n", err)
+	}
 }
