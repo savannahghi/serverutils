@@ -148,6 +148,23 @@ var sources = []*ast.Source{
 	&ast.Source{Name: "graph/base.graphql", Input: `scalar Map
 scalar Any
 scalar Time
+scalar Date
+scalar Markdown
+scalar Decimal
+scalar URL
+scalar ResourceList
+scalar Base64Binary
+scalar Canonical
+scalar Code
+scalar DateTime
+scalar Instant
+scalar Integer
+scalar OID
+scalar PositiveInt
+scalar UnsignedInt
+scalar URI
+scalar UUID
+scalar XHTML
 
 # Relay spec page info
 type PageInfo {
