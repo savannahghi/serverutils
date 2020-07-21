@@ -52,6 +52,7 @@ func NormalizeMSISDN(msisdn string) (string, error) {
 	}
 	formatted := libphonenumber.Format(num, libphonenumber.INTERNATIONAL)
 	cleaned := strings.ReplaceAll(formatted, " ", "")
+	cleaned = strings.ReplaceAll(cleaned, "-", "")
 	return cleaned, nil
 }
 

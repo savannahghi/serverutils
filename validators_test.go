@@ -453,3 +453,60 @@ func TestStringSliceContains(t *testing.T) {
 		})
 	}
 }
+
+func TestNormalizeMSISDN(t *testing.T) {
+	type args struct {
+		msisdn string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "good Kenyan number, full E164 format",
+			args: args{
+				"+254723002959",
+			},
+			want:    "+254723002959",
+			wantErr: false,
+		},
+		{
+			name: "good Kenyan number, no + prefix",
+			args: args{
+				"254723002959",
+			},
+			want:    "+254723002959",
+			wantErr: false,
+		},
+		{
+			name: "good Kenyan number, no international dialling code",
+			args: args{
+				"0723002959",
+			},
+			want:    "+254723002959",
+			wantErr: false,
+		},
+		{
+			name: "good US number, full E164 format",
+			args: args{
+				"+16125409037",
+			},
+			want:    "+16125409037",
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NormalizeMSISDN(tt.args.msisdn)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NormalizeMSISDN() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("NormalizeMSISDN() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
