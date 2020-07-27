@@ -92,7 +92,7 @@ func ComposeUnpaginatedQuery(
 	}
 
 	// apply filters
-	query := firestoreClient.Collection(collectionName).Where("deleted", "==", false)
+	query := firestoreClient.Collection(collectionName).Query
 	if filter != nil {
 		for _, filterParam := range filter.FilterBy {
 			op, err := OpString(filterParam.ComparisonOperation)
