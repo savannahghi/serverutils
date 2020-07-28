@@ -115,3 +115,13 @@ If you have any questions or comments about this Policy, the ways in which SIL c
 Calling us at 0790 360 360
 Emailing us at support (at) slade360.co.ke
 `
+
+//GetConsumerTerms returns the currently active consumer terms of service
+func GetConsumerTerms() (string, error) {
+	return ConsumerTerms, nil
+}
+
+//GetProviderTerms returns the currently active provider terms of service
+func GetProviderTerms() (string, error) {
+	return ProviderTerms, nil
+}
