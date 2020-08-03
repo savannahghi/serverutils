@@ -222,3 +222,97 @@ func TestStructToMap(t *testing.T) {
 		})
 	}
 }
+
+func Test_convertStringMap(t *testing.T) {
+	type args struct {
+		inp map[string]string
+	}
+	tests := []struct {
+		name string
+		args args
+		want map[string]interface{}
+	}{
+		{
+			name: "nil input",
+			args: args{
+				inp: nil,
+			},
+			want: make(map[string]interface{}),
+		},
+		{
+			name: "empty map",
+			args: args{
+				inp: make(map[string]string),
+			},
+			want: make(map[string]interface{}),
+		},
+		{
+			name: "valid map",
+			args: args{
+				inp: map[string]string{
+					"a": "1",
+					"b": "2",
+				},
+			},
+			want: map[string]interface{}{
+				"a": "1",
+				"b": "2",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ConvertStringMap(tt.args.inp); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("convertStringMap() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_convertInterfaceMap(t *testing.T) {
+	type args struct {
+		inp map[string]interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want map[string]string
+	}{
+		{
+			name: "valid input",
+			args: args{
+				inp: map[string]interface{}{
+					"a": "1",
+				},
+			},
+			want: map[string]string{
+				"a": "1",
+			},
+		},
+		{
+			name: "nil input",
+			args: args{
+				inp: nil,
+			},
+			want: map[string]string{},
+		},
+		{
+			name: "wrong value type",
+			args: args{
+				inp: map[string]interface{}{
+					"a": 1,
+				},
+			},
+			want: map[string]string{
+				"a": "invalid string value: 1",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ConvertInterfaceMap(tt.args.inp); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("convertInterfaceMap() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -3,6 +3,7 @@ package base
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 )
 
 // StructToMap converts an object (struct) to a map.
@@ -39,6 +40,44 @@ func MapInterfaceToMapString(in map[string]interface{}) (map[string]string, erro
 		out[k] = s
 	}
 	return out, nil
+}
+
+// ConvertStringMap converts a map[string]string to a map[string]interface{}.
+//
+// This is done mostly in order to conform to the gqlgen Graphql Map scalar.
+func ConvertStringMap(inp map[string]string) map[string]interface{} {
+	out := make(map[string]interface{})
+	if inp == nil {
+		return out
+	}
+	for k, v := range inp {
+		val := interface{}(v)
+		out[k] = val
+	}
+	return out
+}
+
+// ConvertInterfaceMap converts a map[string]interface{} to a map[string]string.
+//
+// Any conversion errors are written out to the output map instead of being
+// returned as error values.
+//
+// New code is discouraged from using this function.
+func ConvertInterfaceMap(inp map[string]interface{}) map[string]string {
+	out := make(map[string]string)
+	if inp == nil {
+		return out
+	}
+	for k, v := range inp {
+		val, ok := v.(string)
+		if !ok {
+			val = fmt.Sprintf("invalid string value: %#v", v)
+			log.Printf(
+				"non string value in map[string]interface{} that is to be converted into map[string]string: %#v", v)
+		}
+		out[k] = val
+	}
+	return out
 }
 
 // ChunkStringSlice chunks the supplied slice of strings into chunks of the
