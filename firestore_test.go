@@ -641,3 +641,60 @@ func TestQueryNodes(t *testing.T) {
 		})
 	}
 }
+
+func TestDeleteNode(t *testing.T) {
+	ctx := context.Background()
+	node := &Model{
+		Name:        "test model instance",
+		Description: "this is a test description",
+		Deleted:     false,
+	}
+	id, _, err := CreateNode(ctx, node)
+	assert.Nil(t, err)
+	assert.NotZero(t, id)
+
+	type args struct {
+		ctx  context.Context
+		id   string
+		node Node
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{
+			name: "existing node",
+			args: args{
+				ctx:  ctx,
+				id:   node.GetID().String(),
+				node: &Model{},
+			},
+			want:    true,
+			wantErr: false,
+		},
+		{
+			name: "non existent node",
+			args: args{
+				ctx:  ctx,
+				id:   "this should not exist",
+				node: &Model{},
+			},
+			want:    true,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := DeleteNode(tt.args.ctx, tt.args.id, tt.args.node)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("DeleteNode() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("DeleteNode() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

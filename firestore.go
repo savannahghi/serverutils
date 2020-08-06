@@ -214,7 +214,7 @@ func RetrieveNode(ctx context.Context, id string, node Node) (Node, error) {
 	collName := GetCollectionName(node)
 	firestoreClient, err := GetFirestoreClient(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("unable to retrieve the node with ID %s: %w", id, err)
+		return nil, fmt.Errorf("unable to initialize Firestore: %w", err)
 	}
 	dsnap, err := firestoreClient.Collection(collName).Doc(id).Get(ctx)
 	if err != nil {
@@ -225,6 +225,20 @@ func RetrieveNode(ctx context.Context, id string, node Node) (Node, error) {
 		return nil, err
 	}
 	return node, nil
+}
+
+// DeleteNode retrieves a node from Firestore
+func DeleteNode(ctx context.Context, id string, node Node) (bool, error) {
+	collName := GetCollectionName(node)
+	firestoreClient, err := GetFirestoreClient(ctx)
+	if err != nil {
+		return false, fmt.Errorf("unable to initialize Firestore: %w", err)
+	}
+	_, err = firestoreClient.Collection(collName).Doc(id).Delete(ctx)
+	if err != nil {
+		return false, fmt.Errorf("unable to delete %T with ID %s: %w", node, id, err)
+	}
+	return true, nil
 }
 
 // CreateNode creates a Node on Firebase
