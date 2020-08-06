@@ -234,13 +234,20 @@ func CreateNode(ctx context.Context, node Node) (string, time.Time, error) {
 	if err != nil {
 		return "", UnixEpoch, fmt.Errorf("unable to update node: %w", err)
 	}
-	newID := uuid.New().String()
-	node.SetID(newID)
-	result, err := firestoreClient.Collection(collectionName).Doc(newID).Create(ctx, node)
+
+	// assign a random ID if one does not already exist
+	// but respect the ones that exist i.e don't overwrite
+	id := node.GetID().String()
+	if id == "" {
+		node.SetID(uuid.New().String())
+		id = node.GetID().String()
+	}
+
+	result, err := firestoreClient.Collection(collectionName).Doc(id).Create(ctx, node)
 	if err != nil {
 		return "", UnixEpoch, err
 	}
-	return newID, result.UpdateTime, nil
+	return id, result.UpdateTime, nil
 }
 
 // UpdateNode updates an existing node's document on Firestore
