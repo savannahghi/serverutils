@@ -655,3 +655,22 @@ func MergeURLValues(values ...url.Values) url.Values {
 	}
 	return merged
 }
+
+// GetAccessToken - given a generic OAuth2 + HTTP server client retrieve its access token
+func GetAccessToken(client *ServerClient) (string, error) {
+	newServerClient, err := NewServerClient(
+		client.clientID,
+		client.clientSecret,
+		client.apiTokenURL,
+		client.apiHost,
+		client.apiScheme,
+		client.grantType,
+		client.username,
+		client.password,
+		client.extraHeaders,
+	)
+	if err != nil {
+		return "", err
+	}
+	return newServerClient.AccessToken(), nil
+}

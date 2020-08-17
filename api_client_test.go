@@ -1385,3 +1385,63 @@ func TestComposeAPIURL(t *testing.T) {
 		})
 	}
 }
+
+
+func TestGetAccessToken(t *testing.T) {
+	// see the README for more guidance on these env vars
+	clientID := MustGetEnvVar("CLIENT_ID")
+	clientSecret := MustGetEnvVar("CLIENT_SECRET")
+	username := MustGetEnvVar("USERNAME")
+	password := MustGetEnvVar("PASSWORD")
+	grantType := MustGetEnvVar("GRANT_TYPE")
+	apiScheme := MustGetEnvVar("API_SCHEME")
+	apiTokenURL := MustGetEnvVar("TOKEN_URL")
+	apiHost := MustGetEnvVar("HOST")
+
+	tests := []struct {
+		name    string
+		args    *ServerClient
+		wantErr bool
+	}{
+		{
+			name: "valid credentials",
+			args: &ServerClient{
+				clientID:     clientID,
+				clientSecret: clientSecret,
+				apiTokenURL:  apiTokenURL,
+				apiHost:      apiHost,
+				apiScheme:    apiScheme,
+				grantType:    grantType,
+				username:     username,
+				password:     password,
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid credentials",
+			args: &ServerClient{
+				clientID:     clientID,
+				clientSecret: clientSecret,
+				apiTokenURL:  apiTokenURL,
+				apiHost:      apiHost,
+				apiScheme:    apiScheme,
+				grantType:    grantType,
+				username:     "username",
+				password:     password,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			token, err := GetAccessToken(tt.args)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetAccessToken() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr {
+				assert.NotNil(t, token)
+			}
+		})
+	}	
+}
