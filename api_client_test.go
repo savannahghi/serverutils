@@ -1400,34 +1400,34 @@ func TestGetAccessToken(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		args    *ServerClient
+		args    *ClientServerOptions
 		wantErr bool
 	}{
 		{
 			name: "valid credentials",
-			args: &ServerClient{
-				clientID:     clientID,
-				clientSecret: clientSecret,
-				apiTokenURL:  apiTokenURL,
-				apiHost:      apiHost,
-				apiScheme:    apiScheme,
-				grantType:    grantType,
-				username:     username,
-				password:     password,
+			args: &ClientServerOptions{
+				ClientID:     clientID,
+				ClientSecret: clientSecret,
+				APITokenURL:  apiTokenURL,
+				APIHost:      apiHost,
+				APIScheme:    apiScheme,
+				GrantType:    grantType,
+				Username:     username,
+				Password:     password,
 			},
 			wantErr: false,
 		},
 		{
 			name: "invalid credentials",
-			args: &ServerClient{
-				clientID:     clientID,
-				clientSecret: clientSecret,
-				apiTokenURL:  apiTokenURL,
-				apiHost:      apiHost,
-				apiScheme:    apiScheme,
-				grantType:    grantType,
-				username:     "username",
-				password:     password,
+			args: &ClientServerOptions{
+				ClientID:     clientID,
+				ClientSecret: clientSecret,
+				APITokenURL:  apiTokenURL,
+				APIHost:      apiHost,
+				APIScheme:    apiScheme,
+				GrantType:    grantType,
+				Username:     "username",
+				Password:     password,
 			},
 			wantErr: true,
 		},

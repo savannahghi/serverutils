@@ -656,18 +656,31 @@ func MergeURLValues(values ...url.Values) url.Values {
 	return merged
 }
 
+//ClientServerOptions - required to compose a server client config payload
+type ClientServerOptions struct {
+	ClientID     string
+	ClientSecret string
+	APITokenURL  string
+	APIHost      string
+	APIScheme    string
+	GrantType    string
+	Username     string
+	Password     string
+	ExtraHeaders map[string]string
+}
+
 // GetAccessToken - given a generic OAuth2 + HTTP server client retrieve its access token
-func GetAccessToken(client *ServerClient) (string, error) {
+func GetAccessToken(clientConfig *ClientServerOptions) (string, error) {
 	newServerClient, err := NewServerClient(
-		client.clientID,
-		client.clientSecret,
-		client.apiTokenURL,
-		client.apiHost,
-		client.apiScheme,
-		client.grantType,
-		client.username,
-		client.password,
-		client.extraHeaders,
+		clientConfig.ClientID,
+		clientConfig.ClientSecret,
+		clientConfig.APITokenURL,
+		clientConfig.APIHost,
+		clientConfig.APIScheme,
+		clientConfig.GrantType,
+		clientConfig.Username,
+		clientConfig.Password,
+		clientConfig.ExtraHeaders,
 	)
 	if err != nil {
 		return "", err
