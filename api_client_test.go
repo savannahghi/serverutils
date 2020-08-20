@@ -1386,7 +1386,6 @@ func TestComposeAPIURL(t *testing.T) {
 	}
 }
 
-
 func TestGetAccessToken(t *testing.T) {
 	// see the README for more guidance on these env vars
 	clientID := MustGetEnvVar("CLIENT_ID")
@@ -1443,5 +1442,38 @@ func TestGetAccessToken(t *testing.T) {
 				assert.NotNil(t, token)
 			}
 		})
-	}	
+	}
+}
+
+func TestNewPostRequest(t *testing.T) {
+	type args struct {
+		url             string
+		values          url.Values
+		headers         map[string]string
+		timeoutDuration int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *http.Response
+		wantErr bool
+	}{
+		{
+			name: "Test post request returns an error",
+			args: args{
+				url: "/some url",
+				values: url.Values{"data": []string{"dummy data"}},
+				headers: map[string]string{"Content-Type": "application/json"},
+				timeoutDuration: 200,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			payload, err := NewPostRequest(tt.args.url, tt.args.values, tt.args.headers, tt.args.timeoutDuration)
+			assert.Nil(t,payload)
+			assert.NotNil(t, err)
+		})
+	}
 }

@@ -687,3 +687,21 @@ func GetAccessToken(clientConfig *ClientServerOptions) (string, error) {
 	}
 	return newServerClient.AccessToken(), nil
 }
+
+// NewPostRequest - http post request
+func NewPostRequest(url string, values url.Values, headers map[string]string, timeoutDuration int) (*http.Response, error) {
+	reader := strings.NewReader(values.Encode())
+
+	req, err := http.NewRequest(http.MethodPost, url, reader)
+	if err != nil {
+		return nil, err
+	}
+
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
+	req.Header.Set("Accept", "application/json")
+
+	client := &http.Client{Timeout: time.Duration(timeoutDuration) * time.Second}
+	return client.Do(req)
+}
