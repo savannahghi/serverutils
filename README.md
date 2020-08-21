@@ -92,6 +92,7 @@ export USERNAME="<a valid username on Slade 360 auth server>"
 export PASSWORD="<a valid password on Slade 360 auth server>"
 export GRANT_TYPE=password
 export DEFAULT_WORKSTATION_ID="<a workstation ID from Slade 360 ERP that has been linked to the user above>"
+export ROOT_COLLECTION_SUFFIX="staging"
 ```
 
 This file *must not* be committed to version control.

@@ -2,6 +2,7 @@ package base
 
 import (
 	"context"
+	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -21,10 +22,14 @@ func (d Dummy) GetID() ID {
 
 func (d Dummy) SetID(string) {}
 
-func Test_getCollectionName(t *testing.T) {
+func TestMain(m *testing.M) {
+	os.Setenv("ROOT_COLLECTION_SUFFIX", "staging")
+	m.Run()
+}
 
+func Test_getCollectionName(t *testing.T) {
 	n1 := &Dummy{}
-	assert.Equal(t, "dummy", GetCollectionName(n1))
+	assert.Equal(t, "dummy_staging", GetCollectionName(n1))
 }
 
 func Test_validatePaginationParameters(t *testing.T) {

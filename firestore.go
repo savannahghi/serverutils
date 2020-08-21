@@ -24,7 +24,17 @@ func GetCollectionName(n Node) string {
 	fullName := fmt.Sprintf("%T", n) // e.g "*authorization.Store"
 	split := strings.Split(fullName, ".")
 	lastPart := split[len(split)-1]
-	return strings.ToLower(lastPart)
+	return suffixCollection(strings.ToLower(lastPart))
+}
+
+func getFirestoreEnvirionmentSuffix() string {
+	return MustGetEnvVar("ROOT_COLLECTION_SUFFIX")
+}
+
+// suffixCollection adds a suffix to the collection name. This will aid in seperating
+// collections for different environments
+func suffixCollection(c string) string {
+	return fmt.Sprintf("%v_%v", c, getFirestoreEnvirionmentSuffix())
 }
 
 // ValidatePaginationParameters ensures that the supplied pagination parameters make sense
