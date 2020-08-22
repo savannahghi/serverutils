@@ -87,7 +87,7 @@ func ValidateMSISDN(
 			SessionID: verificationCode,
 		}
 		_, err = SaveDataToFirestore(
-			firestoreClient, USSDSessionCollectionName, log)
+			firestoreClient, SuffixCollection(USSDSessionCollectionName), log)
 		if err != nil {
 			return "", fmt.Errorf("unable to save USSD session: %v", err)
 		}
@@ -95,7 +95,7 @@ func ValidateMSISDN(
 	}
 
 	// check if the OTP is on file / known
-	query := firestoreClient.Collection(OTPCollectionName).Where(
+	query := firestoreClient.Collection(SuffixCollection(OTPCollectionName)).Where(
 		"isValid", "==", true,
 	).Where(
 		"msisdn", "==", normalized,
@@ -115,7 +115,7 @@ func ValidateMSISDN(
 		otpData := doc.Data()
 		otpData["isValid"] = false
 		err = UpdateRecordOnFirestore(
-			firestoreClient, OTPCollectionName, doc.Ref.ID, otpData)
+			firestoreClient, SuffixCollection(OTPCollectionName), doc.Ref.ID, otpData)
 		if err != nil {
 			return "", fmt.Errorf("unable to save updated OTP document: %v", err)
 		}

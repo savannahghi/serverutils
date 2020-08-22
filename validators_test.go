@@ -117,7 +117,7 @@ func TestValidateMSISDN(t *testing.T) {
 		"msisdn":            normalized,
 		"timestamp":         time.Now(),
 	}
-	_, err = SaveDataToFirestore(firestoreClient, OTPCollectionName, validOtpData)
+	_, err = SaveDataToFirestore(firestoreClient, SuffixCollection(OTPCollectionName), validOtpData)
 	assert.Nil(t, err)
 
 	invalidOtpCode := rand.Int()
@@ -128,7 +128,7 @@ func TestValidateMSISDN(t *testing.T) {
 		"msisdn":            normalized,
 		"timestamp":         time.Now(),
 	}
-	_, err = SaveDataToFirestore(firestoreClient, OTPCollectionName, invalidOtpData)
+	_, err = SaveDataToFirestore(firestoreClient, SuffixCollection(OTPCollectionName), invalidOtpData)
 	assert.Nil(t, err)
 
 	type args struct {

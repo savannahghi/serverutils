@@ -2,6 +2,7 @@ package base
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"reflect"
 	"testing"
@@ -25,6 +26,20 @@ func (d Dummy) SetID(string) {}
 func TestMain(m *testing.M) {
 	os.Setenv("ROOT_COLLECTION_SUFFIX", "staging")
 	m.Run()
+}
+
+func TestSuffixCollection_staging(t *testing.T) {
+	col := "otp"
+	expect := fmt.Sprintf("%v_%v", col, "staging")
+	s := SuffixCollection(col)
+	assert.Equal(t, expect, s)
+}
+
+func TestServiceSuffixCollection_testing(t *testing.T) {
+	col := "otp"
+	expect := fmt.Sprintf("%v_%v", col, "staging")
+	s := SuffixCollection(col)
+	assert.Equal(t, expect, s)
 }
 
 func Test_getCollectionName(t *testing.T) {
