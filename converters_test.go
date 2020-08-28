@@ -1,4 +1,4 @@
-package base
+package base_test
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.slade360emr.com/go/base"
 )
 
 type SampleStruct struct {
@@ -30,7 +31,7 @@ func TestStructToMap_Normal(t *testing.T) {
 		ID:   "12121",
 	}
 
-	res, err := StructToMap(sample)
+	res, err := base.StructToMap(sample)
 	assert.Nil(t, err)
 	assert.NotNil(t, res)
 
@@ -52,7 +53,7 @@ func TestStructToMap_FieldStruct(t *testing.T) {
 		OnePoint: "yuhuhuu",
 	}
 
-	res, err := StructToMap(field)
+	res, err := base.StructToMap(field)
 	assert.Nil(t, err)
 	assert.NotNil(t, res)
 	fmt.Printf("%+v \n", res)
@@ -80,7 +81,7 @@ func TestStructToMap_EmbeddedStruct(t *testing.T) {
 		Hello:       "WORLD!!!!",
 	}
 
-	res, err := StructToMap(embed)
+	res, err := base.StructToMap(embed)
 	assert.Nil(t, err)
 	assert.NotNil(t, res)
 	fmt.Printf("%+v \n", res)
@@ -130,7 +131,7 @@ func TestMapInterfaceToMapString(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := MapInterfaceToMapString(tt.args.in)
+			got, err := base.MapInterfaceToMapString(tt.args.in)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("MapInterfaceToMapString() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -168,7 +169,7 @@ func TestChunkStringSlice(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ChunkStringSlice(tt.args.items, tt.args.chunkSize); !reflect.DeepEqual(got, tt.want) {
+			if got := base.ChunkStringSlice(tt.args.items, tt.args.chunkSize); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ChunkStringSlice() = %v, want %v", got, tt.want)
 			}
 		})
@@ -176,7 +177,6 @@ func TestChunkStringSlice(t *testing.T) {
 }
 
 func TestStructToMap(t *testing.T) {
-
 	type testStruct struct {
 		FirstField  string `json:"firstField,omitempty"`
 		SecondField int    `json:"secondField,omitempty"`
@@ -205,10 +205,18 @@ func TestStructToMap(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "invalid input - not a struct and won't marshal to JSON",
+			args: args{
+				item: make(chan string),
+			},
+			want:    nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := StructToMap(tt.args.item)
+			got, err := base.StructToMap(tt.args.item)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("StructToMap() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -262,7 +270,7 @@ func Test_convertStringMap(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ConvertStringMap(tt.args.inp); !reflect.DeepEqual(got, tt.want) {
+			if got := base.ConvertStringMap(tt.args.inp); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("convertStringMap() = %v, want %v", got, tt.want)
 			}
 		})
@@ -310,7 +318,7 @@ func Test_convertInterfaceMap(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ConvertInterfaceMap(tt.args.inp); !reflect.DeepEqual(got, tt.want) {
+			if got := base.ConvertInterfaceMap(tt.args.inp); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("convertInterfaceMap() = %v, want %v", got, tt.want)
 			}
 		})

@@ -60,7 +60,7 @@ git tag -m "v0.0.1" "v0.0.1"
 git push --tags
 ```
 
-Continous integration tests *must* pass on Gitlab CI. Our coverage threshold
+Continuous integration tests *must* pass on Gitlab CI. Our coverage threshold
 for small libraries is 90% i.e you *must* keep coverage above 90%.
 
 ## Environment variables

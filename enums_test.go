@@ -1,35 +1,37 @@
-package base
+package base_test
 
 import (
 	"bytes"
 	"strconv"
 	"testing"
+
+	"gitlab.slade360emr.com/go/base"
 )
 
 func TestGender_String(t *testing.T) {
 	tests := []struct {
 		name string
-		e    Gender
+		e    base.Gender
 		want string
 	}{
 		{
 			name: "male",
-			e:    GenderMale,
+			e:    base.GenderMale,
 			want: "male",
 		},
 		{
 			name: "female",
-			e:    GenderFemale,
+			e:    base.GenderFemale,
 			want: "female",
 		},
 		{
 			name: "unknown",
-			e:    GenderUnknown,
+			e:    base.GenderUnknown,
 			want: "unknown",
 		},
 		{
 			name: "other",
-			e:    GenderOther,
+			e:    base.GenderOther,
 			want: "other",
 		},
 	}
@@ -45,17 +47,17 @@ func TestGender_String(t *testing.T) {
 func TestGender_IsValid(t *testing.T) {
 	tests := []struct {
 		name string
-		e    Gender
+		e    base.Gender
 		want bool
 	}{
 		{
 			name: "valid male",
-			e:    GenderMale,
+			e:    base.GenderMale,
 			want: true,
 		},
 		{
 			name: "invalid gender",
-			e:    Gender("this is not a real gender"),
+			e:    base.Gender("this is not a real gender"),
 			want: false,
 		},
 	}
@@ -69,14 +71,14 @@ func TestGender_IsValid(t *testing.T) {
 }
 
 func TestGender_UnmarshalGQL(t *testing.T) {
-	female := GenderFemale
-	invalid := Gender("")
+	female := base.GenderFemale
+	invalid := base.Gender("")
 	type args struct {
 		v interface{}
 	}
 	tests := []struct {
 		name    string
-		e       *Gender
+		e       *base.Gender
 		args    args
 		wantErr bool
 	}{
@@ -117,12 +119,12 @@ func TestGender_UnmarshalGQL(t *testing.T) {
 func TestGender_MarshalGQL(t *testing.T) {
 	tests := []struct {
 		name  string
-		e     Gender
+		e     base.Gender
 		wantW string
 	}{
 		{
 			name:  "valid unknown gender enum",
-			e:     GenderUnknown,
+			e:     base.GenderUnknown,
 			wantW: strconv.Quote("unknown"),
 		},
 	}
@@ -140,17 +142,17 @@ func TestGender_MarshalGQL(t *testing.T) {
 func TestFieldType_IsValid(t *testing.T) {
 	tests := []struct {
 		name string
-		e    FieldType
+		e    base.FieldType
 		want bool
 	}{
 		{
 			name: "valid string field type",
-			e:    FieldTypeString,
+			e:    base.FieldTypeString,
 			want: true,
 		},
 		{
 			name: "invalid field type",
-			e:    FieldType("this is not a real field type"),
+			e:    base.FieldType("this is not a real field type"),
 			want: false,
 		},
 	}
@@ -166,12 +168,12 @@ func TestFieldType_IsValid(t *testing.T) {
 func TestFieldType_String(t *testing.T) {
 	tests := []struct {
 		name string
-		e    FieldType
+		e    base.FieldType
 		want string
 	}{
 		{
 			name: "valid boolean field type as string",
-			e:    FieldTypeBoolean,
+			e:    base.FieldTypeBoolean,
 			want: "BOOLEAN",
 		},
 	}
@@ -185,14 +187,14 @@ func TestFieldType_String(t *testing.T) {
 }
 
 func TestFieldType_UnmarshalGQL(t *testing.T) {
-	intEnum := FieldType("")
-	invalid := FieldType("")
+	intEnum := base.FieldType("")
+	invalid := base.FieldType("")
 	type args struct {
 		v interface{}
 	}
 	tests := []struct {
 		name    string
-		e       *FieldType
+		e       *base.FieldType
 		args    args
 		wantErr bool
 	}{
@@ -233,12 +235,12 @@ func TestFieldType_UnmarshalGQL(t *testing.T) {
 func TestFieldType_MarshalGQL(t *testing.T) {
 	tests := []struct {
 		name  string
-		e     FieldType
+		e     base.FieldType
 		wantW string
 	}{
 		{
 			name:  "number field type",
-			e:     FieldTypeNumber,
+			e:     base.FieldTypeNumber,
 			wantW: strconv.Quote("NUMBER"),
 		},
 	}
@@ -256,17 +258,17 @@ func TestFieldType_MarshalGQL(t *testing.T) {
 func TestOperation_IsValid(t *testing.T) {
 	tests := []struct {
 		name string
-		e    Operation
+		e    base.Operation
 		want bool
 	}{
 		{
 			name: "valid operation",
-			e:    OperationEqual,
+			e:    base.OperationEqual,
 			want: true,
 		},
 		{
 			name: "invalid operation",
-			e:    Operation("hii sio valid"),
+			e:    base.Operation("hii sio valid"),
 			want: false,
 		},
 	}
@@ -282,12 +284,12 @@ func TestOperation_IsValid(t *testing.T) {
 func TestOperation_String(t *testing.T) {
 	tests := []struct {
 		name string
-		e    Operation
+		e    base.Operation
 		want string
 	}{
 		{
 			name: "valid case - contains",
-			e:    OperationContains,
+			e:    base.OperationContains,
 			want: "CONTAINS",
 		},
 	}
@@ -301,14 +303,14 @@ func TestOperation_String(t *testing.T) {
 }
 
 func TestOperation_UnmarshalGQL(t *testing.T) {
-	valid := Operation("")
-	invalid := Operation("")
+	valid := base.Operation("")
+	invalid := base.Operation("")
 	type args struct {
 		v interface{}
 	}
 	tests := []struct {
 		name    string
-		e       *Operation
+		e       *base.Operation
 		args    args
 		wantErr bool
 	}{
@@ -349,12 +351,12 @@ func TestOperation_UnmarshalGQL(t *testing.T) {
 func TestOperation_MarshalGQL(t *testing.T) {
 	tests := []struct {
 		name  string
-		e     Operation
+		e     base.Operation
 		wantW string
 	}{
 		{
 			name:  "good case",
-			e:     OperationContains,
+			e:     base.OperationContains,
 			wantW: strconv.Quote("CONTAINS"),
 		},
 	}
@@ -372,12 +374,12 @@ func TestOperation_MarshalGQL(t *testing.T) {
 func TestSortOrder_String(t *testing.T) {
 	tests := []struct {
 		name string
-		e    SortOrder
+		e    base.SortOrder
 		want string
 	}{
 		{
 			name: "good case",
-			e:    SortOrderAsc,
+			e:    base.SortOrderAsc,
 			want: "ASC",
 		},
 	}
@@ -391,13 +393,13 @@ func TestSortOrder_String(t *testing.T) {
 }
 
 func TestSortOrder_UnmarshalGQL(t *testing.T) {
-	so := SortOrder("")
+	so := base.SortOrder("")
 	type args struct {
 		v interface{}
 	}
 	tests := []struct {
 		name    string
-		e       *SortOrder
+		e       *base.SortOrder
 		args    args
 		wantErr bool
 	}{
@@ -438,12 +440,12 @@ func TestSortOrder_UnmarshalGQL(t *testing.T) {
 func TestSortOrder_MarshalGQL(t *testing.T) {
 	tests := []struct {
 		name  string
-		e     SortOrder
+		e     base.SortOrder
 		wantW string
 	}{
 		{
 			name:  "good case",
-			e:     SortOrderDesc,
+			e:     base.SortOrderDesc,
 			wantW: strconv.Quote("DESC"),
 		},
 	}
@@ -453,6 +455,328 @@ func TestSortOrder_MarshalGQL(t *testing.T) {
 			tt.e.MarshalGQL(w)
 			if gotW := w.String(); gotW != tt.wantW {
 				t.Errorf("SortOrder.MarshalGQL() = %v, want %v", gotW, tt.wantW)
+			}
+		})
+	}
+}
+
+func TestContentType_IsValid(t *testing.T) {
+	tests := []struct {
+		name string
+		e    base.ContentType
+		want bool
+	}{
+		{
+			name: "good case",
+			e:    base.ContentTypeJpg,
+			want: true,
+		},
+		{
+			name: "bad case",
+			e:    base.ContentType("not a real content type"),
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.e.IsValid(); got != tt.want {
+				t.Errorf("ContentType.IsValid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestContentType_String(t *testing.T) {
+	tests := []struct {
+		name string
+		e    base.ContentType
+		want string
+	}{
+		{
+			name: "default case",
+			e:    base.ContentTypePdf,
+			want: "PDF",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.e.String(); got != tt.want {
+				t.Errorf("ContentType.String() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestContentType_UnmarshalGQL(t *testing.T) {
+	var sc base.ContentType
+	type args struct {
+		v interface{}
+	}
+	tests := []struct {
+		name    string
+		e       *base.ContentType
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "valid unmarshal",
+			e:    &sc,
+			args: args{
+				v: "PDF",
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid unmarshal",
+			e:    &sc,
+			args: args{
+				v: "this is not a valid scalar value",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.e.UnmarshalGQL(tt.args.v); (err != nil) != tt.wantErr {
+				t.Errorf("ContentType.UnmarshalGQL() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestContentType_MarshalGQL(t *testing.T) {
+	tests := []struct {
+		name  string
+		e     base.ContentType
+		wantW string
+	}{
+		{
+			name:  "default case",
+			e:     base.ContentTypePdf,
+			wantW: strconv.Quote("PDF"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := &bytes.Buffer{}
+			tt.e.MarshalGQL(w)
+			if gotW := w.String(); gotW != tt.wantW {
+				t.Errorf("ContentType.MarshalGQL() = %v, want %v", gotW, tt.wantW)
+			}
+		})
+	}
+}
+
+func TestLanguage_IsValid(t *testing.T) {
+	tests := []struct {
+		name string
+		e    base.Language
+		want bool
+	}{
+		{
+			name: "good case",
+			e:    base.LanguageEn,
+			want: true,
+		},
+		{
+			name: "bad case",
+			e:    base.Language("not a real language"),
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.e.IsValid(); got != tt.want {
+				t.Errorf("Language.IsValid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestLanguage_String(t *testing.T) {
+	tests := []struct {
+		name string
+		e    base.Language
+		want string
+	}{
+		{
+			name: "default case",
+			e:    base.LanguageEn,
+			want: "en",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.e.String(); got != tt.want {
+				t.Errorf("Language.String() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestLanguage_UnmarshalGQL(t *testing.T) {
+	var sc base.Language
+
+	type args struct {
+		v interface{}
+	}
+	tests := []struct {
+		name    string
+		e       *base.Language
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "valid unmarshal",
+			e:    &sc,
+			args: args{
+				v: "en",
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid unmarshal",
+			e:    &sc,
+			args: args{
+				v: "this is not a valid scalar value",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.e.UnmarshalGQL(tt.args.v); (err != nil) != tt.wantErr {
+				t.Errorf("Language.UnmarshalGQL() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestLanguage_MarshalGQL(t *testing.T) {
+	tests := []struct {
+		name  string
+		e     base.Language
+		wantW string
+	}{
+		{
+			name:  "default case",
+			e:     base.LanguageEn,
+			wantW: strconv.Quote("en"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := &bytes.Buffer{}
+			tt.e.MarshalGQL(w)
+			if gotW := w.String(); gotW != tt.wantW {
+				t.Errorf("Language.MarshalGQL() = %v, want %v", gotW, tt.wantW)
+			}
+		})
+	}
+}
+
+func TestPractitionerSpecialty_IsValid(t *testing.T) {
+	tests := []struct {
+		name string
+		e    base.PractitionerSpecialty
+		want bool
+	}{
+		{
+			name: "good case",
+			e:    base.PractitionerSpecialtyAnaesthesia,
+			want: true,
+		},
+		{
+			name: "bad case",
+			e:    base.PractitionerSpecialty("not a real specialty"),
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.e.IsValid(); got != tt.want {
+				t.Errorf("PractitionerSpecialty.IsValid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPractitionerSpecialty_String(t *testing.T) {
+	tests := []struct {
+		name string
+		e    base.PractitionerSpecialty
+		want string
+	}{
+		{
+			name: "default case",
+			e:    base.PractitionerSpecialtyAnaesthesia,
+			want: "ANAESTHESIA",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.e.String(); got != tt.want {
+				t.Errorf("PractitionerSpecialty.String() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPractitionerSpecialty_UnmarshalGQL(t *testing.T) {
+	var sc base.PractitionerSpecialty
+	type args struct {
+		v interface{}
+	}
+	tests := []struct {
+		name    string
+		e       *base.PractitionerSpecialty
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "valid unmarshal",
+			e:    &sc,
+			args: args{
+				v: "ANAESTHESIA",
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid unmarshal",
+			e:    &sc,
+			args: args{
+				v: "this is not a valid scalar value",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.e.UnmarshalGQL(tt.args.v); (err != nil) != tt.wantErr {
+				t.Errorf("PractitionerSpecialty.UnmarshalGQL() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestPractitionerSpecialty_MarshalGQL(t *testing.T) {
+	tests := []struct {
+		name  string
+		e     base.PractitionerSpecialty
+		wantW string
+	}{
+		{
+			name:  "default case",
+			e:     base.PractitionerSpecialtyAnaesthesia,
+			wantW: strconv.Quote("ANAESTHESIA"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := &bytes.Buffer{}
+			tt.e.MarshalGQL(w)
+			if gotW := w.String(); gotW != tt.wantW {
+				t.Errorf("PractitionerSpecialty.MarshalGQL() = %v, want %v", gotW, tt.wantW)
 			}
 		})
 	}

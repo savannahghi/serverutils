@@ -1,14 +1,15 @@
-package base
+package base_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.slade360emr.com/go/base"
 )
 
 func TestShortenLink(t *testing.T) {
-	dynamicLinkDomain, err := GetEnvVar(FDLDomainEnvironmentVariableName)
+	dynamicLinkDomain, err := base.GetEnvVar(base.FDLDomainEnvironmentVariableName)
 	assert.Nil(t, err)
 
 	type args struct {
@@ -31,7 +32,7 @@ func TestShortenLink(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ShortenLink(tt.args.ctx, tt.args.longLink)
+			got, err := base.ShortenLink(tt.args.ctx, tt.args.longLink)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ShortenLink() error = %v, wantErr %v", err, tt.wantErr)
 				return

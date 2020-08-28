@@ -9,9 +9,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// Sep is a separator, used to create "opaque" IDs
-const Sep = "|"
-
 // ID is fulfilled by all stringifiable types.
 // A valid Relay ID must fulfill this interface.
 type ID interface {

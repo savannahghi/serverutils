@@ -70,3 +70,87 @@ type SladeAPIListRespBase struct {
 	StartIndex  int    `json:"start_index,omitempty"`
 	EndIndex    int    `json:"end_index,omitempty"`
 }
+
+// LoginCreds is used to (de)serialize the login username and password
+type LoginCreds struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type setupProcess struct {
+	Progress        int           `json:"progress"`
+	CompletedSteps  []interface{} `json:"completedSteps"`
+	IncompleteSteps []interface{} `json:"incompleteSteps"`
+	NextStep        interface{}   `json:"nextStep"`
+}
+
+// LoginResponse is used to (de)serialize the result of a successful login
+type LoginResponse struct {
+	CustomToken   string          `json:"custom_token"`
+	Scope         string          `json:"scope"`
+	ExpiresIn     int             `json:"expires_in"`
+	IDToken       string          `json:"id_token"`
+	RefreshToken  string          `json:"refresh_token"`
+	TokenType     string          `json:"token_type"`
+	UserProfile   *EDIUserProfile `json:"user_profile"`
+	UID           string          `json:"uid"`
+	Email         string          `json:"email"`
+	DisplayName   string          `json:"display_name"`
+	EmailVerified bool            `json:"email_verified"`
+	PhoneNumber   string          `json:"phone_number"`
+	PhotoURL      string          `json:"photo_url"`
+	Disabled      bool            `json:"disabled"`
+	TenantID      string          `json:"tenant_id"`
+	ProviderID    string          `json:"provider_id"`
+	Setup         *setupProcess   `json:"setup,omitempty"`
+}
+
+// RefreshCreds models the inputs expected from an API client when refreshing tokens
+type RefreshCreds struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
+// LogoutRequest models the inputs expected from an API client when requesting a log out
+type LogoutRequest struct {
+	UID string `json:"uid"`
+}
+
+// EDIUserProfile is used to (de)serialialize the Slade 360 auth server
+// profile of the logged in user.
+type EDIUserProfile struct {
+	ID              int      `json:"id"`
+	GUID            string   `json:"guid"`
+	Email           string   `json:"email"`
+	FirstName       string   `json:"first_name"`
+	LastName        string   `json:"last_name"`
+	OtherNames      string   `json:"other_names"`
+	IsStaff         bool     `json:"is_staff"`
+	IsActive        bool     `json:"is_active"`
+	Organisation    int      `json:"organisation"`
+	BusinessPartner string   `json:"business_partner"`
+	Roles           []string `json:"roles"`
+	BPType          string   `json:"bp_type"`
+}
+
+// RefreshResponse is used to return the results of a successful token refresh to an API client
+type RefreshResponse struct {
+	ExpiresIn    int    `json:"expires_in"`
+	IDToken      string `json:"id_token"`
+	RefreshToken string `json:"refresh_token"`
+	TokenType    string `json:"token_type"`
+}
+
+// FirebaseRefreshResponse is used to (de)serialize the results of a successful Firebase token refresh
+type FirebaseRefreshResponse struct {
+	ExpiresIn    string `json:"expires_in"`
+	TokenType    string `json:"token_type"`
+	RefreshToken string `json:"refresh_token"`
+	IDToken      string `json:"id_token"`
+	UserID       string `json:"user_id"`
+	ProjectID    string `json:"project_id"`
+}
+
+// AccessTokenPayload is used to accept access token verification requests from API clients
+type AccessTokenPayload struct {
+	AccessToken string `json:"accessToken"`
+}

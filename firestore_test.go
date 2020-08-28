@@ -1,15 +1,15 @@
-package base
+package base_test
 
 import (
 	"context"
 	"fmt"
-	"os"
 	"reflect"
 	"testing"
 	"time"
 
 	"cloud.google.com/go/firestore"
 	"github.com/stretchr/testify/assert"
+	"gitlab.slade360emr.com/go/base"
 )
 
 // Dummy is a test node
@@ -17,34 +17,29 @@ type Dummy struct{}
 
 func (d Dummy) IsNode() {}
 
-func (d Dummy) GetID() ID {
-	return IDValue("dummy id")
+func (d Dummy) GetID() base.ID {
+	return base.IDValue("dummy id")
 }
 
 func (d Dummy) SetID(string) {}
 
-func TestMain(m *testing.M) {
-	os.Setenv("ROOT_COLLECTION_SUFFIX", "staging")
-	m.Run()
-}
-
 func TestSuffixCollection_staging(t *testing.T) {
 	col := "otp"
 	expect := fmt.Sprintf("%v_%v", col, "staging")
-	s := SuffixCollection(col)
+	s := base.SuffixCollection(col)
 	assert.Equal(t, expect, s)
 }
 
 func TestServiceSuffixCollection_testing(t *testing.T) {
 	col := "otp"
 	expect := fmt.Sprintf("%v_%v", col, "staging")
-	s := SuffixCollection(col)
+	s := base.SuffixCollection(col)
 	assert.Equal(t, expect, s)
 }
 
 func Test_getCollectionName(t *testing.T) {
 	n1 := &Dummy{}
-	assert.Equal(t, "dummy_staging", GetCollectionName(n1))
+	assert.Equal(t, "dummy_staging", base.GetCollectionName(n1))
 }
 
 func Test_validatePaginationParameters(t *testing.T) {
@@ -54,12 +49,12 @@ func Test_validatePaginationParameters(t *testing.T) {
 	before := "20"
 
 	tests := map[string]struct {
-		pagination           *PaginationInput
+		pagination           *base.PaginationInput
 		expectError          bool
 		expectedErrorMessage string
 	}{
 		"first_last_specified": {
-			pagination: &PaginationInput{
+			pagination: &base.PaginationInput{
 				First: first,
 				Last:  last,
 			},
@@ -67,26 +62,26 @@ func Test_validatePaginationParameters(t *testing.T) {
 			expectedErrorMessage: "if `first` is specified for pagination, `last` cannot be specified",
 		},
 		"first_only": {
-			pagination: &PaginationInput{
+			pagination: &base.PaginationInput{
 				First: first,
 			},
 			expectError: false,
 		},
 		"last_only": {
-			pagination: &PaginationInput{
+			pagination: &base.PaginationInput{
 				Last: last,
 			},
 			expectError: false,
 		},
 		"first_and_after": {
-			pagination: &PaginationInput{
+			pagination: &base.PaginationInput{
 				First: first,
 				After: after,
 			},
 			expectError: false,
 		},
 		"last_and_before": {
-			pagination: &PaginationInput{
+			pagination: &base.PaginationInput{
 				Last:   last,
 				Before: before,
 			},
@@ -99,7 +94,7 @@ func Test_validatePaginationParameters(t *testing.T) {
 	}
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			err := ValidatePaginationParameters(tc.pagination)
+			err := base.ValidatePaginationParameters(tc.pagination)
 			if tc.expectError {
 				assert.NotNil(t, err)
 				assert.Contains(t, err.Error(), tc.expectedErrorMessage)
@@ -113,56 +108,56 @@ func Test_validatePaginationParameters(t *testing.T) {
 
 func Test_opstring(t *testing.T) {
 	tests := map[string]struct {
-		op                   Operation
+		op                   base.Operation
 		expectedOutput       string
 		expectError          bool
 		expectedErrorMessage string
 	}{
 		"invalid_operation": {
-			op:                   Operation("invalid unknown operation"),
+			op:                   base.Operation("invalid unknown operation"),
 			expectedOutput:       "",
 			expectError:          true,
 			expectedErrorMessage: "unknown operation; did you forget to update this function after adding new operations in the schema?",
 		},
 		"less than": {
-			op:             OperationLessThan,
+			op:             base.OperationLessThan,
 			expectedOutput: "<",
 			expectError:    false,
 		},
 		"less than_or_equal_to": {
-			op:             OperationLessThanOrEqualTo,
+			op:             base.OperationLessThanOrEqualTo,
 			expectedOutput: "<=",
 			expectError:    false,
 		},
 		"equal_to": {
-			op:             OperationEqual,
+			op:             base.OperationEqual,
 			expectedOutput: "==",
 			expectError:    false,
 		},
 		"greater_than": {
-			op:             OperationGreaterThan,
+			op:             base.OperationGreaterThan,
 			expectedOutput: ">",
 			expectError:    false,
 		},
 		"greater_than_or_equal_to": {
-			op:             OperationGreaterThanOrEqualTo,
+			op:             base.OperationGreaterThanOrEqualTo,
 			expectedOutput: ">=",
 			expectError:    false,
 		},
 		"in": {
-			op:             OperationIn,
+			op:             base.OperationIn,
 			expectedOutput: "in",
 			expectError:    false,
 		},
 		"contains": {
-			op:             OperationContains,
+			op:             base.OperationContains,
 			expectedOutput: "array-contains",
 			expectError:    false,
 		},
 	}
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			opString, err := OpString(tc.op)
+			opString, err := base.OpString(tc.op)
 			assert.Equal(t, tc.expectedOutput, opString)
 			if tc.expectError {
 				assert.Equal(t, tc.expectedErrorMessage, err.Error())
@@ -190,7 +185,7 @@ func TestGetFirestoreClient(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetFirestoreClient(tt.args.ctx)
+			got, err := base.GetFirestoreClient(tt.args.ctx)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetFirestoreClient() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -202,109 +197,120 @@ func TestGetFirestoreClient(t *testing.T) {
 
 func TestComposeUnpaginatedQuery(t *testing.T) {
 	ctx := context.Background()
-	node := &Model{}
-	sortAsc := SortInput{
-		SortBy: []*SortParam{
+	node := &base.Model{}
+	sortAsc := base.SortInput{
+		SortBy: []*base.SortParam{
 			{
 				FieldName: "name",
-				SortOrder: SortOrderAsc,
+				SortOrder: base.SortOrderAsc,
 			},
 		},
 	}
-	sortDesc := SortInput{
-		SortBy: []*SortParam{
+	sortDesc := base.SortInput{
+		SortBy: []*base.SortParam{
 			{
 				FieldName: "name",
-				SortOrder: SortOrderDesc,
+				SortOrder: base.SortOrderDesc,
 			},
 		},
 	}
-	invalidFilter := FilterInput{
-		FilterBy: []*FilterParam{
+	invalidFilter := base.FilterInput{
+		FilterBy: []*base.FilterParam{
 			{
 				FieldName:           "name",
-				FieldType:           FieldTypeString,
-				ComparisonOperation: Operation("not a valid operation"),
+				FieldType:           base.FieldTypeString,
+				ComparisonOperation: base.Operation("not a valid operation"),
 				FieldValue:          "val",
 			},
 		},
 	}
-	booleanFilter := FilterInput{
-		FilterBy: []*FilterParam{
+	booleanFilter := base.FilterInput{
+		FilterBy: []*base.FilterParam{
 			{
 				FieldName:           "deleted",
-				FieldType:           FieldTypeBoolean,
-				ComparisonOperation: OperationEqual,
+				FieldType:           base.FieldTypeBoolean,
+				ComparisonOperation: base.OperationEqual,
 				FieldValue:          "false",
 			},
 		},
 	}
-	invalidBoolFilterWrongType := FilterInput{
-		FilterBy: []*FilterParam{
+	invalidBoolFilterWrongType := base.FilterInput{
+		FilterBy: []*base.FilterParam{
 			{
 				FieldName:           "deleted",
-				FieldType:           FieldTypeBoolean,
-				ComparisonOperation: OperationEqual,
+				FieldType:           base.FieldTypeBoolean,
+				ComparisonOperation: base.OperationEqual,
 				FieldValue:          false,
 			},
 		},
 	}
-	invalidBoolFilterUnparseableString := FilterInput{
-		FilterBy: []*FilterParam{
+	invalidBoolFilterUnparseableString := base.FilterInput{
+		FilterBy: []*base.FilterParam{
 			{
 				FieldName:           "deleted",
-				FieldType:           FieldTypeBoolean,
-				ComparisonOperation: OperationEqual,
+				FieldType:           base.FieldTypeBoolean,
+				ComparisonOperation: base.OperationEqual,
 				FieldValue:          "bad format",
 			},
 		},
 	}
-	intFilter := FilterInput{
-		FilterBy: []*FilterParam{
+	intFilter := base.FilterInput{
+		FilterBy: []*base.FilterParam{
 			{
 				FieldName:           "count",
-				FieldType:           FieldTypeInteger,
-				ComparisonOperation: OperationGreaterThan,
+				FieldType:           base.FieldTypeInteger,
+				ComparisonOperation: base.OperationGreaterThan,
 				FieldValue:          0,
 			},
 		},
 	}
-	invalidIntFilter := FilterInput{
-		FilterBy: []*FilterParam{
+	invalidIntFilter := base.FilterInput{
+		FilterBy: []*base.FilterParam{
 			{
 				FieldName:           "count",
-				FieldType:           FieldTypeInteger,
-				ComparisonOperation: OperationGreaterThan,
+				FieldType:           base.FieldTypeInteger,
+				ComparisonOperation: base.OperationGreaterThan,
 				FieldValue:          "not a valid int",
 			},
 		},
 	}
-	timestampFilter := FilterInput{
-		FilterBy: []*FilterParam{
+	timestampFilter := base.FilterInput{
+		FilterBy: []*base.FilterParam{
 			{
 				FieldName:           "updated",
-				FieldType:           FieldTypeTimestamp,
-				ComparisonOperation: OperationGreaterThan,
+				FieldType:           base.FieldTypeTimestamp,
+				ComparisonOperation: base.OperationGreaterThan,
 				FieldValue:          time.Now(),
 			},
 		},
 	}
-	numberFilter := FilterInput{
-		FilterBy: []*FilterParam{
+	numberFilter := base.FilterInput{
+		FilterBy: []*base.FilterParam{
 			{
 				FieldName:           "numfield",
-				FieldType:           FieldTypeNumber,
-				ComparisonOperation: OperationLessThan,
+				FieldType:           base.FieldTypeNumber,
+				ComparisonOperation: base.OperationLessThan,
 				FieldValue:          1.0,
 			},
 		},
 	}
-	stringFilter := FilterInput{
-		FilterBy: []*FilterParam{
+	stringFilter := base.FilterInput{
+		FilterBy: []*base.FilterParam{
 			{
 				FieldName:           "name",
-				FieldType:           FieldTypeString,
-				ComparisonOperation: OperationEqual,
+				FieldType:           base.FieldTypeString,
+				ComparisonOperation: base.OperationEqual,
+				FieldValue:          "a string",
+			},
+		},
+	}
+
+	unknownFieldType := base.FilterInput{
+		FilterBy: []*base.FilterParam{
+			{
+				FieldName:           "name",
+				FieldType:           base.FieldType("this is a strange field type"),
+				ComparisonOperation: base.OperationEqual,
 				FieldValue:          "a string",
 			},
 		},
@@ -312,9 +318,9 @@ func TestComposeUnpaginatedQuery(t *testing.T) {
 
 	type args struct {
 		ctx    context.Context
-		filter *FilterInput
-		sort   *SortInput
-		node   Node
+		filter *base.FilterInput
+		sort   *base.SortInput
+		node   base.Node
 	}
 	tests := []struct {
 		name    string
@@ -441,10 +447,20 @@ func TestComposeUnpaginatedQuery(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "unknown field type",
+			args: args{
+				ctx:    ctx,
+				filter: &unknownFieldType,
+				sort:   &sortAsc,
+				node:   node,
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ComposeUnpaginatedQuery(tt.args.ctx, tt.args.filter, tt.args.sort, tt.args.node)
+			got, err := base.ComposeUnpaginatedQuery(tt.args.ctx, tt.args.filter, tt.args.sort, tt.args.node)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ComposeUnpaginatedQuery() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -459,7 +475,7 @@ func TestComposeUnpaginatedQuery(t *testing.T) {
 func TestCreateNode(t *testing.T) {
 	type args struct {
 		ctx  context.Context
-		node Node
+		node base.Node
 	}
 	tests := []struct {
 		name    string
@@ -470,14 +486,14 @@ func TestCreateNode(t *testing.T) {
 			name: "good case",
 			args: args{
 				ctx:  context.Background(),
-				node: &Model{},
+				node: &base.Model{},
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			id, timestamp, err := CreateNode(tt.args.ctx, tt.args.node)
+			id, timestamp, err := base.CreateNode(tt.args.ctx, tt.args.node)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CreateNode() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -490,8 +506,8 @@ func TestCreateNode(t *testing.T) {
 
 func TestUpdateNode(t *testing.T) {
 	ctx := context.Background()
-	node := &Model{}
-	id, _, err := CreateNode(ctx, node)
+	node := &base.Model{}
+	id, _, err := base.CreateNode(ctx, node)
 	assert.Nil(t, err)
 	assert.NotZero(t, id)
 
@@ -500,7 +516,7 @@ func TestUpdateNode(t *testing.T) {
 	type args struct {
 		ctx  context.Context
 		id   string
-		node Node
+		node base.Node
 	}
 	tests := []struct {
 		name    string
@@ -516,10 +532,19 @@ func TestUpdateNode(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "node that does not exist",
+			args: args{
+				ctx:  ctx,
+				id:   "this is a bogus ID that should not exist",
+				node: node,
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := UpdateNode(tt.args.ctx, tt.args.id, tt.args.node)
+			got, err := base.UpdateNode(tt.args.ctx, tt.args.id, tt.args.node)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UpdateNode() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -531,20 +556,20 @@ func TestUpdateNode(t *testing.T) {
 
 func TestRetrieveNode(t *testing.T) {
 	ctx := context.Background()
-	node := &Model{}
-	id, _, err := CreateNode(ctx, node)
+	node := &base.Model{}
+	id, _, err := base.CreateNode(ctx, node)
 	assert.Nil(t, err)
 	assert.NotZero(t, id)
 
 	type args struct {
 		ctx  context.Context
 		id   string
-		node Node
+		node base.Node
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    Node
+		want    base.Node
 		wantErr bool
 	}{
 		{
@@ -557,10 +582,20 @@ func TestRetrieveNode(t *testing.T) {
 			want:    node,
 			wantErr: false,
 		},
+		{
+			name: "non existent node",
+			args: args{
+				ctx:  ctx,
+				id:   "fake ID - should not exist",
+				node: node,
+			},
+			want:    nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := RetrieveNode(tt.args.ctx, tt.args.id, tt.args.node)
+			got, err := base.RetrieveNode(tt.args.ctx, tt.args.id, tt.args.node)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RetrieveNode() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -574,30 +609,30 @@ func TestRetrieveNode(t *testing.T) {
 
 func TestQueryNodes(t *testing.T) {
 	ctx := context.Background()
-	node := &Model{
+	node := &base.Model{
 		Name:        "test model instance",
 		Description: "this is a test description",
 		Deleted:     false,
 	}
-	id, _, err := CreateNode(ctx, node)
+	id, _, err := base.CreateNode(ctx, node)
 	assert.Nil(t, err)
 	assert.NotZero(t, id)
 
-	sortAsc := SortInput{
-		SortBy: []*SortParam{
+	sortAsc := base.SortInput{
+		SortBy: []*base.SortParam{
 			{
 				FieldName: "name",
-				SortOrder: SortOrderAsc,
+				SortOrder: base.SortOrderAsc,
 			},
 		},
 	}
 
 	type args struct {
 		ctx        context.Context
-		pagination *PaginationInput
-		filter     *FilterInput
-		sort       *SortInput
-		node       Node
+		pagination *base.PaginationInput
+		filter     *base.FilterInput
+		sort       *base.SortInput
+		node       base.Node
 	}
 	tests := []struct {
 		name    string
@@ -612,7 +647,7 @@ func TestQueryNodes(t *testing.T) {
 				pagination: nil,
 				filter:     nil,
 				sort:       nil,
-				node:       &Model{},
+				node:       &base.Model{},
 			},
 			wantErr: false,
 		},
@@ -620,13 +655,13 @@ func TestQueryNodes(t *testing.T) {
 			name: "with pagination, first",
 			args: args{
 				ctx: ctx,
-				pagination: &PaginationInput{
+				pagination: &base.PaginationInput{
 					First: 10,
 					After: id,
 				},
 				filter: nil,
 				sort:   &sortAsc,
-				node:   &Model{},
+				node:   &base.Model{},
 			},
 			wantErr: false,
 		},
@@ -634,20 +669,20 @@ func TestQueryNodes(t *testing.T) {
 			name: "with pagination, last",
 			args: args{
 				ctx: ctx,
-				pagination: &PaginationInput{
+				pagination: &base.PaginationInput{
 					Last:   1,
 					Before: id,
 				},
 				filter: nil,
 				sort:   &sortAsc,
-				node:   &Model{},
+				node:   &base.Model{},
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			snapshots, pageInfo, err := QueryNodes(tt.args.ctx, tt.args.pagination, tt.args.filter, tt.args.sort, tt.args.node)
+			snapshots, pageInfo, err := base.QueryNodes(tt.args.ctx, tt.args.pagination, tt.args.filter, tt.args.sort, tt.args.node)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("QueryNodes() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -664,19 +699,19 @@ func TestQueryNodes(t *testing.T) {
 
 func TestDeleteNode(t *testing.T) {
 	ctx := context.Background()
-	node := &Model{
+	node := &base.Model{
 		Name:        "test model instance",
 		Description: "this is a test description",
 		Deleted:     false,
 	}
-	id, _, err := CreateNode(ctx, node)
+	id, _, err := base.CreateNode(ctx, node)
 	assert.Nil(t, err)
 	assert.NotZero(t, id)
 
 	type args struct {
 		ctx  context.Context
 		id   string
-		node Node
+		node base.Node
 	}
 	tests := []struct {
 		name    string
@@ -689,7 +724,7 @@ func TestDeleteNode(t *testing.T) {
 			args: args{
 				ctx:  ctx,
 				id:   node.GetID().String(),
-				node: &Model{},
+				node: &base.Model{},
 			},
 			want:    true,
 			wantErr: false,
@@ -699,7 +734,7 @@ func TestDeleteNode(t *testing.T) {
 			args: args{
 				ctx:  ctx,
 				id:   "this should not exist",
-				node: &Model{},
+				node: &base.Model{},
 			},
 			want:    true,
 			wantErr: false,
@@ -707,7 +742,7 @@ func TestDeleteNode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DeleteNode(tt.args.ctx, tt.args.id, tt.args.node)
+			got, err := base.DeleteNode(tt.args.ctx, tt.args.id, tt.args.node)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DeleteNode() error = %v, wantErr %v", err, tt.wantErr)
 				return

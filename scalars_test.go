@@ -1,4 +1,4 @@
-package base
+package base_test
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
+	"gitlab.slade360emr.com/go/base"
 )
 
 func TestNewDate(t *testing.T) {
@@ -84,7 +85,7 @@ func TestNewDate(t *testing.T) {
 	}
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			d, err := NewDate(tc.day, tc.month, tc.year)
+			d, err := base.NewDate(tc.day, tc.month, tc.year)
 			if tc.expectError {
 				assert.NotNil(t, err)
 				assert.Nil(t, d)
@@ -100,7 +101,7 @@ func TestNewDate(t *testing.T) {
 				assert.NotNil(t, textBs)
 				assert.Equal(t, tc.expectedMarshalText, string(textBs))
 
-				newDate := Date{}
+				newDate := base.Date{}
 				err = newDate.UnmarshalText(textBs)
 				assert.Nil(t, err)
 
@@ -114,7 +115,7 @@ func TestNewDate(t *testing.T) {
 				assert.NotNil(t, jsonBs)
 				assert.Equal(t, tc.expectedJSON, string(jsonBs))
 
-				otherDate := Date{}
+				otherDate := base.Date{}
 				err = otherDate.UnmarshalJSON(jsonBs)
 				assert.Nil(t, err)
 
@@ -125,7 +126,7 @@ func TestNewDate(t *testing.T) {
 				gql := w.String()
 				assert.Equal(t, string(jsonBs), gql)
 
-				gqlDate := &Date{}
+				gqlDate := &base.Date{}
 				err = gqlDate.UnmarshalGQL(gql)
 				assert.Nil(t, err)
 			}
@@ -156,7 +157,7 @@ func TestDate_String(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := Date{
+			d := base.Date{
 				Year:  tt.fields.Year,
 				Month: tt.fields.Month,
 				Day:   tt.fields.Day,
@@ -172,14 +173,14 @@ func TestDecimal_UnmarshalGQL(t *testing.T) {
 	dec, err := decimal.NewFromString("3.14")
 	assert.Nil(t, err)
 
-	sc := Decimal(dec)
+	sc := base.Decimal(dec)
 
 	type args struct {
 		v interface{}
 	}
 	tests := []struct {
 		name    string
-		sc      *Decimal
+		sc      *base.Decimal
 		args    args
 		wantErr bool
 	}{
@@ -222,10 +223,10 @@ func TestDecimal_MarshalGQL(t *testing.T) {
 	dec, err := decimal.NewFromString("3.14")
 	assert.Nil(t, err)
 
-	sc := Decimal(dec)
+	sc := base.Decimal(dec)
 	tests := []struct {
 		name  string
-		sc    Decimal
+		sc    base.Decimal
 		wantW string
 	}{
 		{
@@ -252,31 +253,31 @@ func TestURL_UnmarshalGQL(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    URL
+		want    base.URL
 		wantErr bool
 	}{
 		{
 			name:    "good case-valid url",
 			args:    args{v: "http://www.example.com/index.html"},
-			want:    URL("http://www.example.com/index.html"),
+			want:    base.URL("http://www.example.com/index.html"),
 			wantErr: false,
 		},
 		{
 			name:    "sad case-unmarshal non-string input",
 			args:    args{v: 119.12},
-			want:    URL(""),
+			want:    base.URL(""),
 			wantErr: true,
 		},
 		{
 			name:    "sad case-invalid URL",
 			args:    args{v: "not a link"},
-			want:    URL(""),
+			want:    base.URL(""),
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var link URL
+			var link base.URL
 			err := link.UnmarshalGQL(tt.args.v)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("URL.UnmarshalGQL() error = %v, wantErr %v", err, tt.wantErr)
@@ -304,17 +305,17 @@ func TestURL_MarshalGQL(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		sc    URL
+		sc    base.URL
 		wantW string
 	}{
 		{
 			name:  "good case",
-			sc:    URL(goodLink),
+			sc:    base.URL(goodLink),
 			wantW: `"` + goodLink + `"`,
 		},
 		{
 			name:  "invalid URL",
-			sc:    URL(badLink),
+			sc:    base.URL(badLink),
 			wantW: `"` + errorMessage + `"`,
 		},
 	}
@@ -331,22 +332,22 @@ func TestURL_MarshalGQL(t *testing.T) {
 
 func TestDateTime_Time(t *testing.T) {
 	timeStr := "2020-04-03T12:10:34+03:00"
-	validTime, err := time.Parse(dateTimeFormatLayout, timeStr)
+	validTime, err := time.Parse(base.DateTimeFormatLayout, timeStr)
 	assert.Nil(t, err)
 
 	tests := []struct {
 		name string
-		sc   DateTime
+		sc   base.DateTime
 		want time.Time
 	}{
 		{
 			name: "good case",
-			sc:   DateTime(timeStr),
+			sc:   base.DateTime(timeStr),
 			want: validTime,
 		},
 		{
 			name: "bad case",
-			sc:   DateTime("this is not a valid date string"),
+			sc:   base.DateTime("this is not a valid date string"),
 			want: time.Unix(0, 0),
 		},
 	}
@@ -394,7 +395,7 @@ func TestDate_MarshalText(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := Date{
+			d := base.Date{
 				Year:  tt.fields.Year,
 				Month: tt.fields.Month,
 				Day:   tt.fields.Day,
@@ -465,7 +466,7 @@ func TestDate_UnmarshalText(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &Date{
+			d := &base.Date{
 				Year:  tt.fields.Year,
 				Month: tt.fields.Month,
 				Day:   tt.fields.Day,
@@ -543,7 +544,7 @@ func TestDate_UnmarshalJSON(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &Date{
+			d := &base.Date{
 				Year:  tt.fields.Year,
 				Month: tt.fields.Month,
 				Day:   tt.fields.Day,
@@ -590,7 +591,7 @@ func TestDate_MarshalJSON(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := Date{
+			d := base.Date{
 				Year:  tt.fields.Year,
 				Month: tt.fields.Month,
 				Day:   tt.fields.Day,
@@ -639,7 +640,7 @@ func TestDate_MarshalGQL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := Date{
+			d := base.Date{
 				Year:  tt.fields.Year,
 				Month: tt.fields.Month,
 				Day:   tt.fields.Day,
@@ -719,7 +720,7 @@ func TestDate_UnmarshalGQL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &Date{
+			d := &base.Date{
 				Year:  tt.fields.Year,
 				Month: tt.fields.Month,
 				Day:   tt.fields.Day,
@@ -732,13 +733,13 @@ func TestDate_UnmarshalGQL(t *testing.T) {
 }
 
 func TestBase64Binary_UnmarshalGQL(t *testing.T) {
-	var sc Base64Binary
+	var sc base.Base64Binary
 	type args struct {
 		v interface{}
 	}
 	tests := []struct {
 		name    string
-		sc      *Base64Binary
+		sc      *base.Base64Binary
 		args    args
 		wantErr bool
 	}{
@@ -769,10 +770,10 @@ func TestBase64Binary_UnmarshalGQL(t *testing.T) {
 }
 
 func TestBase64Binary_MarshalGQL(t *testing.T) {
-	sc := Base64Binary("Y2FydG9vbg==")
+	sc := base.Base64Binary("Y2FydG9vbg==")
 	tests := []struct {
 		name  string
-		sc    Base64Binary
+		sc    base.Base64Binary
 		wantW string
 	}{
 		{
@@ -793,13 +794,13 @@ func TestBase64Binary_MarshalGQL(t *testing.T) {
 }
 
 func TestCanonical_UnmarshalGQL(t *testing.T) {
-	var sc Canonical
+	var sc base.Canonical
 	type args struct {
 		v interface{}
 	}
 	tests := []struct {
 		name    string
-		sc      *Canonical
+		sc      *base.Canonical
 		args    args
 		wantErr bool
 	}{
@@ -830,10 +831,10 @@ func TestCanonical_UnmarshalGQL(t *testing.T) {
 }
 
 func TestCanonical_MarshalGQL(t *testing.T) {
-	sc := Canonical("http://hl7.org/fhir/ValueSet/my-valueset|0.8")
+	sc := base.Canonical("http://hl7.org/fhir/ValueSet/my-valueset|0.8")
 	tests := []struct {
 		name  string
-		sc    Canonical
+		sc    base.Canonical
 		wantW string
 	}{
 		{
@@ -854,14 +855,14 @@ func TestCanonical_MarshalGQL(t *testing.T) {
 }
 
 func TestCode_UnmarshalGQL(t *testing.T) {
-	var sc Code
+	var sc base.Code
 
 	type args struct {
 		v interface{}
 	}
 	tests := []struct {
 		name    string
-		sc      *Code
+		sc      *base.Code
 		args    args
 		wantErr bool
 	}{
@@ -892,10 +893,10 @@ func TestCode_UnmarshalGQL(t *testing.T) {
 }
 
 func TestCode_MarshalGQL(t *testing.T) {
-	sc := Code("J10")
+	sc := base.Code("J10")
 	tests := []struct {
 		name  string
-		sc    Code
+		sc    base.Code
 		wantW string
 	}{
 		{
@@ -916,13 +917,13 @@ func TestCode_MarshalGQL(t *testing.T) {
 }
 
 func TestDateTime_UnmarshalGQL(t *testing.T) {
-	var sc DateTime
+	var sc base.DateTime
 	type args struct {
 		v interface{}
 	}
 	tests := []struct {
 		name    string
-		sc      *DateTime
+		sc      *base.DateTime
 		args    args
 		wantErr bool
 	}{
@@ -953,10 +954,10 @@ func TestDateTime_UnmarshalGQL(t *testing.T) {
 }
 
 func TestDateTime_MarshalGQL(t *testing.T) {
-	sc := DateTime("2020-01-01")
+	sc := base.DateTime("2020-01-01")
 	tests := []struct {
 		name  string
-		sc    DateTime
+		sc    base.DateTime
 		wantW string
 	}{
 		{
@@ -977,13 +978,13 @@ func TestDateTime_MarshalGQL(t *testing.T) {
 }
 
 func TestInstant_UnmarshalGQL(t *testing.T) {
-	var sc Instant
+	var sc base.Instant
 	type args struct {
 		v interface{}
 	}
 	tests := []struct {
 		name    string
-		sc      *Instant
+		sc      *base.Instant
 		args    args
 		wantErr bool
 	}{
@@ -1014,10 +1015,10 @@ func TestInstant_UnmarshalGQL(t *testing.T) {
 }
 
 func TestInstant_MarshalGQL(t *testing.T) {
-	sc := Instant("2020-01-01")
+	sc := base.Instant("2020-01-01")
 	tests := []struct {
 		name  string
-		sc    Instant
+		sc    base.Instant
 		wantW string
 	}{
 		{
@@ -1038,13 +1039,13 @@ func TestInstant_MarshalGQL(t *testing.T) {
 }
 
 func TestMarkdown_UnmarshalGQL(t *testing.T) {
-	var sc Markdown
+	var sc base.Markdown
 	type args struct {
 		v interface{}
 	}
 	tests := []struct {
 		name    string
-		sc      *Markdown
+		sc      *base.Markdown
 		args    args
 		wantErr bool
 	}{
@@ -1075,10 +1076,10 @@ func TestMarkdown_UnmarshalGQL(t *testing.T) {
 }
 
 func TestMarkdown_MarshalGQL(t *testing.T) {
-	sc := Markdown("this is Markdown")
+	sc := base.Markdown("this is Markdown")
 	tests := []struct {
 		name  string
-		sc    Markdown
+		sc    base.Markdown
 		wantW string
 	}{
 		{
@@ -1099,13 +1100,13 @@ func TestMarkdown_MarshalGQL(t *testing.T) {
 }
 
 func TestOID_UnmarshalGQL(t *testing.T) {
-	var sc OID
+	var sc base.OID
 	type args struct {
 		v interface{}
 	}
 	tests := []struct {
 		name    string
-		sc      *OID
+		sc      *base.OID
 		args    args
 		wantErr bool
 	}{
@@ -1136,10 +1137,10 @@ func TestOID_UnmarshalGQL(t *testing.T) {
 }
 
 func TestOID_MarshalGQL(t *testing.T) {
-	sc := OID("oid:an-oid")
+	sc := base.OID("oid:an-oid")
 	tests := []struct {
 		name  string
-		sc    OID
+		sc    base.OID
 		wantW string
 	}{
 		{
@@ -1160,13 +1161,13 @@ func TestOID_MarshalGQL(t *testing.T) {
 }
 
 func TestURI_UnmarshalGQL(t *testing.T) {
-	var sc URI
+	var sc base.URI
 	type args struct {
 		v interface{}
 	}
 	tests := []struct {
 		name    string
-		sc      *URI
+		sc      *base.URI
 		args    args
 		wantErr bool
 	}{
@@ -1197,10 +1198,10 @@ func TestURI_UnmarshalGQL(t *testing.T) {
 }
 
 func TestURI_MarshalGQL(t *testing.T) {
-	sc := URI("ftp://a.b.c")
+	sc := base.URI("ftp://a.b.c")
 	tests := []struct {
 		name  string
-		sc    URI
+		sc    base.URI
 		wantW string
 	}{
 		{
@@ -1221,13 +1222,13 @@ func TestURI_MarshalGQL(t *testing.T) {
 }
 
 func TestUUID_UnmarshalGQL(t *testing.T) {
-	var sc UUID
+	var sc base.UUID
 	type args struct {
 		v interface{}
 	}
 	tests := []struct {
 		name    string
-		sc      *UUID
+		sc      *base.UUID
 		args    args
 		wantErr bool
 	}{
@@ -1259,10 +1260,10 @@ func TestUUID_UnmarshalGQL(t *testing.T) {
 
 func TestUUID_MarshalGQL(t *testing.T) {
 	randomUUID := uuid.New().String()
-	sc := UUID(randomUUID)
+	sc := base.UUID(randomUUID)
 	tests := []struct {
 		name  string
-		sc    UUID
+		sc    base.UUID
 		wantW string
 	}{
 		{
@@ -1283,13 +1284,13 @@ func TestUUID_MarshalGQL(t *testing.T) {
 }
 
 func TestXHTML_UnmarshalGQL(t *testing.T) {
-	var sc XHTML
+	var sc base.XHTML
 	type args struct {
 		v interface{}
 	}
 	tests := []struct {
 		name    string
-		sc      *XHTML
+		sc      *base.XHTML
 		args    args
 		wantErr bool
 	}{
@@ -1321,10 +1322,10 @@ func TestXHTML_UnmarshalGQL(t *testing.T) {
 
 func TestXHTML_MarshalGQL(t *testing.T) {
 	fragment := "<p>a fragment</p>"
-	sc := XHTML(fragment)
+	sc := base.XHTML(fragment)
 	tests := []struct {
 		name  string
-		sc    XHTML
+		sc    base.XHTML
 		wantW string
 	}{
 		{
@@ -1346,10 +1347,10 @@ func TestXHTML_MarshalGQL(t *testing.T) {
 
 func TestDecimal_String(t *testing.T) {
 	dec := decimal.NewFromFloat(1.23)
-	sc := Decimal(dec)
+	sc := base.Decimal(dec)
 	tests := []struct {
 		name string
-		sc   *Decimal
+		sc   *base.Decimal
 		want string
 	}{
 		{
@@ -1369,10 +1370,10 @@ func TestDecimal_String(t *testing.T) {
 
 func TestDecimal_Decimal(t *testing.T) {
 	dec := decimal.NewFromFloat(1.23)
-	sc := Decimal(dec)
+	sc := base.Decimal(dec)
 	tests := []struct {
 		name string
-		sc   *Decimal
+		sc   *base.Decimal
 		want decimal.Decimal
 	}{
 		{

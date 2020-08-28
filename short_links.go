@@ -7,17 +7,6 @@ import (
 	"google.golang.org/api/firebasedynamiclinks/v1"
 )
 
-// FDLDomainEnvironmentVariableName is the name of the domain used for short
-// links.
-//
-// e.g https://healthcloud.page.link or https://bwl.page.link
-const FDLDomainEnvironmentVariableName = "FIREBASE_DYNAMIC_LINKS_DOMAIN"
-
-// ServerPublicDomainEnvironmentVariableName is the name of the environment
-// variable at which the server is deployed. It is used to generate long
-// links for shortening
-const ServerPublicDomainEnvironmentVariableName = "SERVER_PUBLIC_DOMAIN"
-
 // ShortenLink shortens an FDL link
 func ShortenLink(ctx context.Context, longLink string) (string, error) {
 	fdlService, err := firebasedynamiclinks.NewService(ctx)

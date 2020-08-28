@@ -1,4 +1,4 @@
-package base
+package base_test
 
 import (
 	"math/rand"
@@ -9,14 +9,15 @@ import (
 	"cloud.google.com/go/firestore"
 	uuid "github.com/kevinburke/go.uuid"
 	"github.com/stretchr/testify/assert"
+	"gitlab.slade360emr.com/go/base"
 )
 
-func getFirestoreClient(t *testing.T) *firestore.Client {
-	fc := &FirebaseClient{}
+func GetFirestoreClient(t *testing.T) *firestore.Client {
+	fc := &base.FirebaseClient{}
 	firebaseApp, err := fc.InitFirebase()
 	assert.Nil(t, err)
 
-	ctx := GetAuthenticatedContext(t)
+	ctx := base.GetAuthenticatedContext(t)
 	firestoreClient, err := firebaseApp.Firestore(ctx)
 	assert.Nil(t, err)
 	assert.NotNil(t, firestoreClient)
@@ -81,7 +82,7 @@ func TestValidateCoordinates(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := ValidateCoordinates(tt.args.coordinates)
+			got, got1, err := base.ValidateCoordinates(tt.args.coordinates)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateCoordinates() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -97,16 +98,16 @@ func TestValidateCoordinates(t *testing.T) {
 }
 
 func TestValidateMSISDN(t *testing.T) {
-	fc := &FirebaseClient{}
+	fc := &base.FirebaseClient{}
 	firebaseApp, err := fc.InitFirebase()
 	assert.Nil(t, err)
 
-	ctx := GetAuthenticatedContext(t)
+	ctx := base.GetAuthenticatedContext(t)
 	firestoreClient, err := firebaseApp.Firestore(ctx)
 	assert.Nil(t, err)
 
 	otpMsisdn := "+254722000000"
-	normalized, err := NormalizeMSISDN(otpMsisdn)
+	normalized, err := base.NormalizeMSISDN(otpMsisdn)
 	assert.Nil(t, err)
 
 	validOtpCode := rand.Int()
@@ -117,7 +118,7 @@ func TestValidateMSISDN(t *testing.T) {
 		"msisdn":            normalized,
 		"timestamp":         time.Now(),
 	}
-	_, err = SaveDataToFirestore(firestoreClient, SuffixCollection(OTPCollectionName), validOtpData)
+	_, err = base.SaveDataToFirestore(firestoreClient, base.SuffixCollection(base.OTPCollectionName), validOtpData)
 	assert.Nil(t, err)
 
 	invalidOtpCode := rand.Int()
@@ -128,7 +129,7 @@ func TestValidateMSISDN(t *testing.T) {
 		"msisdn":            normalized,
 		"timestamp":         time.Now(),
 	}
-	_, err = SaveDataToFirestore(firestoreClient, SuffixCollection(OTPCollectionName), invalidOtpData)
+	_, err = base.SaveDataToFirestore(firestoreClient, base.SuffixCollection(base.OTPCollectionName), invalidOtpData)
 	assert.Nil(t, err)
 
 	type args struct {
@@ -198,7 +199,7 @@ func TestValidateMSISDN(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ValidateMSISDN(tt.args.msisdn, tt.args.verificationCode, tt.args.isUSSD, tt.args.firestoreClient)
+			got, err := base.ValidateMSISDN(tt.args.msisdn, tt.args.verificationCode, tt.args.isUSSD, tt.args.firestoreClient)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateMSISDN() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -211,11 +212,11 @@ func TestValidateMSISDN(t *testing.T) {
 }
 
 func TestValidateEmail(t *testing.T) {
-	fc := &FirebaseClient{}
+	fc := &base.FirebaseClient{}
 	firebaseApp, err := fc.InitFirebase()
 	assert.Nil(t, err)
 
-	ctx := GetAuthenticatedContext(t)
+	ctx := base.GetAuthenticatedContext(t)
 	firestoreClient, err := firebaseApp.Firestore(ctx)
 	assert.Nil(t, err)
 
@@ -268,7 +269,7 @@ func TestValidateEmail(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := ValidateEmail(tt.args.email, tt.args.optIn, tt.args.firestoreClient); (err != nil) != tt.wantErr {
+			if err := base.ValidateEmail(tt.args.email, tt.args.optIn, tt.args.firestoreClient); (err != nil) != tt.wantErr {
 				t.Errorf("ValidateEmail() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -301,7 +302,7 @@ func TestMustNormalizeMSISDN(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MustNormalizeMSISDN(tt.args.msisdn); got != tt.want {
+			if got := base.MustNormalizeMSISDN(tt.args.msisdn); got != tt.want {
 				t.Errorf("MustNormalizeMSISDN() = %v, want %v", got, tt.want)
 			}
 		})
@@ -311,7 +312,7 @@ func TestMustNormalizeMSISDN(t *testing.T) {
 func TestMustNormalizeMSISDN_Panic_Scenarios(t *testing.T) {
 	invalid := "not a number"
 	assert.Panics(t, func() {
-		MustNormalizeMSISDN(invalid)
+		base.MustNormalizeMSISDN(invalid)
 	})
 }
 
@@ -344,7 +345,7 @@ func TestIntSliceContains(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IntSliceContains(tt.args.s, tt.args.e); got != tt.want {
+			if got := base.IntSliceContains(tt.args.s, tt.args.e); got != tt.want {
 				t.Errorf("IntSliceContains() = %v, want %v", got, tt.want)
 			}
 		})
@@ -352,7 +353,7 @@ func TestIntSliceContains(t *testing.T) {
 }
 
 func TestValidateAndSaveMSISDN(t *testing.T) {
-	fc := getFirestoreClient(t)
+	fc := GetFirestoreClient(t)
 
 	type args struct {
 		msisdn           string
@@ -406,7 +407,7 @@ func TestValidateAndSaveMSISDN(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ValidateAndSaveMSISDN(tt.args.msisdn, tt.args.verificationCode, tt.args.isUSSD, tt.args.optIn, tt.args.firestoreClient)
+			got, err := base.ValidateAndSaveMSISDN(tt.args.msisdn, tt.args.verificationCode, tt.args.isUSSD, tt.args.optIn, tt.args.firestoreClient)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateAndSaveMSISDN() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -447,7 +448,7 @@ func TestStringSliceContains(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := StringSliceContains(tt.args.s, tt.args.e); got != tt.want {
+			if got := base.StringSliceContains(tt.args.s, tt.args.e); got != tt.want {
 				t.Errorf("StringSliceContains() = %v, want %v", got, tt.want)
 			}
 		})
@@ -499,7 +500,7 @@ func TestNormalizeMSISDN(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NormalizeMSISDN(tt.args.msisdn)
+			got, err := base.NormalizeMSISDN(tt.args.msisdn)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NormalizeMSISDN() error = %v, wantErr %v", err, tt.wantErr)
 				return

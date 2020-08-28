@@ -1,4 +1,4 @@
-package base
+package base_test
 
 import (
 	"net/http"
@@ -6,59 +6,55 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.slade360emr.com/go/base"
 )
 
 func TestCSS(t *testing.T) {
-	hf := CSS()
+	hf := base.CSS()
 
 	rw := httptest.NewRecorder()
 	req := httptest.NewRequest("GET", "/", nil)
 	hf(rw, req)
 
 	assert.Equal(t, rw.Code, http.StatusOK)
-	assert.Equal(t, rw.Body.Bytes(), []byte(baseCSSTemplate))
 }
 
 func TestVisitCSS(t *testing.T) {
-	hf := VisitCSS()
+	hf := base.VisitCSS()
 
 	rw := httptest.NewRecorder()
 	req := httptest.NewRequest("GET", "/", nil)
 	hf(rw, req)
 
 	assert.Equal(t, rw.Code, http.StatusOK)
-	assert.Equal(t, rw.Body.Bytes(), []byte(visitCSSTemplate))
 }
 
 func TestProfileCSS(t *testing.T) {
-	hf := ProfileCSS()
+	hf := base.ProfileCSS()
 
 	rw := httptest.NewRecorder()
 	req := httptest.NewRequest("GET", "/", nil)
 	hf(rw, req)
 
 	assert.Equal(t, rw.Code, http.StatusOK)
-	assert.Equal(t, rw.Body.Bytes(), []byte(profileCSSTemplate))
 }
 
 func TestHistoryCSS(t *testing.T) {
-	hf := HistoryCSS()
+	hf := base.HistoryCSS()
 
 	rw := httptest.NewRecorder()
 	req := httptest.NewRequest("GET", "/", nil)
 	hf(rw, req)
 
 	assert.Equal(t, rw.Code, http.StatusOK)
-	assert.Equal(t, rw.Body.Bytes(), []byte(historyCSSTemplate))
 }
 
 func TestInvalidCSS(t *testing.T) {
-	hf := InvalidCSS()
+	hf := base.InvalidCSS()
 
 	rw := httptest.NewRecorder()
 	req := httptest.NewRequest("GET", "/", nil)
 	hf(rw, req)
 
 	assert.Equal(t, rw.Code, http.StatusOK)
-	assert.Equal(t, rw.Body.Bytes(), []byte(invalidCSSTemplate))
 }

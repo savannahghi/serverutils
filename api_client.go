@@ -29,62 +29,6 @@ import (
 	"moul.io/http2curl"
 )
 
-// validation constants
-const (
-	tokenMinLength       = 12
-	apiPasswordMinLength = 3
-	tokenExpiryRatio     = 0.95 // Refresh access tokens after 95% of the time is spent
-	meURLFragment        = "v1/user/me/?format=json"
-
-	// BeWellVirtualPayerSladeCode is the Slade Code for the virtual provider used by the Be.Well app for e.g telemedicine
-	BeWellVirtualPayerSladeCode = 2019 // PRO-4683
-
-	// BeWellVirtualProviderSladeCode is the Slade Code for the virtual payer used by the Be.Well app for e.g healthcare lending
-	BeWellVirtualProviderSladeCode = 4683 // PAY-2019
-
-	// DefaultRESTAPIPageSize is the page size to use when calling Slade REST API services if the
-	// client does not specify a page size
-	DefaultRESTAPIPageSize = 100
-
-	// MaxRestAPIPageSize is the largest page size we'll request
-	MaxRestAPIPageSize = 250
-
-	// AppName is the name of "this server"
-	AppName = "api-gateway"
-
-	// DSNEnvVarName is the Sentry reporting config
-	DSNEnvVarName = "SENTRY_DSN"
-
-	// AppVersion is the app version (used for StackDriver error reporting)
-	AppVersion = "0.0.1"
-
-	// PortEnvVarName is the name of the environment variable that defines the
-	// server port
-	PortEnvVarName = "PORT"
-
-	// DefaultPort is the default port at which the server listens if the port
-	// environment variable is not set
-	DefaultPort = "8080"
-
-	// BearerTokenPrefix is the prefix that comes before the authorization token
-	// in the authorization header
-	BearerTokenPrefix = "Bearer "
-
-	// GoogleCloudProjectIDEnvVarName is used to determine the ID of the GCP project e.g for setting up StackDriver client
-	GoogleCloudProjectIDEnvVarName = "GOOGLE_CLOUD_PROJECT"
-
-	// DebugEnvVarName is used to determine if we should print extended tracing / logging (debugging aids)
-	// to the console
-	DebugEnvVarName = "DEBUG"
-
-	// TestsEnvVarName is used to determine if we are running in a test environment
-	IsRunningTestsEnvVarName = "IS_RUNNING_TESTS"
-
-	// CIEnvVarName is set to "true" in CI enviroments e.g Gitlab CI, Github actions etc.
-	// It can be used to opt in to / out of tests in such environments
-	CIEnvVarName = "CI"
-)
-
 // OAUTHResponse holds OAuth2 tokens and scope, to be referred to when composing Authentication headers
 // and when checking permissions
 type OAUTHResponse struct {
@@ -118,13 +62,12 @@ type Client interface {
 	GrantType() string
 	Username() string
 	Password() string
-
-	// private setters
-	setInitialized(b bool)
-	updateAuth(authResp *OAUTHResponse)
+	UpdateAuth(authResp *OAUTHResponse)
+	SetInitialized(b bool)
 }
 
-func boolEnv(envVarName string) bool {
+// BoolEnv gets and parses a boolean envirpnment variable
+func BoolEnv(envVarName string) bool {
 	envVar, err := GetEnvVar(envVarName)
 	if err != nil {
 		return false
@@ -138,12 +81,12 @@ func boolEnv(envVarName string) bool {
 
 // IsDebug returns true if debug has been turned on in the environment
 func IsDebug() bool {
-	return boolEnv(DebugEnvVarName)
+	return BoolEnv(DebugEnvVarName)
 }
 
 // IsRunningTests returns true if debug has been turned on in the environment
 func IsRunningTests() bool {
-	return boolEnv(IsRunningTestsEnvVarName)
+	return BoolEnv(IsRunningTestsEnvVarName)
 }
 
 // GetEnvVar retrieves the environment variable with the supplied name and fails
@@ -172,8 +115,82 @@ func MustGetEnvVar(envVarName string) string {
 	return val
 }
 
+// DefaultServerClient initializes a server client using default environment variables
+func DefaultServerClient() (*ServerClient, error) {
+	clientID, err := GetEnvVar(ClientIDEnvVarName)
+	if err != nil {
+		return nil, err
+	}
+
+	clientSecret, err := GetEnvVar(ClientSecretEnvVarName)
+	if err != nil {
+		return nil, err
+	}
+
+	username, err := GetEnvVar(UsernameEnvVarName)
+	if err != nil {
+		return nil, err
+	}
+
+	password, err := GetEnvVar(PasswordEnvVarName)
+	if err != nil {
+		return nil, err
+	}
+
+	grantType, err := GetEnvVar(GrantTypeEnvVarName)
+	if err != nil {
+		return nil, err
+	}
+
+	apiScheme, err := GetEnvVar(APISchemeEnvVarName)
+	if err != nil {
+		return nil, err
+	}
+
+	apiTokenURL, err := GetEnvVar(TokenURLEnvVarName)
+	if err != nil {
+		return nil, err
+	}
+
+	apiHost, err := GetEnvVar(APIHostEnvVarName)
+	if err != nil {
+		return nil, err
+	}
+
+	workstationID, err := GetEnvVar(WorkstationEnvVarName)
+	if err != nil {
+		// this is optional
+		log.Printf("%s env var not found", WorkstationEnvVarName)
+	}
+
+	customHeaders := map[string]string{
+		WorkstationHeaderName: workstationID,
+	}
+	return NewServerClient(
+		clientID,
+		clientSecret,
+		apiTokenURL,
+		apiHost,
+		apiScheme,
+		grantType,
+		username,
+		password,
+		customHeaders,
+	)
+}
+
 // NewServerClient initializes a generic OAuth2 + HTTP server client
-func NewServerClient(clientID string, clientSecret string, apiTokenURL string, apiHost string, apiScheme string, grantType string, username string, password string, extraHeaders map[string]string) (*ServerClient, error) {
+func NewServerClient(
+	clientID string,
+	clientSecret string,
+	apiTokenURL string,
+	apiHost string,
+	apiScheme string,
+	grantType string,
+	username string,
+	password string,
+	extraHeaders map[string]string,
+) (*ServerClient, error) {
 	c := ServerClient{
 		clientID:     clientID,
 		clientSecret: clientSecret,
@@ -214,16 +231,15 @@ func NewServerClient(clientID string, clientSecret string, apiTokenURL string, a
 // ServerClient MUST be configured by calling the `Initialize` method.
 type ServerClient struct {
 	// key connec
-	clientID         string
-	clientSecret     string
-	apiTokenURL      string
-	authServerDomain string
-	apiHost          string
-	apiScheme        string
-	grantType        string
-	username         string
-	password         string
-	extraHeaders     map[string]string // optional extra headers
+	clientID     string
+	clientSecret string
+	apiTokenURL  string
+	apiHost      string
+	apiScheme    string
+	grantType    string
+	username     string
+	password     string
+	extraHeaders map[string]string // optional extra headers
 
 	// these fields are set by the constructor upon successful initialization
 	httpClient   *http.Client
@@ -267,16 +283,16 @@ func (c *ServerClient) Refresh() error {
 		msg := fmt.Sprintf("server error status: %d", resp.StatusCode)
 		return fmt.Errorf(msg)
 	}
-	authResp, decodeErr := decodeOauthResponseFromJSON(resp)
+	authResp, decodeErr := DecodeOAUTHResponseFromJSON(resp)
 	if decodeErr != nil {
 		return decodeErr
 	}
-	c.updateAuth(authResp)
+	c.UpdateAuth(authResp)
 	return nil
 }
 
-// updateAuth updates the tokens stored on the EDI API client after successful authentication or refreshes
-func (c *ServerClient) updateAuth(authResp *OAUTHResponse) {
+// UpdateAuth updates the tokens stored on the EDI API client after successful authentication or refreshes
+func (c *ServerClient) UpdateAuth(authResp *OAUTHResponse) {
 	c.accessToken = authResp.AccessToken
 	c.tokenType = authResp.TokenType
 	c.accessScope = authResp.Scope
@@ -284,7 +300,7 @@ func (c *ServerClient) updateAuth(authResp *OAUTHResponse) {
 	c.expiresIn = authResp.ExpiresIn
 
 	// wait out most of the token's duration to expiry before attempting to Refresh
-	secondsToRefresh := int(float64(c.expiresIn) * tokenExpiryRatio)
+	secondsToRefresh := int(float64(c.expiresIn) * TokenExpiryRatio)
 	c.refreshAt = time.Now().Add(time.Second * time.Duration(secondsToRefresh))
 	c.isInitialized = true
 }
@@ -311,11 +327,11 @@ func (c *ServerClient) Authenticate() error {
 		msg := fmt.Sprintf("server error status: %d", authResp.StatusCode)
 		return fmt.Errorf(msg)
 	}
-	decodedAuthResp, decodeErr := decodeOauthResponseFromJSON(authResp)
+	decodedAuthResp, decodeErr := DecodeOAUTHResponseFromJSON(authResp)
 	if decodeErr != nil {
 		return decodeErr
 	}
-	c.updateAuth(decodedAuthResp)
+	c.UpdateAuth(decodedAuthResp)
 	return nil // no error
 }
 
@@ -382,7 +398,7 @@ func (c *ServerClient) Initialize() error {
 		return checkErr
 	}
 
-	c.setInitialized(true)
+	c.SetInitialized(true)
 	return nil
 }
 
@@ -446,11 +462,6 @@ func (c *ServerClient) APITokenURL() string {
 	return c.apiTokenURL
 }
 
-// AuthServerDomain returns the configured auth server domain on the client
-func (c *ServerClient) AuthServerDomain() string {
-	return c.authServerDomain
-}
-
 // GrantType returns the configured grant type on the client
 func (c *ServerClient) GrantType() string {
 	return c.grantType
@@ -471,8 +482,8 @@ func (c *ServerClient) IsInitialized() bool {
 	return c.isInitialized
 }
 
-// setInitialized sets the value of the isInitialized bool
-func (c *ServerClient) setInitialized(isInitialized bool) {
+// SetInitialized sets the value of the isInitialized bool
+func (c *ServerClient) SetInitialized(isInitialized bool) {
 	c.isInitialized = isInitialized
 }
 
@@ -591,7 +602,8 @@ func ComposeAPIURL(client Client, path string, query string) string {
 	return apiURL.String()
 }
 
-func decodeOauthResponseFromJSON(resp *http.Response) (*OAUTHResponse, error) {
+// DecodeOAUTHResponseFromJSON extracts a Slade 360 auth server OAUth response from the supplied HTTP response
+func DecodeOAUTHResponseFromJSON(resp *http.Response) (*OAUTHResponse, error) {
 	defer CloseRespBody(resp)
 	var decodedAuthResp OAUTHResponse
 	respBytes, readErr := ioutil.ReadAll(resp.Body)

@@ -9,9 +9,6 @@ import (
 	"google.golang.org/api/calendar/v3"
 )
 
-// DefaultCalendarEmail is the email address that "owns" the calendar by default
-const DefaultCalendarEmail = "be.well@healthcloud.co.ke"
-
 func getJSONGoogleApplicationCredentials() ([]byte, error) {
 	// a future iteration of this needs to decrypt GPG encoded creds using the
 	// secret pass phrase

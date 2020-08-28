@@ -11,9 +11,6 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-const dateLayout = "2006-01-02"
-const dateTimeFormatLayout = "2006-01-02T15:04:05+03:00"
-
 // Base64Binary is a stream of bytes
 type Base64Binary string
 
@@ -74,7 +71,7 @@ type DateTime string
 
 // Time converts the DateTime to a time
 func (sc DateTime) Time() time.Time {
-	d, err := time.Parse(dateTimeFormatLayout, string(sc))
+	d, err := time.Parse(DateTimeFormatLayout, string(sc))
 	if err != nil {
 		return time.Unix(0, 0)
 	}
@@ -259,7 +256,7 @@ func (sc *Decimal) UnmarshalGQL(v interface{}) error {
 			"can't parse '%s' into decimal, error: %s", str, err)
 	}
 	deci := Decimal(dec)
-	sc = &deci
+	*sc = deci
 	return nil
 }
 
@@ -320,7 +317,7 @@ func (d *Date) Validate() error {
 	return nil
 }
 
-// AsTime retuns a Go stdlib time that corresponds to this date
+// AsTime returns a Go stdlib time that corresponds to this date
 func (d Date) AsTime() time.Time {
 	return time.Date(
 		int(d.Year),
@@ -341,7 +338,7 @@ func (d Date) MarshalText() (text []byte, err error) {
 		return nil, err
 	}
 	t := d.AsTime()
-	text = []byte(t.Format(dateLayout))
+	text = []byte(t.Format(DateLayout))
 	return // implicit return of text and err, to match encoding.TextMarshaler precisely
 }
 
@@ -362,7 +359,7 @@ func (d Date) String() string {
 // UnmarshalText parses the value from text
 func (d *Date) UnmarshalText(text []byte) error {
 	inp := string(text)
-	t, err := time.Parse(dateLayout, inp)
+	t, err := time.Parse(DateLayout, inp)
 	if err != nil {
 		return fmt.Errorf("can't parse '%s' into date: %v", inp, err)
 	}

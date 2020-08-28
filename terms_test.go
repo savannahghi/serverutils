@@ -1,7 +1,9 @@
-package base
+package base_test
 
 import (
 	"testing"
+
+	"gitlab.slade360emr.com/go/base"
 )
 
 func TestGetConsumerTerms(t *testing.T) {
@@ -12,13 +14,13 @@ func TestGetConsumerTerms(t *testing.T) {
 	}{
 		{
 			name:    "Good case",
-			want:    ConsumerTerms,
+			want:    base.ConsumerTerms,
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetConsumerTerms()
+			got, err := base.GetConsumerTerms()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetConsumerTerms() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -38,13 +40,13 @@ func TestGetProviderTerms(t *testing.T) {
 	}{
 		{
 			name:    "Good case",
-			want:    ProviderTerms,
+			want:    base.ProviderTerms,
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetProviderTerms()
+			got, err := base.GetProviderTerms()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetProviderTerms() error = %v, wantErr %v", err, tt.wantErr)
 				return

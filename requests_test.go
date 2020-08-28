@@ -1,28 +1,29 @@
-package base
+package base_test
 
 import (
 	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.slade360emr.com/go/base"
 )
 
 func TestReadRequestToTarget(t *testing.T) {
-	clientID := MustGetEnvVar("CLIENT_ID")
-	clientSecret := MustGetEnvVar("CLIENT_SECRET")
-	username := MustGetEnvVar("USERNAME")
-	password := MustGetEnvVar("PASSWORD")
-	grantType := MustGetEnvVar("GRANT_TYPE")
-	apiScheme := MustGetEnvVar("API_SCHEME")
-	apiTokenURL := MustGetEnvVar("TOKEN_URL")
-	apiHost := MustGetEnvVar("HOST")
-	customHeader := MustGetEnvVar("DEFAULT_WORKSTATION_ID")
+	clientID := base.MustGetEnvVar(base.ClientIDEnvVarName)
+	clientSecret := base.MustGetEnvVar(base.ClientSecretEnvVarName)
+	username := base.MustGetEnvVar(base.UsernameEnvVarName)
+	password := base.MustGetEnvVar(base.PasswordEnvVarName)
+	grantType := base.MustGetEnvVar(base.GrantTypeEnvVarName)
+	apiScheme := base.MustGetEnvVar(base.APISchemeEnvVarName)
+	apiTokenURL := base.MustGetEnvVar(base.TokenURLEnvVarName)
+	apiHost := base.MustGetEnvVar(base.APIHostEnvVarName)
+	customHeader := base.MustGetEnvVar(base.WorkstationEnvVarName)
 	extraHeaders := map[string]string{
-		"X-WORKSTATION": customHeader,
+		base.WorkstationHeaderName: customHeader,
 	}
 	target := map[string]interface{}{}
 
-	client, err := NewServerClient(
+	client, err := base.NewServerClient(
 		clientID,
 		clientSecret,
 		apiTokenURL,
@@ -37,7 +38,7 @@ func TestReadRequestToTarget(t *testing.T) {
 	assert.NotNil(t, client)
 
 	type args struct {
-		apiClient Client
+		apiClient base.Client
 		method    string
 		path      string
 		query     string
@@ -96,7 +97,7 @@ func TestReadRequestToTarget(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := ReadRequestToTarget(tt.args.apiClient, tt.args.method, tt.args.path, tt.args.query, tt.args.content, tt.args.target); (err != nil) != tt.wantErr {
+			if err := base.ReadRequestToTarget(tt.args.apiClient, tt.args.method, tt.args.path, tt.args.query, tt.args.content, tt.args.target); (err != nil) != tt.wantErr {
 				t.Errorf("ReadRequestToTarget() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -104,21 +105,21 @@ func TestReadRequestToTarget(t *testing.T) {
 }
 
 func TestReadAuthServerRequestToTarget(t *testing.T) {
-	clientID := MustGetEnvVar("CLIENT_ID")
-	clientSecret := MustGetEnvVar("CLIENT_SECRET")
-	username := MustGetEnvVar("USERNAME")
-	password := MustGetEnvVar("PASSWORD")
-	grantType := MustGetEnvVar("GRANT_TYPE")
-	apiScheme := MustGetEnvVar("API_SCHEME")
-	apiTokenURL := MustGetEnvVar("TOKEN_URL")
-	apiHost := MustGetEnvVar("HOST")
-	customHeader := MustGetEnvVar("DEFAULT_WORKSTATION_ID")
+	clientID := base.MustGetEnvVar(base.ClientIDEnvVarName)
+	clientSecret := base.MustGetEnvVar(base.ClientSecretEnvVarName)
+	username := base.MustGetEnvVar(base.UsernameEnvVarName)
+	password := base.MustGetEnvVar(base.PasswordEnvVarName)
+	grantType := base.MustGetEnvVar(base.GrantTypeEnvVarName)
+	apiScheme := base.MustGetEnvVar(base.APISchemeEnvVarName)
+	apiTokenURL := base.MustGetEnvVar(base.TokenURLEnvVarName)
+	apiHost := base.MustGetEnvVar(base.APIHostEnvVarName)
+	workstationID := base.MustGetEnvVar(base.WorkstationEnvVarName)
 	extraHeaders := map[string]string{
-		"X-WORKSTATION": customHeader,
+		base.WorkstationHeaderName: workstationID,
 	}
 	target := map[string]interface{}{}
 
-	client, err := NewServerClient(
+	client, err := base.NewServerClient(
 		clientID,
 		clientSecret,
 		apiTokenURL,
@@ -133,7 +134,7 @@ func TestReadAuthServerRequestToTarget(t *testing.T) {
 	assert.NotNil(t, client)
 
 	type args struct {
-		client  Client
+		client  base.Client
 		method  string
 		url     string
 		s       string
@@ -159,7 +160,7 @@ func TestReadAuthServerRequestToTarget(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := ReadAuthServerRequestToTarget(tt.args.client, tt.args.method, tt.args.url, tt.args.s, tt.args.content, tt.args.target); (err != nil) != tt.wantErr {
+			if err := base.ReadAuthServerRequestToTarget(tt.args.client, tt.args.method, tt.args.url, tt.args.s, tt.args.content, tt.args.target); (err != nil) != tt.wantErr {
 				t.Errorf("ReadAuthServerRequestToTarget() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

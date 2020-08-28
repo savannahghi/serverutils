@@ -11,10 +11,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// DefaultPageSize is used to paginate records (e.g those fetched from Firebase)
-// if there is no user specified page size
-const DefaultPageSize = 100
-
 // UnixEpoch is used as our version of "time zero".
 // We don't (shouldn't) change it so it's safe to make it a global.
 var UnixEpoch = time.Unix(0, 0)
@@ -32,7 +28,7 @@ func GetFirestoreEnvirionmentSuffix() string {
 	return MustGetEnvVar("ROOT_COLLECTION_SUFFIX")
 }
 
-// SuffixCollection adds a suffix to the collection name. This will aid in seperating
+// SuffixCollection adds a suffix to the collection name. This will aid in separating
 // collections for different environments
 func SuffixCollection(c string) string {
 	return fmt.Sprintf("%v_%v", c, GetFirestoreEnvirionmentSuffix())
@@ -136,7 +132,7 @@ func ComposeUnpaginatedQuery(
 			case FieldTypeString:
 				query = query.Where(filterParam.FieldName, op, filterParam.FieldValue)
 			default:
-				query = query.Where(filterParam.FieldName, op, filterParam.FieldValue)
+				return nil, fmt.Errorf("unexpected field type '%s'", filterParam.FieldType.String())
 			}
 		}
 	}

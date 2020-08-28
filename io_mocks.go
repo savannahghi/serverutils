@@ -3,6 +3,7 @@ package base
 import (
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 )
 
 // BlowUpOnClose provides a closer that always returns an error, for testing purposes
@@ -38,4 +39,35 @@ func MockHTTPClient(fn MockHTTPTransportFunc) *http.Client {
 	return &http.Client{
 		Transport: MockHTTPTransportFunc(fn),
 	}
+}
+
+// NewErrorResponseWriter returns an initialized ErrorResponseWriter
+func NewErrorResponseWriter(err error) *ErrorResponseWriter {
+	return &ErrorResponseWriter{
+		err: err,
+		rec: httptest.NewRecorder(),
+	}
+}
+
+// ErrorResponseWriter is a http.ResponseWriter that always errors on attempted writes.
+//
+// It is necessary for tests.
+type ErrorResponseWriter struct {
+	err error
+	rec *httptest.ResponseRecorder
+}
+
+// Header delegates reading of headers to the underlying response writer
+func (w *ErrorResponseWriter) Header() http.Header {
+	return w.rec.Header()
+}
+
+// Write always returns the supplied error on any attempt to write.
+func (w *ErrorResponseWriter) Write([]byte) (int, error) {
+	return 0, w.err
+}
+
+// WriteHeader delegates writing of headers to the underlying response writer
+func (w *ErrorResponseWriter) WriteHeader(statusCode int) {
+	w.rec.WriteHeader(statusCode)
 }

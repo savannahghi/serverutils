@@ -1,10 +1,11 @@
-package base
+package base_test
 
 import (
 	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.slade360emr.com/go/base"
 )
 
 func TestNewCursor(t *testing.T) {
@@ -14,26 +15,26 @@ func TestNewCursor(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *Cursor
+		want *base.Cursor
 	}{
 		{
 			name: "offset one",
 			args: args{
 				offset: 1,
 			},
-			want: &Cursor{Offset: 1},
+			want: &base.Cursor{Offset: 1},
 		},
 		{
 			name: "default offset",
 			args: args{
 				offset: 0,
 			},
-			want: &Cursor{},
+			want: &base.Cursor{},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewCursor(tt.args.offset); !reflect.DeepEqual(got, tt.want) {
+			if got := base.NewCursor(tt.args.offset); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewCursor() = %v, want %v", got, tt.want)
 			}
 		})
@@ -42,7 +43,7 @@ func TestNewCursor(t *testing.T) {
 
 func TestEncodeCursor(t *testing.T) {
 	type args struct {
-		cursor *Cursor
+		cursor *base.Cursor
 	}
 	tests := []struct {
 		name string
@@ -52,21 +53,21 @@ func TestEncodeCursor(t *testing.T) {
 		{
 			name: "default zero offset cursor",
 			args: args{
-				cursor: &Cursor{},
+				cursor: &base.Cursor{},
 			},
 			want: "gaZPZmZzZXTTAAAAAAAAAAA=",
 		},
 		{
 			name: "negative cursor",
 			args: args{
-				cursor: &Cursor{Offset: -1},
+				cursor: &base.Cursor{Offset: -1},
 			},
 			want: "gaZPZmZzZXTT//////////8=",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := EncodeCursor(tt.args.cursor); got != tt.want {
+			if got := base.EncodeCursor(tt.args.cursor); got != tt.want {
 				t.Errorf("EncodeCursor() = %v, want %v", got, tt.want)
 			}
 		})
@@ -100,7 +101,7 @@ func TestCreateAndEncodeCursor(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		got := CreateAndEncodeCursor(tt.args.offset)
+		got := base.CreateAndEncodeCursor(tt.args.offset)
 		assert.NotNil(t, got)
 		assert.Equal(t, *got, *tt.want)
 	}
@@ -115,7 +116,7 @@ func TestDecodeCursor(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *Cursor
+		want    *base.Cursor
 		wantErr bool
 	}{
 		{
@@ -123,7 +124,7 @@ func TestDecodeCursor(t *testing.T) {
 			args: args{
 				cursor: zeroCur,
 			},
-			want:    &Cursor{Offset: 0},
+			want:    &base.Cursor{Offset: 0},
 			wantErr: false,
 		},
 		{
@@ -131,7 +132,7 @@ func TestDecodeCursor(t *testing.T) {
 			args: args{
 				cursor: negCur,
 			},
-			want:    &Cursor{Offset: -1},
+			want:    &base.Cursor{Offset: -1},
 			wantErr: false,
 		},
 		{
@@ -145,7 +146,7 @@ func TestDecodeCursor(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DecodeCursor(tt.args.cursor)
+			got, err := base.DecodeCursor(tt.args.cursor)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DecodeCursor() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -166,26 +167,26 @@ func TestMustDecodeCursor(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *Cursor
+		want *base.Cursor
 	}{
 		{
 			name: "zero cursor",
 			args: args{
 				cursor: zeroCur,
 			},
-			want: &Cursor{Offset: 0},
+			want: &base.Cursor{Offset: 0},
 		},
 		{
 			name: "minus one cursor",
 			args: args{
 				cursor: negCur,
 			},
-			want: &Cursor{Offset: -1},
+			want: &base.Cursor{Offset: -1},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MustDecodeCursor(tt.args.cursor); !reflect.DeepEqual(got, tt.want) {
+			if got := base.MustDecodeCursor(tt.args.cursor); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MustDecodeCursor() = %v, want %v", got, tt.want)
 			}
 		})

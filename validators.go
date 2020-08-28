@@ -12,14 +12,6 @@ import (
 	"github.com/ttacon/libphonenumber"
 )
 
-// default collection names
-const (
-	EmailOptInCollectionName  = "email_opt_ins"
-	PhoneOptInCollectionName  = "phone_opt_ins"
-	USSDSessionCollectionName = "ussd_signup_sessions"
-	defaultRegion             = "KE"
-)
-
 // ValidateEmail returns an error if the supplied string does not have a
 // valid format or resolvable host
 func ValidateEmail(

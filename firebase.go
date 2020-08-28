@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
@@ -14,34 +15,6 @@ import (
 	"firebase.google.com/go/messaging"
 	"github.com/lithammer/shortuuid"
 	"google.golang.org/api/option"
-)
-
-/* #nosec */
-const (
-	// FirebaseWebAPIKeyEnvVarName is the name of the env var that holds a Firebase web API key
-	// for this project
-	FirebaseWebAPIKeyEnvVarName = "FIREBASE_WEB_API_KEY"
-
-	// FirebaseCustomTokenSigninURL is the Google Identity Toolkit API for signing in over REST
-	FirebaseCustomTokenSigninURL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key="
-
-	// FirebaseRefreshTokenURL is used to request Firebase refresh tokens from Google APIs
-	FirebaseRefreshTokenURL = "https://securetoken.googleapis.com/v1/token?key="
-
-	// GoogleApplicationCredentialsEnvVarName is used to obtain service account details from the
-	// local server when necessary e.g when running tests on CI or a local developer setup
-	GoogleApplicationCredentialsEnvVarName = "GOOGLE_APPLICATION_CREDENTIALS"
-
-	// TestUserEmail is used by integration tests
-	TestUserEmail = "automated.test.user.bewell-app-ci@healthcloud.co.ke"
-
-	// OTPCollectionName is the name of the collection used to persist single
-	// use verification codes on Firebase
-	OTPCollectionName = "otps"
-
-	// IdentifierCollectionName is used to record randomly generated identifiers so that they
-	// are not re-issued
-	IdentifierCollectionName = "identifiers"
 )
 
 // FirebaseTokenExchangePayload is marshalled into JSON and sent to the Firebase Auth REST API
@@ -70,7 +43,6 @@ type IFirebaseApp interface {
 // It has been defined in order to facilitate mocking for tests
 type IFirebaseClient interface {
 	InitFirebase() (IFirebaseApp, error)
-	AuthenticateCustomFirebaseToken(customAuthToken string, client *http.Client) (*FirebaseUserTokens, error)
 }
 
 // FirebaseClient is an implementation of the FirebaseClient interface
@@ -95,7 +67,7 @@ func (fc *FirebaseClient) InitFirebase() (IFirebaseApp, error) {
 // AuthenticateCustomFirebaseToken takes a custom Firebase auth token and tries to fetch an ID token
 // If successful, a pointer to the ID token is returned
 // Otherwise, an error is returned
-func (fc *FirebaseClient) AuthenticateCustomFirebaseToken(customAuthToken string, httpClient *http.Client) (*FirebaseUserTokens, error) {
+func AuthenticateCustomFirebaseToken(customAuthToken string) (*FirebaseUserTokens, error) {
 	apiKey, apiKeyErr := GetEnvVar(FirebaseWebAPIKeyEnvVarName)
 	if apiKeyErr != nil {
 		return nil, apiKeyErr
@@ -108,6 +80,8 @@ func (fc *FirebaseClient) AuthenticateCustomFirebaseToken(customAuthToken string
 	payloadBytes, _ := json.Marshal(payload) // err intentionally ignored, static typing makes it very hard to get this error
 
 	url := FirebaseCustomTokenSigninURL + apiKey
+	httpClient := http.DefaultClient
+	httpClient.Timeout = time.Second * HTTPClientTimeoutSecs
 	resp, err := httpClient.Post(url, "application/json", bytes.NewReader(payloadBytes))
 	defer CloseRespBody(resp)
 	if err != nil {
@@ -129,8 +103,13 @@ func (fc *FirebaseClient) AuthenticateCustomFirebaseToken(customAuthToken string
 
 // CreateFirebaseCustomToken creates a custom auth token for the user with the
 // indicated UID
-func CreateFirebaseCustomToken(ctx context.Context, uid string, fc IFirebaseClient) (string, error) {
-	authClient, err := GetFirebaseAuthClient(ctx, fc)
+func CreateFirebaseCustomToken(ctx context.Context, uid string) (string, error) {
+	fc := &FirebaseClient{}
+	firebaseApp, err := fc.InitFirebase()
+	if err != nil {
+		return "", fmt.Errorf("unable to initialize Firebase app: %w", err)
+	}
+	authClient, err := firebaseApp.Auth(ctx)
 	if err != nil {
 		return "", fmt.Errorf("unable to create custom Firebase token: %w", err)
 	}
@@ -139,8 +118,8 @@ func CreateFirebaseCustomToken(ctx context.Context, uid string, fc IFirebaseClie
 
 // GetOrCreateFirebaseUser retrieves the user record of the user with the given email
 // or creates a new one if no user has the specified email
-func GetOrCreateFirebaseUser(ctx context.Context, email string, fc IFirebaseClient) (*auth.UserRecord, error) {
-	authClient, err := GetFirebaseAuthClient(ctx, fc)
+func GetOrCreateFirebaseUser(ctx context.Context, email string) (*auth.UserRecord, error) {
+	authClient, err := GetFirebaseAuthClient(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get or create Firebase user: %w", err)
 	}
@@ -162,7 +141,8 @@ func GetOrCreateFirebaseUser(ctx context.Context, email string, fc IFirebaseClie
 }
 
 // GetFirebaseAuthClient initializes a Firebase Authentication client
-func GetFirebaseAuthClient(ctx context.Context, fc IFirebaseClient) (*auth.Client, error) {
+func GetFirebaseAuthClient(ctx context.Context) (*auth.Client, error) {
+	fc := &FirebaseClient{}
 	firebaseApp, err := fc.InitFirebase()
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize Firebase app: %w", err)
@@ -175,15 +155,23 @@ func GetFirebaseAuthClient(ctx context.Context, fc IFirebaseClient) (*auth.Clien
 }
 
 // ValidateBearerToken checks the bearer token for validity against Firebase
-func ValidateBearerToken(ctx context.Context, token string, firebaseApp IFirebaseApp) (*auth.Token, error) {
+func ValidateBearerToken(ctx context.Context, token string) (*auth.Token, error) {
+	fc := &FirebaseClient{}
+	firebaseApp, err := fc.InitFirebase()
+	if err != nil {
+		return nil, fmt.Errorf("can't initialize Firebase: %w", err)
+	}
+
 	client, clientErr := firebaseApp.Auth(ctx)
 	if clientErr != nil {
 		return nil, fmt.Errorf("error getting Auth client: " + clientErr.Error())
 	}
+
 	verifiedToken, verifyErr := client.VerifyIDToken(ctx, token)
 	if verifyErr != nil {
 		return nil, fmt.Errorf("invalid auth token: " + verifyErr.Error())
 	}
+
 	return verifiedToken, nil
 }
 

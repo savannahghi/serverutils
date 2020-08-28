@@ -1,10 +1,11 @@
-package base
+package base_test
 
 import (
 	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.slade360emr.com/go/base"
 )
 
 func TestTypeof(t *testing.T) {
@@ -26,7 +27,7 @@ func TestTypeof(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Typeof(tt.args.v); got != tt.want {
+			if got := base.Typeof(tt.args.v); got != tt.want {
 				t.Errorf("Typeof() = %v, want %v", got, tt.want)
 			}
 		})
@@ -36,12 +37,12 @@ func TestTypeof(t *testing.T) {
 func TestIDValue_String(t *testing.T) {
 	tests := []struct {
 		name string
-		val  IDValue
+		val  base.IDValue
 		want string
 	}{
 		{
 			name: "happy case",
-			val:  IDValue("mimi ni id"),
+			val:  base.IDValue("mimi ni id"),
 			want: "mimi ni id",
 		},
 	}
@@ -57,25 +58,25 @@ func TestIDValue_String(t *testing.T) {
 func TestMarshalID(t *testing.T) {
 	type args struct {
 		id string
-		n  Node
+		n  base.Node
 	}
 	tests := []struct {
 		name string
 		args args
-		want ID
+		want base.ID
 	}{
 		{
 			name: "good case",
 			args: args{
 				id: "1",
-				n:  &Model{},
+				n:  &base.Model{},
 			},
-			want: IDValue("MXwqYmFzZS5Nb2RlbA=="),
+			want: base.IDValue("MXwqYmFzZS5Nb2RlbA=="),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MarshalID(tt.args.id, tt.args.n); !reflect.DeepEqual(got, tt.want) {
+			if got := base.MarshalID(tt.args.id, tt.args.n); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MarshalID() = %v, want %v", got, tt.want)
 			}
 		})
@@ -83,7 +84,7 @@ func TestMarshalID(t *testing.T) {
 }
 
 func TestNewString(t *testing.T) {
-	ns := NewString("a string")
+	ns := base.NewString("a string")
 	assert.Equal(t, "a string", *ns)
 }
 
@@ -99,19 +100,19 @@ func TestModel_GetID(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		want   ID
+		want   base.ID
 	}{
 		{
 			name: "good case",
 			fields: fields{
 				ID: "an ID",
 			},
-			want: IDValue("an ID"),
+			want: base.IDValue("an ID"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Model{
+			c := &base.Model{
 				ID:           tt.fields.ID,
 				Name:         tt.fields.Name,
 				Description:  tt.fields.Description,
@@ -152,7 +153,7 @@ func TestModel_SetID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Model{
+			c := &base.Model{
 				ID:           tt.fields.ID,
 				Name:         tt.fields.Name,
 				Description:  tt.fields.Description,
@@ -161,7 +162,7 @@ func TestModel_SetID(t *testing.T) {
 				UpdatedByUID: tt.fields.UpdatedByUID,
 			}
 			c.SetID(tt.args.id)
-			assert.Equal(t, c.GetID(), IDValue(tt.args.id))
+			assert.Equal(t, c.GetID(), base.IDValue(tt.args.id))
 		})
 	}
 }
@@ -185,7 +186,7 @@ func TestModel_IsNode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Model{
+			c := &base.Model{
 				ID:           tt.fields.ID,
 				Name:         tt.fields.Name,
 				Description:  tt.fields.Description,

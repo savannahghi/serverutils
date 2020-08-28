@@ -1,4 +1,4 @@
-image: eu.gcr.io/savannah-emr/golang-ci-image:0.0.2
+image: eu.gcr.io/savannah-emr/golang-ci-image:0.0.4
 
 stages:
   - test
@@ -17,6 +17,7 @@ lint_and_test:
     - go vet $(go list ./... | grep -v /vendor/)
     - golint -set_exit_status $(go list ./... | grep -v /vendor/)
     - errcheck -ignore 'os:.*,' $(go list ./... | grep -v /vendor/)
+    - misspell -error .
     - gosec ./...
     - go-acc -o coverage.txt --ignore generated,cmd ./...
     - grep -v "generated.go" coverage.txt | grep -v "_gen.go" | grep -v "mocks.go" > coverage.out
@@ -24,6 +25,8 @@ lint_and_test:
     - gocov convert coverage.out > coverage.json
     - gocov report coverage.json > coverage_report.txt
     - tail coverage_report.txt
+    - ineffassign ./*  # identify ineffective assignments
+    - "gocyclo -over 5 . || :" # display the most complex functions but do not fail the build because of this
   artifacts:
     untracked: true
     paths:

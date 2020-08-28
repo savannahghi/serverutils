@@ -1,9 +1,8 @@
-package base
+package base_test
 
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -13,6 +12,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.slade360emr.com/go/base"
 )
 
 func TestMergeURLValues(t *testing.T) {
@@ -51,7 +51,7 @@ func TestMergeURLValues(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MergeURLValues(tt.args.values...); !reflect.DeepEqual(got, tt.want) {
+			if got := base.MergeURLValues(tt.args.values...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MergeURLValues() = %v, want %v", got, tt.want)
 			}
 		})
@@ -76,7 +76,7 @@ func TestGetAPIPaginationParams(t *testing.T) {
 	afterPage.Add("page", "1")
 
 	type args struct {
-		pagination *PaginationInput
+		pagination *base.PaginationInput
 	}
 	tests := []struct {
 		name    string
@@ -95,7 +95,7 @@ func TestGetAPIPaginationParams(t *testing.T) {
 		{
 			name: "pagination last set",
 			args: args{
-				pagination: &PaginationInput{
+				pagination: &base.PaginationInput{
 					Last: 10,
 				},
 			},
@@ -105,7 +105,7 @@ func TestGetAPIPaginationParams(t *testing.T) {
 		{
 			name: "pagination first set",
 			args: args{
-				pagination: &PaginationInput{
+				pagination: &base.PaginationInput{
 					First: 10,
 				},
 			},
@@ -115,7 +115,7 @@ func TestGetAPIPaginationParams(t *testing.T) {
 		{
 			name: "pagination before set",
 			args: args{
-				pagination: &PaginationInput{
+				pagination: &base.PaginationInput{
 					Before: "12",
 				},
 			},
@@ -125,7 +125,7 @@ func TestGetAPIPaginationParams(t *testing.T) {
 		{
 			name: "pagination after set",
 			args: args{
-				pagination: &PaginationInput{
+				pagination: &base.PaginationInput{
 					After: "12",
 				},
 			},
@@ -135,7 +135,7 @@ func TestGetAPIPaginationParams(t *testing.T) {
 		{
 			name: "pagination - wrong after format",
 			args: args{
-				pagination: &PaginationInput{
+				pagination: &base.PaginationInput{
 					After: "this is not an int",
 				},
 			},
@@ -145,7 +145,7 @@ func TestGetAPIPaginationParams(t *testing.T) {
 		{
 			name: "pagination - wrong before format",
 			args: args{
-				pagination: &PaginationInput{
+				pagination: &base.PaginationInput{
 					Before: "this is not an int",
 				},
 			},
@@ -155,7 +155,7 @@ func TestGetAPIPaginationParams(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetAPIPaginationParams(tt.args.pagination)
+			got, err := base.GetAPIPaginationParams(tt.args.pagination)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAPIPaginationParams() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -167,86 +167,17 @@ func TestGetAPIPaginationParams(t *testing.T) {
 	}
 }
 
-func TestServerClient_IsInitialized(t *testing.T) {
-	type fields struct {
-		isInitialized bool
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   bool
-	}{
-		{
-			name: "initialized client",
-			fields: fields{
-				isInitialized: true,
-			},
-			want: true,
-		},
-		{
-			name: "uninitialized client",
-			fields: fields{
-				isInitialized: false,
-			},
-			want: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := &ServerClient{
-				isInitialized: tt.fields.isInitialized,
-			}
-			if got := c.IsInitialized(); got != tt.want {
-				t.Errorf("ServerClient.IsInitialized() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestServerClient_AuthServerDomain(t *testing.T) {
-	type fields struct {
-		authServerDomain string
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   string
-	}{
-		{
-			name: "auth server domain set",
-			fields: fields{
-				authServerDomain: "https://auth.healthcloud.co.ke",
-			},
-			want: "https://auth.healthcloud.co.ke",
-		},
-		{
-			name: "auth server domain not set",
-			want: "",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := &ServerClient{
-				authServerDomain: tt.fields.authServerDomain,
-			}
-			if got := c.AuthServerDomain(); got != tt.want {
-				t.Errorf("ServerClient.IsInitialized() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestNewServerClient(t *testing.T) {
 	// see the README for more guidance on these env vars
-	clientID := MustGetEnvVar("CLIENT_ID")
-	clientSecret := MustGetEnvVar("CLIENT_SECRET")
-	username := MustGetEnvVar("USERNAME")
-	password := MustGetEnvVar("PASSWORD")
-	grantType := MustGetEnvVar("GRANT_TYPE")
-	apiScheme := MustGetEnvVar("API_SCHEME")
-	apiTokenURL := MustGetEnvVar("TOKEN_URL")
-	apiHost := MustGetEnvVar("HOST")
-	customHeader := MustGetEnvVar("DEFAULT_WORKSTATION_ID")
+	clientID := base.MustGetEnvVar(base.ClientIDEnvVarName)
+	clientSecret := base.MustGetEnvVar(base.ClientSecretEnvVarName)
+	username := base.MustGetEnvVar(base.UsernameEnvVarName)
+	password := base.MustGetEnvVar(base.PasswordEnvVarName)
+	grantType := base.MustGetEnvVar(base.GrantTypeEnvVarName)
+	apiScheme := base.MustGetEnvVar(base.APISchemeEnvVarName)
+	apiTokenURL := base.MustGetEnvVar(base.TokenURLEnvVarName)
+	apiHost := base.MustGetEnvVar(base.APIHostEnvVarName)
+	workstationID := base.MustGetEnvVar(base.WorkstationEnvVarName)
 
 	type args struct {
 		clientID     string
@@ -295,7 +226,7 @@ func TestNewServerClient(t *testing.T) {
 				username:     username,
 				password:     password,
 				extraHeaders: map[string]string{
-					"X-WORKSTATION": customHeader,
+					base.WorkstationHeaderName: workstationID,
 				},
 			},
 			wantErr: false,
@@ -303,7 +234,7 @@ func TestNewServerClient(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewServerClient(tt.args.clientID, tt.args.clientSecret, tt.args.apiTokenURL, tt.args.apiHost, tt.args.apiScheme, tt.args.grantType, tt.args.username, tt.args.password, tt.args.extraHeaders)
+			got, err := base.NewServerClient(tt.args.clientID, tt.args.clientSecret, tt.args.apiTokenURL, tt.args.apiHost, tt.args.apiScheme, tt.args.grantType, tt.args.username, tt.args.password, tt.args.extraHeaders)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewServerClient() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -356,7 +287,7 @@ func Test_boolEnv(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := boolEnv(tt.args.envVarName); got != tt.want {
+			if got := base.BoolEnv(tt.args.envVarName); got != tt.want {
 				t.Errorf("boolEnv() = %v, want %v", got, tt.want)
 			}
 		})
@@ -375,7 +306,7 @@ func TestIsRunningTests(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsRunningTests(); got != tt.want {
+			if got := base.IsRunningTests(); got != tt.want {
 				t.Errorf("IsRunningTests() = %v, want %v", got, tt.want)
 			}
 		})
@@ -411,7 +342,7 @@ func TestGetEnvVar(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetEnvVar(tt.args.envVarName)
+			got, err := base.GetEnvVar(tt.args.envVarName)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetEnvVar() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -442,296 +373,51 @@ func TestMustGetEnvVar(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MustGetEnvVar(tt.args.envVarName); got != tt.want {
+			if got := base.MustGetEnvVar(tt.args.envVarName); got != tt.want {
 				t.Errorf("MustGetEnvVar() = %v, want %v", got, tt.want)
 			}
 
 			assert.Panics(t, func() {
-				MustGetEnvVar("this does not exist as an env var")
+				base.MustGetEnvVar("this does not exist as an env var")
 			})
 		})
 	}
 }
 
-func TestNewEDIClient_Invalid_Domain(t *testing.T) {
-	c := ServerClient{
-		clientID:         "",
-		clientSecret:     "",
-		apiTokenURL:      "",
-		authServerDomain: "",
-		apiHost:          "",
-		apiScheme:        "",
-		grantType:        "",
-		username:         "",
-		password:         "",
-	}
-	err := c.Initialize()
-	assert.NotNil(t, err)
-	assert.Equal(t, " is not a valid clientId, expected a non-blank alphanumeric string of at least 12 characters", err.Error())
-}
-
-func TestNewEDIClient_Invalid_ClientID(t *testing.T) {
-	c := ServerClient{
-		clientID:         "",
-		clientSecret:     "",
-		apiTokenURL:      "",
-		authServerDomain: "",
-		apiHost:          "",
-		apiScheme:        "",
-		grantType:        "",
-		username:         "",
-		password:         "",
-	}
-	err := c.Initialize()
-	assert.NotNil(t, err)
-	assert.Equal(t, " is not a valid clientId, expected a non-blank alphanumeric string of at least 12 characters", err.Error())
-}
-
-func TestNewEDIClient_Invalid_ClientSecret(t *testing.T) {
-	c := ServerClient{
-		clientID:         "SDFGHJKLOIUYG",
-		clientSecret:     "",
-		apiTokenURL:      "",
-		authServerDomain: "",
-		apiHost:          "",
-		apiScheme:        "",
-		grantType:        "",
-		username:         "",
-		password:         "",
-	}
-	err := c.Initialize()
-	assert.NotNil(t, err)
-	assert.Equal(t, " is not a valid clientSecret, expected a non-blank alphanumeric string of at least 12 characters", err.Error())
-}
-
-func TestNewEDIClient_Invalid_APITokenURL(t *testing.T) {
-	c := ServerClient{
-		clientID:         "SDFGHJKLOIUYG",
-		clientSecret:     "RTFFfghjfkjkhjkghkgfhadciuy",
-		apiTokenURL:      "",
-		authServerDomain: "",
-		apiHost:          "",
-		apiScheme:        "",
-		grantType:        "",
-		username:         "",
-		password:         "",
-	}
-	err := c.Initialize()
-	assert.NotNil(t, err)
-	assert.Equal(t, " is not a valid apiTokenURL, expected an http(s) URL", err.Error())
-}
-
-func TestNewEDIClient_Invalid_APIHost(t *testing.T) {
-	c := ServerClient{
-		clientID:         "SDFGHJKLOIUYG",
-		clientSecret:     "RTFFfghjfkjkhjkghkgfhadciuy",
-		apiTokenURL:      "http://localhost:9000/o/token/",
-		authServerDomain: "localhost",
-		apiHost:          "",
-		apiScheme:        "",
-		grantType:        "",
-		username:         "",
-		password:         "",
-	}
-	err := c.Initialize()
-	assert.NotNil(t, err)
-	assert.Equal(t, " is not a valid apiHost, expected a valid IP or domain name", err.Error())
-}
-
-func TestNewEDIClient_Invalid_APIScheme(t *testing.T) {
-	c := ServerClient{
-		clientID:         "SDFGHJKLOIUYG",
-		clientSecret:     "RTFFfghjfkjkhjkghkgfhadciuy",
-		apiTokenURL:      "http://localhost:9000/o/token/",
-		authServerDomain: "localhost",
-		apiHost:          "localhost",
-		apiScheme:        "ftp",
-		grantType:        "",
-		username:         "",
-		password:         "",
-	}
-	err := c.Initialize()
-	assert.NotNil(t, err)
-	assert.Equal(t, "ftp is not a valid apiScheme, expected http or https", err.Error())
-}
-
-func TestNewEDIClient_Invalid_GrantType(t *testing.T) {
-	c := ServerClient{
-		clientID:         "SDFGHJKLOIUYG",
-		clientSecret:     "RTFFfghjfkjkhjkghkgfhadciuy",
-		apiTokenURL:      "http://localhost:9000/o/token/",
-		authServerDomain: "localhost",
-		apiHost:          "localhost",
-		apiScheme:        "http",
-		grantType:        "token_refresh",
-		username:         "",
-		password:         "",
-	}
-	err := c.Initialize()
-	assert.NotNil(t, err)
-	assert.Equal(t, "the only supported OAuth grant type for now is 'password'", err.Error())
-}
-
-func TestNewEDIClient_Invalid_Username(t *testing.T) {
-	c := ServerClient{
-		clientID:         "SDFGHJKLOIUYG",
-		clientSecret:     "RTFFfghjfkjkhjkghkgfhadciuy",
-		apiTokenURL:      "http://localhost:9000/o/token/",
-		authServerDomain: "localhost",
-		apiHost:          "localhost",
-		apiScheme:        "http",
-		grantType:        "password",
-		username:         "not_an_email",
-		password:         "",
-	}
-	err := c.Initialize()
-	assert.NotNil(t, err)
-	assert.Equal(t, "the Username should be a valid email address", err.Error())
-}
-
-func TestNewEDIClient_Invalid_Password(t *testing.T) {
-	c := ServerClient{
-		clientID:         "SDFGHJKLOIUYG",
-		clientSecret:     "RTFFfghjfkjkhjkghkgfhadciuy",
-		apiTokenURL:      "http://localhost:9000/o/token/",
-		authServerDomain: "localhost",
-		apiHost:          "localhost",
-		apiScheme:        "http",
-		grantType:        "password",
-		username:         "user@mail.com",
-		password:         "x",
-	}
-	err := c.Initialize()
-	assert.NotNil(t, err)
-	assert.Equal(t, fmt.Sprintf("the Password should be a string of at least %d characters", apiPasswordMinLength), err.Error())
-}
-
 func TestCloseRespBody(t *testing.T) {
 	// no-op for nil response
-	CloseRespBody(nil)
+	base.CloseRespBody(nil)
 
 	// closes the resp body when supported
 	resp := &http.Response{Body: ioutil.NopCloser(strings.NewReader("some contents"))}
-	CloseRespBody(resp)
+	base.CloseRespBody(resp)
 
 	// does not blow up on unclosable bodies
 	req := httptest.NewRequest("POST", "/", strings.NewReader("some contents"))
-	blowResp := &http.Response{Body: BlowUpOnClose{}, Request: req}
-	CloseRespBody(blowResp)
+	blowResp := &http.Response{Body: base.BlowUpOnClose{}, Request: req}
+	base.CloseRespBody(blowResp)
 }
 
 func TestCheckEDIAPIInitialization(t *testing.T) {
 	msg := "the EDI httpClient is not correctly initialized. Please use the `.Initialize` constructor"
-	nilErr := CheckAPIInitialization(nil)
+	nilErr := base.CheckAPIInitialization(nil)
 	assert.NotNil(t, nilErr)
 	assert.Equal(t, msg, nilErr.Error())
 
-	badCl := &MockClient{Initialized: false}
-	initErr := CheckAPIInitialization(badCl)
+	badCl := &base.MockClient{Initialized: false}
+	initErr := base.CheckAPIInitialization(badCl)
 	assert.NotNil(t, initErr)
 	assert.Equal(t, msg, initErr.Error())
 
-	goodCl := &MockClient{Initialized: true}
-	noErr := CheckAPIInitialization(goodCl)
+	goodCl := &base.MockClient{Initialized: true}
+	noErr := base.CheckAPIInitialization(goodCl)
 	assert.Nil(t, noErr)
-}
-
-func TestCheckEDIClientPostConditions(t *testing.T) {
-	tests := map[string]struct {
-		input Client
-		want  error
-	}{
-		"invalid_access_tokens": {
-			input: &ServerClient{
-				accessToken: "invalid",
-			},
-			want: fmt.Errorf("invalid access token after EDIAPIClient initialization"),
-		},
-		"invalid_token_type": {
-			input: &ServerClient{
-				accessToken: "hjhjkhkjhjkhklhkhkhjhkjh",
-				tokenType:   "Bogus",
-			},
-			want: fmt.Errorf("invalid token type after EDIAPIClient initialization, expected 'Bearer'"),
-		},
-		"invalid_refresh_token": {
-			input: &ServerClient{
-				accessToken:  "hjhjkhkjhjkhklhkhkhjhkjh",
-				tokenType:    "Bearer",
-				refreshToken: "bad",
-			},
-			want: fmt.Errorf("invalid Refresh token after EDIAPIClient initialization"),
-		},
-		"invalid_access_scope": {
-			input: &ServerClient{
-				accessToken:  "hjhjkhkjhjkhklhkhkhjhkjh",
-				tokenType:    "Bearer",
-				refreshToken: "jfdahfdjafhdjfhdalkfjdhkfhasdk",
-				accessScope:  "bad",
-			},
-			want: fmt.Errorf("invalid access scope text after EDIAPIClient initialization"),
-		},
-		"invalid_expires_in": {
-			input: &ServerClient{
-				accessToken:  "hjhjkhkjhjkhklhkhkhjhkjh",
-				tokenType:    "Bearer",
-				refreshToken: "jfdahfdjafhdjfhdalkfjdhkfhasdk",
-				accessScope:  "scope blah blah blah more blah blah blah",
-				expiresIn:    -1,
-			},
-			want: fmt.Errorf("invalid expiresIn after EDIAPIClient initialization"),
-		},
-		"invalid_refresh_at": {
-			input: &ServerClient{
-				accessToken:  "hjhjkhkjhjkhklhkhkhjhkjh",
-				tokenType:    "Bearer",
-				refreshToken: "jfdahfdjafhdjfhdalkfjdhkfhasdk",
-				accessScope:  "scope blah blah blah more blah blah blah",
-				expiresIn:    3600,
-				refreshAt:    time.Unix(0, 0),
-			},
-			want: fmt.Errorf("invalid past refreshAt after EDIAPIClient initialization"),
-		},
-		"passing_case": {
-			input: &ServerClient{
-				accessToken:  "hjhjkhkjhjkhklhkhkhjhkjh",
-				tokenType:    "Bearer",
-				refreshToken: "jfdahfdjafhdjfhdalkfjdhkfhasdk",
-				accessScope:  "scope blah blah blah more blah blah blah",
-				expiresIn:    3600,
-				refreshAt:    time.Now().Add(time.Second * 3600),
-			},
-			want: nil,
-		},
-		"invalid_credentials": {
-			input: &MockClient{
-				authErr:      fmt.Errorf("mock auth error"),
-				accessToken:  "hjhjkhkjhjkhklhkhkhjhkjh",
-				tokenType:    "Bearer",
-				refreshToken: "jfdahfdjafhdjfhdalkfjdhkfhasdk",
-				accessScope:  "scope blah blah blah more blah blah blah",
-				expiresIn:    3600,
-				refreshAt:    time.Now().Add(time.Second * 3600),
-			},
-			want: fmt.Errorf("mock auth error"),
-		},
-	}
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			err := CheckAPIClientPostConditions(tc.input)
-
-			// if the validator passes, err will be nil
-			if err != nil {
-				assert.Equalf(t, tc.want.Error(), err.Error(), "expected error '%s' not found")
-			}
-		})
-	}
 }
 
 func Test_decodeOauthResponseFromJSON_Unreadable_Body(t *testing.T) {
 	req := httptest.NewRequest("POST", "/", strings.NewReader("some more contents"))
-	blowResp := &http.Response{Body: BlowUpOnRead{}, Request: req}
-	oauth, err := decodeOauthResponseFromJSON(blowResp)
+	blowResp := &http.Response{Body: base.BlowUpOnRead{}, Request: req}
+	oauth, err := base.DecodeOAUTHResponseFromJSON(blowResp)
 	assert.NotNil(t, err)
 	assert.Nil(t, oauth)
 	assert.Equal(t, "boom", err.Error())
@@ -740,7 +426,7 @@ func Test_decodeOauthResponseFromJSON_Unreadable_Body(t *testing.T) {
 func Test_decodeOauthResponseFromJSON_Unmarshallable_Body(t *testing.T) {
 	reader := ioutil.NopCloser(strings.NewReader("very bad not valid JSON"))
 	resp := &http.Response{Body: reader}
-	oauth, err := decodeOauthResponseFromJSON(resp)
+	oauth, err := base.DecodeOAUTHResponseFromJSON(resp)
 	assert.NotNil(t, err)
 	assert.Nil(t, oauth)
 	assert.Equal(t, "invalid character 'v' looking for beginning of value", err.Error())
@@ -757,7 +443,7 @@ func Test_decodeOauthResponseFromJSON_Unmarshallable_Success(t *testing.T) {
 		}`
 	reader := ioutil.NopCloser(strings.NewReader(jsonResp))
 	resp := &http.Response{Body: reader}
-	oauth, err := decodeOauthResponseFromJSON(resp)
+	oauth, err := base.DecodeOAUTHResponseFromJSON(resp)
 	assert.NotNil(t, oauth)
 	assert.Nil(t, err)
 	assert.Equal(t, oauth.AccessToken, "GJJGFDGJJGFGJHHJF")
@@ -767,583 +453,35 @@ func Test_decodeOauthResponseFromJSON_Unmarshallable_Success(t *testing.T) {
 	assert.Equal(t, oauth.RefreshToken, "YHGFDSETGJKHFDD")
 
 	// update auth
-	c := &ServerClient{}
-	c.updateAuth(oauth)
-	assert.Equal(t, oauth.AccessToken, c.accessToken)
-	assert.Equal(t, oauth.TokenType, c.tokenType)
-	assert.Equal(t, oauth.Scope, c.accessScope)
-	assert.Equal(t, oauth.RefreshToken, c.refreshToken)
-	assert.Equal(t, oauth.ExpiresIn, c.expiresIn)
+	c := &base.ServerClient{}
+	c.UpdateAuth(oauth)
+	assert.Equal(t, oauth.AccessToken, c.AccessToken())
+	assert.Equal(t, oauth.TokenType, c.TokenType())
+	assert.Equal(t, oauth.Scope, c.AccessScope())
+	assert.Equal(t, oauth.RefreshToken, c.RefreshToken())
+	assert.Equal(t, oauth.ExpiresIn, c.ExpiresIn())
 
 	// wait out most of the token's duration to expiry before attempting to Refresh
-	secondsToRefresh := int(float64(c.expiresIn) * tokenExpiryRatio)
+	secondsToRefresh := int(float64(c.ExpiresIn()) * base.TokenExpiryRatio)
 	refreshTime := time.Now().Add(time.Second * time.Duration(secondsToRefresh))
-	assert.InDelta(t, refreshTime.UnixNano(), c.refreshAt.UnixNano(), 1_000_000_000, "allow up to one second of delta")
-	assert.Equal(t, true, c.isInitialized)
-}
-
-func TestEDIAPIClient_Authenticate_Non_20x_Response(t *testing.T) {
-	hf := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "POST", r.Method)
-		assert.Equal(t, "application/x-www-form-urlencoded", r.Header.Get("Content-Type"))
-
-		body, _ := ioutil.ReadAll(r.Body)
-		assert.NotNil(t, body)
-		w.WriteHeader(http.StatusInternalServerError) // 500 error response
-	})
-	srv := httptest.NewServer(hf)
-	defer srv.Close()
-
-	cl := srv.Client()
-	client := ServerClient{
-		httpClient:       cl,
-		clientID:         "cidhhhhhhhhhhh",
-		clientSecret:     "csffffffffffff",
-		grantType:        "password",
-		username:         "yusa@yusa.io",
-		password:         "the greatest Password in the world",
-		isInitialized:    true,
-		apiTokenURL:      srv.URL, // important, this invokes our test server!
-		apiHost:          "localhost",
-		authServerDomain: "localhost",
-		apiScheme:        "http",
-	}
-	err := client.Authenticate()
-	assert.NotNil(t, err)
-	assert.Equal(t, "server error status: 500", err.Error())
-
-	refreshErr := client.Refresh()
-	assert.NotNil(t, refreshErr)
-	assert.Equal(t, "server error status: 500", refreshErr.Error())
-}
-
-func TestEDIAPIClient_Authenticate_HTTP_Error(t *testing.T) {
-	hf := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "POST", r.Method)
-		assert.Equal(t, "application/x-www-form-urlencoded", r.Header.Get("Content-Type"))
-
-		body, _ := ioutil.ReadAll(r.Body)
-		assert.NotNil(t, body)
-		panic(nil) // abort the connection prematurely
-	})
-	srv := httptest.NewServer(hf)
-	defer srv.Close()
-
-	cl := srv.Client()
-	client := ServerClient{
-		httpClient:       cl,
-		clientID:         "cidxxxxxxxxxxx",
-		clientSecret:     "csxxxxxxxxxxx",
-		grantType:        "password",
-		username:         "yusa@yusa.io",
-		password:         "the greatest Password in the world",
-		isInitialized:    true,
-		apiTokenURL:      srv.URL, // important, this invokes our test server!
-		apiHost:          "localhost",
-		authServerDomain: "localhost",
-		apiScheme:        "http",
-	}
-	err := client.Authenticate()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), ": EOF")
-
-	refreshErr := client.Refresh()
-	assert.NotNil(t, refreshErr)
-	assert.Contains(t, refreshErr.Error(), ": EOF")
-}
-
-func TestEDIAPIClient_Authenticate_Unmarshalable_Response(t *testing.T) {
-	hf := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "POST", r.Method)
-		assert.Equal(t, "application/x-www-form-urlencoded", r.Header.Get("Content-Type"))
-
-		body, _ := ioutil.ReadAll(r.Body)
-		assert.NotNil(t, body)
-
-		respBytes := []byte("some stuff")
-		bytes, writeErr := w.Write(respBytes)
-		assert.Nil(t, writeErr)
-		assert.Equal(t, 10, bytes)
-	})
-	srv := httptest.NewServer(hf)
-	defer srv.Close()
-
-	cl := srv.Client()
-	client := ServerClient{
-		httpClient:       cl,
-		clientID:         "cidxxxxxxxxxx",
-		clientSecret:     "csxxxxxxxxxxx",
-		grantType:        "password",
-		username:         "yusa@yusa.io",
-		password:         "the greatest Password in the world",
-		isInitialized:    true,
-		apiTokenURL:      srv.URL, // important, this invokes our test server!
-		apiHost:          "localhost",
-		apiScheme:        "http",
-		authServerDomain: "localhost",
-	}
-	err := client.Authenticate()
-	assert.NotNil(t, err)
-	assert.Equal(t, "invalid character 's' looking for beginning of value", err.Error())
-
-	refreshErr := client.Refresh()
-	assert.NotNil(t, refreshErr)
-	assert.Equal(t, "invalid character 's' looking for beginning of value", refreshErr.Error())
-}
-
-func TestEDIAPIClient_Authenticate_Success(t *testing.T) {
-	hf := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "POST", r.Method)
-		assert.Equal(t, "application/x-www-form-urlencoded", r.Header.Get("Content-Type"))
-
-		body, _ := ioutil.ReadAll(r.Body)
-		assert.NotNil(t, body)
-
-		jsonResp := `
-		{
-			"access_token": "GJJGFDGJJGFGJHHJF",
-			"scope": "this.is.some.dummy.scope",
-			"token_type": "Bearer",
-			"expires_in": 3600,
-			"refresh_token": "YHGFDSETGJKHFDD"
-		}`
-		respBytes := []byte(jsonResp)
-		bytes, writeErr := w.Write(respBytes)
-		assert.Nil(t, writeErr)
-		assert.NotNil(t, bytes)
-	})
-	srv := httptest.NewServer(hf)
-	defer srv.Close()
-
-	cl := srv.Client()
-	client := ServerClient{
-		httpClient:       cl,
-		clientID:         "cidxxxxxxxxxxx",
-		clientSecret:     "csxxxxxxxxxxx",
-		grantType:        "password",
-		username:         "yusa@yusa.io",
-		password:         "the greatest Password in the world",
-		isInitialized:    true,
-		apiTokenURL:      srv.URL, // important, this invokes our test server!
-		apiHost:          "localhost",
-		authServerDomain: "localhost",
-		apiScheme:        "http",
-	}
-	err := client.Authenticate()
-	assert.Nil(t, err) // successful authentication
-
-	refreshErr := client.Refresh()
-	assert.Nil(t, refreshErr)
-}
-
-func TestEDIAPIClient_Authenticate_Failing_Preconditions(t *testing.T) {
-	client := ServerClient{
-		clientID:         "cidxxxxxxxxxxx",
-		clientSecret:     "csxxxxxxxxxxx",
-		grantType:        "password",
-		username:         "yusa@yusa.io",
-		password:         "the greatest Password in the world",
-		isInitialized:    true,
-		apiHost:          "", // bad value, will trigger preconditions check
-		authServerDomain: "localhost",
-		apiScheme:        "http",
-	}
-	err := client.Authenticate()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "is not a valid apiTokenURL, expected an http(s) UR")
-}
-
-func TestEDIAPIClient_Initialize_Failing_Postconditions(t *testing.T) {
-	hf := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "POST", r.Method)
-		assert.Equal(t, "application/x-www-form-urlencoded", r.Header.Get("Content-Type"))
-
-		body, _ := ioutil.ReadAll(r.Body)
-		assert.NotNil(t, body)
-
-		// the access_token is too short, will trigger a post-condition fail
-		jsonResp := `
-		{
-			"access_token": "x",
-			"scope": "this.is.some.dummy.scope",
-			"token_type": "Bearer",
-			"expires_in": 3600,
-			"refresh_token": "YHGFDSETGJKHFDD"
-		}`
-		respBytes := []byte(jsonResp)
-		bytes, writeErr := w.Write(respBytes)
-		assert.Nil(t, writeErr)
-		assert.NotNil(t, bytes)
-	})
-	srv := httptest.NewServer(hf)
-	defer srv.Close()
-
-	cl := srv.Client()
-	client := ServerClient{
-		httpClient:       cl,
-		clientID:         "cidxxxxxxxxxxx",
-		clientSecret:     "csxxxxxxxxxxx",
-		grantType:        "password",
-		username:         "yusa@yusa.io",
-		password:         "the greatest Password in the world",
-		isInitialized:    true,
-		apiTokenURL:      srv.URL, // important, this invokes our test server!
-		apiHost:          "localhost",
-		authServerDomain: "localhost",
-		apiScheme:        "http",
-	}
-	err := client.Initialize()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "invalid access token after EDIAPIClient initialization")
-}
-
-func TestNewEDIClient_Auth_Fail(t *testing.T) {
-	hf := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "POST", r.Method)
-		assert.Equal(t, "application/x-www-form-urlencoded", r.Header.Get("Content-Type"))
-
-		body, _ := ioutil.ReadAll(r.Body)
-		assert.NotNil(t, body)
-		w.WriteHeader(http.StatusInternalServerError) // 500 error response
-	})
-	srv := httptest.NewServer(hf)
-	defer srv.Close()
-
-	c := ServerClient{
-		clientID:         "SDFGHJKLOIUYG",
-		clientSecret:     "RTFFfghjfkjkhjkghkgfhadciuy",
-		apiTokenURL:      srv.URL,
-		authServerDomain: "localhost",
-		apiHost:          "localhost",
-		apiScheme:        "http",
-		grantType:        "password",
-		username:         "user@mail.com",
-		password:         "legit Password",
-	}
-	err := c.Initialize()
-	assert.NotNil(t, err)
-	assert.Equal(t, "server error status: 500", err.Error())
-}
-
-func TestEDIAPIClient_MakeRequest_Happy_Case(t *testing.T) {
-	hf := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method)
-		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
-		assert.Equal(t, "Bearer JHJKLHLKJHJKHKJHKJHKJ", r.Header.Get("Authorization"))
-
-		body, rErr := ioutil.ReadAll(r.Body)
-		assert.Nil(t, rErr)
-		assert.NotNil(t, body)
-		w.Header().Set("Content-Type", "application/json")
-
-		jsonOutput := `{"a": 1}`
-		bytes, wErr := w.Write([]byte(jsonOutput))
-		assert.Nil(t, wErr)
-		assert.Equal(t, len(jsonOutput), bytes)
-	})
-	srv := httptest.NewServer(hf)
-	defer srv.Close()
-
-	cl := srv.Client()
-	now := time.Now()
-	future := now.Add(time.Second * 3600)
-	client := ServerClient{
-		httpClient:    cl,
-		clientID:      "cid",
-		clientSecret:  "cs",
-		grantType:     "password",
-		username:      "yusa@yusa.io",
-		password:      "the greatest Password in the world",
-		isInitialized: true,
-		accessToken:   "JHJKLHLKJHJKHKJHKJHKJ",
-		refreshAt:     future,
-	}
-	// the request is sent to our test server at srv.URL
-	resp, err := client.MakeRequest("GET", srv.URL, strings.NewReader("stuff"))
-	log.Printf("%#v\n", err)
-	assert.Nil(t, err)
-	assert.Equal(t, "application/json", resp.Header.Get("Content-Type"))
-
-	respBody, readErr := ioutil.ReadAll(resp.Body)
-	assert.Nil(t, readErr)
-	assert.Equal(t, `{"a": 1}`, string(respBody))
-}
-
-func TestEDIAPIClient_MakeRequest_Wrong_Content_Type(t *testing.T) {
-	hf := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method)
-		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
-		assert.Equal(t, "Bearer JHJKLHLKJHJKHKJHKJHKJ", r.Header.Get("Authorization"))
-
-		body, rErr := ioutil.ReadAll(r.Body)
-		assert.Nil(t, rErr)
-		assert.NotNil(t, body)
-		w.Header().Set("Content-Type", "text/plain")
-
-		jsonOutput := `{"a": 1}`
-		bytes, wErr := w.Write([]byte(jsonOutput))
-		assert.Nil(t, wErr)
-		assert.Equal(t, len(jsonOutput), bytes)
-	})
-	srv := httptest.NewServer(hf)
-	defer srv.Close()
-
-	cl := srv.Client()
-	now := time.Now()
-	future := now.Add(time.Second * 3600)
-	client := ServerClient{
-		httpClient:    cl,
-		clientID:      "cid",
-		clientSecret:  "cs",
-		grantType:     "password",
-		username:      "yusa@yusa.io",
-		password:      "the greatest Password in the world",
-		isInitialized: true,
-		accessToken:   "JHJKLHLKJHJKHKJHKJHKJ",
-		refreshAt:     future,
-	}
-	// the request is sent to our test server at srv.URL
-	resp, err := client.MakeRequest("GET", srv.URL, strings.NewReader("stuff"))
-	log.Printf("%#v\n", err)
-	assert.NotNil(t, err)
-	assert.Equal(t, "expected application/json Content-Type, got text/plain", err.Error())
-	assert.Nil(t, resp)
-}
-
-func TestEDIAPIClient_MakeRequest_Client_Error(t *testing.T) {
-	hf := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method)
-		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
-		assert.Equal(t, "Bearer JHJKLHLKJHJKHKJHKJHKJ", r.Header.Get("Authorization"))
-
-		body, rErr := ioutil.ReadAll(r.Body)
-		assert.Nil(t, rErr)
-		assert.NotNil(t, body)
-		w.Header().Set("Content-Type", "text/plain")
-
-		panic(nil) // abort the request
-	})
-	srv := httptest.NewServer(hf)
-	defer srv.Close()
-
-	cl := srv.Client()
-	now := time.Now()
-	future := now.Add(time.Second * 3600)
-	client := ServerClient{
-		httpClient:    cl,
-		clientID:      "cid",
-		clientSecret:  "cs",
-		grantType:     "password",
-		username:      "yusa@yusa.io",
-		password:      "the greatest Password in the world",
-		isInitialized: true,
-		accessToken:   "JHJKLHLKJHJKHKJHKJHKJ",
-		refreshAt:     future,
-	}
-	// the request is sent to our test server at srv.URL
-	resp, err := client.MakeRequest("GET", srv.URL, strings.NewReader("stuff"))
-	log.Printf("%#v\n", err)
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), ": EOF")
-	assert.Nil(t, resp)
-}
-
-func TestEDIAPIClient_MakeRequest_Refresh_Needed_Succeeds(t *testing.T) {
-	ediHf := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method)
-		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
-		assert.Equal(t, "Bearer GJJGFDGJJGFGJHHJF", r.Header.Get("Authorization"))
-
-		body, rErr := ioutil.ReadAll(r.Body)
-		assert.Nil(t, rErr)
-		assert.NotNil(t, body)
-		w.Header().Set("Content-Type", "application/json")
-
-		jsonOutput := `{"a": 1}`
-		bytes, wErr := w.Write([]byte(jsonOutput))
-		assert.Nil(t, wErr)
-		assert.Equal(t, len(jsonOutput), bytes)
-	})
-	ediSrv := httptest.NewServer(ediHf)
-	defer ediSrv.Close()
-
-	// authentication and refresh should succeed
-	authHF := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "POST", r.Method)
-		assert.Equal(t, "application/x-www-form-urlencoded", r.Header.Get("Content-Type"))
-
-		body, _ := ioutil.ReadAll(r.Body)
-		assert.NotNil(t, body)
-
-		jsonResp := `
-		{
-			"access_token": "GJJGFDGJJGFGJHHJF",
-			"scope": "this.is.some.dummy.scope",
-			"token_type": "Bearer",
-			"expires_in": 3600,
-			"refresh_token": "YHGFDSETGJKHFDD"
-		}`
-		respBytes := []byte(jsonResp)
-		bytes, writeErr := w.Write(respBytes)
-		assert.Nil(t, writeErr)
-		assert.NotNil(t, bytes)
-	})
-	authSrv := httptest.NewServer(authHF)
-	defer authSrv.Close()
-
-	cl := ediSrv.Client()
-	now := time.Now()
-	past := now.Add(time.Second * -3600)
-	assert.Less(t, past.UnixNano(), now.UnixNano())
-	client := ServerClient{
-		httpClient:    cl,
-		clientID:      "cid",
-		clientSecret:  "cs",
-		grantType:     "password",
-		username:      "yusa@yusa.io",
-		password:      "the greatest Password in the world",
-		isInitialized: true,
-		accessToken:   "GJJGFDGJJGFGJHHJF",
-		refreshAt:     past,
-		apiTokenURL:   authSrv.URL,
-	}
-	// the request is sent to our test server at ediSrv.URL
-	resp, err := client.MakeRequest("GET", ediSrv.URL, strings.NewReader("stuff"))
-	log.Printf("%#v\n", err)
-	assert.Nil(t, err)
-	assert.Equal(t, "application/json", resp.Header.Get("Content-Type"))
-
-	respBody, readErr := ioutil.ReadAll(resp.Body)
-	assert.Nil(t, readErr)
-	assert.Equal(t, `{"a": 1}`, string(respBody))
-}
-
-func TestEDIAPIClient_MakeRequest_Refresh_Needed_Error(t *testing.T) {
-	ediHf := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		jsonOutput := `{"a": 1}`
-		bytes, wErr := w.Write([]byte(jsonOutput))
-		assert.Nil(t, wErr)
-		assert.Equal(t, len(jsonOutput), bytes)
-	})
-	ediSrv := httptest.NewServer(ediHf)
-	defer ediSrv.Close()
-
-	// authentication and refresh should succeed
-	authHF := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		panic(nil)
-	})
-	authSrv := httptest.NewServer(authHF)
-	defer authSrv.Close()
-
-	cl := ediSrv.Client()
-	now := time.Now()
-	past := now.Add(time.Second * -3600)
-	assert.Less(t, past.UnixNano(), now.UnixNano())
-	client := ServerClient{
-		httpClient:    cl,
-		clientID:      "cid",
-		clientSecret:  "cs",
-		grantType:     "password",
-		username:      "yusa@yusa.io",
-		password:      "the greatest Password in the world",
-		isInitialized: true,
-		accessToken:   "GJJGFDGJJGFGJHHJF",
-		refreshAt:     past,
-		apiTokenURL:   authSrv.URL,
-	}
-	// the request is sent to our test server at ediSrv.URL
-	resp, err := client.MakeRequest("GET", ediSrv.URL, strings.NewReader("stuff"))
-	log.Printf("%#v\n", err)
-	assert.NotNil(t, err)
-	assert.Nil(t, resp)
-	assert.Contains(t, err.Error(), ": EOF")
-}
-
-func TestEDIAPIClient_MeURL(t *testing.T) {
-	// invalid URL test case first
-	badURL := "\t[@]<>{}^|\n"
-	c := ServerClient{apiTokenURL: badURL}
-	url, err := c.MeURL()
-	assert.NotNil(t, err)
-	assert.Equal(t, "", url)
-	assert.Contains(t, err.Error(), "invalid control character in URL")
-
-	// valid URL
-	validURL := "https://accounts-core.release.slade360.co.ke/oauth2/token/"
-	c1 := ServerClient{apiTokenURL: validURL}
-	goodURL, goodERR := c1.MeURL()
-	assert.Nil(t, goodERR)
-	assert.Equal(t, "https://accounts-core.release.slade360.co.ke/v1/user/me/?format=json", goodURL)
-}
-
-func TestEDIAPIClient_RefreshAt(t *testing.T) {
-	now := time.Now()
-	c := ServerClient{refreshAt: now}
-	assert.Equal(t, now, c.RefreshAt())
-}
-
-func TestEDIAPIClient_HTTPClient(t *testing.T) {
-	c := ServerClient{httpClient: http.DefaultClient}
-	assert.Equal(t, http.DefaultClient, c.HTTPClient())
-}
-
-func TestEDIAPIClient_Refresh_Uninitialized_Client(t *testing.T) {
-	c := ServerClient{isInitialized: false}
-	err := c.Refresh()
-	assert.NotNil(t, err)
-	assert.Equal(t, "cannot Refresh API tokens on an uninitialized client", err.Error())
-}
-
-func TestEDIAPIClient_Refresh_Client_Error(t *testing.T) {
-	hf := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		panic(nil) // abort the request, causing a refresh error
-	})
-	srv := httptest.NewServer(hf)
-	defer srv.Close()
-	cl := srv.Client()
-	c := ServerClient{
-		httpClient:    cl,
-		clientID:      "cid",
-		clientSecret:  "cs",
-		grantType:     "password",
-		username:      "yusa@yusa.io",
-		password:      "the greatest Password in the world",
-		isInitialized: true,
-		apiTokenURL:   srv.URL, // important, this invokes our test server!
-	}
-	err := c.Refresh()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), ": EOF")
-}
-
-func TestEDIAPIClient_MakeRequest_Invalid_URL(t *testing.T) {
-	c := ServerClient{
-		isInitialized: true,
-		refreshAt:     time.Now().Add(time.Second * 3600),
-	}
-	badURL := "\n\t\r"
-	resp, err := c.MakeRequest("GET", badURL, strings.NewReader("dummy"))
-	assert.Nil(t, resp)
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "net/url: invalid control character in URL")
+	assert.InDelta(t, refreshTime.UnixNano(), c.RefreshAt().UnixNano(), 1_000_000_000, "allow up to one second of delta")
+	assert.Equal(t, true, c.IsInitialized())
 }
 
 func TestComposeAPIURL(t *testing.T) {
-
-	clientID := MustGetEnvVar("CLIENT_ID")
-	clientSecret := MustGetEnvVar("CLIENT_SECRET")
-	username := MustGetEnvVar("USERNAME")
-	password := MustGetEnvVar("PASSWORD")
-	grantType := MustGetEnvVar("GRANT_TYPE")
-	apiScheme := MustGetEnvVar("API_SCHEME")
-	apiTokenURL := MustGetEnvVar("TOKEN_URL")
-	apiHost := MustGetEnvVar("HOST")
-	customHeader := MustGetEnvVar("DEFAULT_WORKSTATION_ID")
+	clientID := base.MustGetEnvVar(base.ClientIDEnvVarName)
+	clientSecret := base.MustGetEnvVar(base.ClientSecretEnvVarName)
+	username := base.MustGetEnvVar(base.UsernameEnvVarName)
+	password := base.MustGetEnvVar(base.PasswordEnvVarName)
+	grantType := base.MustGetEnvVar(base.GrantTypeEnvVarName)
+	apiScheme := base.MustGetEnvVar(base.APISchemeEnvVarName)
+	apiTokenURL := base.MustGetEnvVar(base.TokenURLEnvVarName)
+	apiHost := base.MustGetEnvVar(base.APIHostEnvVarName)
+	workstationID := base.MustGetEnvVar(base.WorkstationEnvVarName)
 	extraHeaders := map[string]string{
-		"X-WORKSTATION": customHeader,
+		base.WorkstationHeaderName: workstationID,
 	}
-	client, err := NewServerClient(
+	client, err := base.NewServerClient(
 		clientID,
 		clientSecret,
 		apiTokenURL,
@@ -1358,7 +496,7 @@ func TestComposeAPIURL(t *testing.T) {
 	assert.NotNil(t, client)
 
 	type args struct {
-		client Client
+		client base.Client
 		path   string
 		query  string
 	}
@@ -1379,7 +517,7 @@ func TestComposeAPIURL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ComposeAPIURL(tt.args.client, tt.args.path, tt.args.query); got != tt.want {
+			if got := base.ComposeAPIURL(tt.args.client, tt.args.path, tt.args.query); got != tt.want {
 				t.Errorf("ComposeAPIURL() = %v, want %v", got, tt.want)
 			}
 		})
@@ -1388,23 +526,23 @@ func TestComposeAPIURL(t *testing.T) {
 
 func TestGetAccessToken(t *testing.T) {
 	// see the README for more guidance on these env vars
-	clientID := MustGetEnvVar("CLIENT_ID")
-	clientSecret := MustGetEnvVar("CLIENT_SECRET")
-	username := MustGetEnvVar("USERNAME")
-	password := MustGetEnvVar("PASSWORD")
-	grantType := MustGetEnvVar("GRANT_TYPE")
-	apiScheme := MustGetEnvVar("API_SCHEME")
-	apiTokenURL := MustGetEnvVar("TOKEN_URL")
-	apiHost := MustGetEnvVar("HOST")
+	clientID := base.MustGetEnvVar(base.ClientIDEnvVarName)
+	clientSecret := base.MustGetEnvVar(base.ClientSecretEnvVarName)
+	username := base.MustGetEnvVar(base.UsernameEnvVarName)
+	password := base.MustGetEnvVar(base.PasswordEnvVarName)
+	grantType := base.MustGetEnvVar(base.GrantTypeEnvVarName)
+	apiScheme := base.MustGetEnvVar(base.APISchemeEnvVarName)
+	apiTokenURL := base.MustGetEnvVar(base.TokenURLEnvVarName)
+	apiHost := base.MustGetEnvVar(base.APIHostEnvVarName)
 
 	tests := []struct {
 		name    string
-		args    *ClientServerOptions
+		args    *base.ClientServerOptions
 		wantErr bool
 	}{
 		{
 			name: "valid credentials",
-			args: &ClientServerOptions{
+			args: &base.ClientServerOptions{
 				ClientID:     clientID,
 				ClientSecret: clientSecret,
 				APITokenURL:  apiTokenURL,
@@ -1418,7 +556,7 @@ func TestGetAccessToken(t *testing.T) {
 		},
 		{
 			name: "invalid credentials",
-			args: &ClientServerOptions{
+			args: &base.ClientServerOptions{
 				ClientID:     clientID,
 				ClientSecret: clientSecret,
 				APITokenURL:  apiTokenURL,
@@ -1433,7 +571,7 @@ func TestGetAccessToken(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			token, err := GetAccessToken(tt.args)
+			token, err := base.GetAccessToken(tt.args)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAccessToken() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1453,27 +591,133 @@ func TestNewPostRequest(t *testing.T) {
 		timeoutDuration int
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    *http.Response
-		wantErr bool
+		name string
+		args args
+		want *http.Response
 	}{
 		{
 			name: "Test post request returns an error",
 			args: args{
-				url: "/some url",
-				values: url.Values{"data": []string{"dummy data"}},
-				headers: map[string]string{"Content-Type": "application/json"},
+				url:             "/some url",
+				values:          url.Values{"data": []string{"dummy data"}},
+				headers:         map[string]string{"Content-Type": "application/json"},
 				timeoutDuration: 200,
+			},
+		},
+		{
+			name: "invalid URL",
+			args: args{
+				url:             "this is not a real URL",
+				values:          url.Values{"data": []string{"dummy data"}},
+				headers:         map[string]string{"Content-Type": "application/json"},
+				timeoutDuration: 200,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			payload, err := base.NewPostRequest(tt.args.url, tt.args.values, tt.args.headers, tt.args.timeoutDuration)
+			assert.Nil(t, payload)
+			assert.NotNil(t, err)
+		})
+	}
+}
+
+func TestServerClient_MeURL(t *testing.T) {
+	// badly initialized client
+	badClient, err := base.NewServerClient(
+		base.MustGetEnvVar(base.ClientIDEnvVarName),
+		base.MustGetEnvVar(base.ClientSecretEnvVarName),
+		"this is not a valid url",
+		base.MustGetEnvVar(base.APIHostEnvVarName),
+		base.MustGetEnvVar(base.APISchemeEnvVarName),
+		base.MustGetEnvVar(base.GrantTypeEnvVarName),
+		base.MustGetEnvVar(base.UsernameEnvVarName),
+		base.MustGetEnvVar(base.PasswordEnvVarName),
+		map[string]string{
+			base.WorkstationHeaderName: base.MustGetEnvVar(base.WorkstationEnvVarName),
+		},
+	)
+	assert.NotNil(t, err)
+	assert.Nil(t, badClient)
+
+	// properly initialized client
+	goodClient, err := base.NewServerClient(
+		base.MustGetEnvVar(base.ClientIDEnvVarName),
+		base.MustGetEnvVar(base.ClientSecretEnvVarName),
+		base.MustGetEnvVar(base.TokenURLEnvVarName),
+		base.MustGetEnvVar(base.APIHostEnvVarName),
+		base.MustGetEnvVar(base.APISchemeEnvVarName),
+		base.MustGetEnvVar(base.GrantTypeEnvVarName),
+		base.MustGetEnvVar(base.UsernameEnvVarName),
+		base.MustGetEnvVar(base.PasswordEnvVarName),
+		map[string]string{
+			base.WorkstationHeaderName: base.MustGetEnvVar(base.WorkstationEnvVarName),
+		},
+	)
+	assert.Nil(t, err)
+	assert.NotNil(t, goodClient)
+	got, err := goodClient.MeURL()
+	assert.Nil(t, err)
+	assert.Equal(t, "https://auth.healthcloud.co.ke/v1/user/me/?format=json", got)
+}
+
+func TestDefaultServerClient(t *testing.T) {
+	client, err := base.DefaultServerClient()
+	assert.Nil(t, err)
+	assert.NotNil(t, client)
+}
+
+func TestCheckAPIClientPostConditions(t *testing.T) {
+	goodClient, err := base.DefaultServerClient()
+	assert.Nil(t, err)
+	assert.NotNil(t, goodClient)
+
+	type args struct {
+		client base.Client
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "valid client",
+			args: args{
+				client: goodClient,
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid client - no access token",
+			args: args{
+				client: &base.ServerClient{},
 			},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			payload, err := NewPostRequest(tt.args.url, tt.args.values, tt.args.headers, tt.args.timeoutDuration)
-			assert.Nil(t,payload)
-			assert.NotNil(t, err)
+			if err := base.CheckAPIClientPostConditions(tt.args.client); (err != nil) != tt.wantErr {
+				t.Errorf("CheckAPIClientPostConditions() error = %v, wantErr %v", err, tt.wantErr)
+			}
 		})
 	}
+}
+
+func TestServerClient_HTTPClient(t *testing.T) {
+	c, err := base.DefaultServerClient()
+	assert.Nil(t, err)
+	assert.NotNil(t, c)
+
+	assert.NotNil(t, c.HTTPClient())
+}
+
+func TestServerClient_Refresh(t *testing.T) {
+	c, err := base.DefaultServerClient()
+	assert.Nil(t, err)
+	assert.NotNil(t, c)
+
+	err = c.Refresh()
+	assert.Nil(t, err)
 }

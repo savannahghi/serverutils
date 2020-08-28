@@ -169,12 +169,12 @@ func (c *MockClient) Password() string {
 	return c.password
 }
 
-// updateAuth applies values from the supplied OAUTHResponse to the mock client through a configured mock function
-func (c *MockClient) updateAuth(authResp *OAUTHResponse) {
+// UpdateAuth applies values from the supplied OAUTHResponse to the mock client through a configured mock function
+func (c *MockClient) UpdateAuth(authResp *OAUTHResponse) {
 	c.oauthRespUpdateFunc(authResp)
 }
 
-// setInitialized sets the value of the isInitialized boolean on the mock
-func (c *MockClient) setInitialized(isInitialized bool) {
+// SetInitialized sets the value of the isInitialized boolean on the mock
+func (c *MockClient) SetInitialized(isInitialized bool) {
 	c.Initialized = isInitialized
 }
