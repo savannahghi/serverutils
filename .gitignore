@@ -1,5 +1,5 @@
 env.sh
 *env.sh
-coverage.txt
 .vscode/
 venv/
+coverage.*

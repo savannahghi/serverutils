@@ -3,7 +3,6 @@ package base
 import (
 	"fmt"
 	"io"
-	"log"
 	"strconv"
 )
 
@@ -57,7 +56,7 @@ func (e *Gender) UnmarshalGQL(v interface{}) error {
 
 // MarshalGQL writes the enum value to the supplied writer
 func (e Gender) MarshalGQL(w io.Writer) {
-	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 // FieldType is used to represent the GraphQL enum that is used for filter parameters
@@ -120,7 +119,7 @@ func (e *FieldType) UnmarshalGQL(v interface{}) error {
 
 // MarshalGQL serializes the enum value to the supplied writer
 func (e FieldType) MarshalGQL(w io.Writer) {
-	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 // Operation is used to map to a gqlgen (GraphQL) enum that defines filter/comparison operations
@@ -192,7 +191,7 @@ func (e *Operation) UnmarshalGQL(v interface{}) error {
 
 // MarshalGQL writes the enum value to the supplied writer
 func (e Operation) MarshalGQL(w io.Writer) {
-	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 // SortOrder is used to represent map sort directions to a GraphQl enum
@@ -243,7 +242,7 @@ func (e *SortOrder) UnmarshalGQL(v interface{}) error {
 
 // MarshalGQL writes the sort order to the supplied writer as a quoted string
 func (e SortOrder) MarshalGQL(w io.Writer) {
-	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 // ContentType defines accepted content types
@@ -292,10 +291,8 @@ func (e *ContentType) UnmarshalGQL(v interface{}) error {
 
 // MarshalGQL writes the value of this enum to the supplied writer
 func (e ContentType) MarshalGQL(w io.Writer) {
-	_, err := fmt.Fprint(w, strconv.Quote(e.String()))
-	if err != nil {
-		log.Printf("%v\n", err)
-	}
+	fmt.Fprint(w, strconv.Quote(e.String()))
+
 }
 
 // Language defines allowed languages for uploads
@@ -354,10 +351,8 @@ func (e *Language) UnmarshalGQL(v interface{}) error {
 
 // MarshalGQL writes the value of this enum to the supplied writer
 func (e Language) MarshalGQL(w io.Writer) {
-	_, err := fmt.Fprint(w, strconv.Quote(e.String()))
-	if err != nil {
-		log.Printf("%v\n", err)
-	}
+	fmt.Fprint(w, strconv.Quote(e.String()))
+
 }
 
 // PractitionerSpecialty is a list of recognised health worker specialties.
@@ -466,8 +461,515 @@ func (e *PractitionerSpecialty) UnmarshalGQL(v interface{}) error {
 
 // MarshalGQL writes the practitioner specialty to the supplied writer
 func (e PractitionerSpecialty) MarshalGQL(w io.Writer) {
-	_, err := fmt.Fprint(w, strconv.Quote(e.String()))
-	if err != nil {
-		log.Printf("%v\n", err)
+	fmt.Fprint(w, strconv.Quote(e.String()))
+
+}
+
+// IDDocumentType is an internal code system for identification document types.
+type IDDocumentType string
+
+// ID type constants
+const (
+	// IDDocumentTypeNationalID ...
+	IDDocumentTypeNationalID IDDocumentType = "national_id"
+	// IDDocumentTypePassport ...
+	IDDocumentTypePassport IDDocumentType = "passport"
+	// IDDocumentTypeAlienID ...
+	IDDocumentTypeAlienID IDDocumentType = "alien_id"
+)
+
+// AllIDDocumentType is a list of known ID types
+var AllIDDocumentType = []IDDocumentType{
+	IDDocumentTypeNationalID,
+	IDDocumentTypePassport,
+	IDDocumentTypeAlienID,
+}
+
+// IsValid checks that the ID type is valid
+func (e IDDocumentType) IsValid() bool {
+	switch e {
+	case IDDocumentTypeNationalID, IDDocumentTypePassport, IDDocumentTypeAlienID:
+		return true
 	}
+	return false
+}
+
+// String ...
+func (e IDDocumentType) String() string {
+	return string(e)
+}
+
+// UnmarshalGQL translates the input value to an ID type
+func (e *IDDocumentType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = IDDocumentType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid IDDocumentType", str)
+	}
+	return nil
+}
+
+// MarshalGQL writes the enum value to the supplied writer
+func (e IDDocumentType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+
+}
+
+// MaritalStatus is used to code individuals' marital statuses.
+//
+// See: https://www.hl7.org/fhir/valueset-marital-status.html
+type MaritalStatus string
+
+// known marital statuses
+const (
+	// MaritalStatusA ...
+	MaritalStatusA MaritalStatus = "A"
+	// MaritalStatusD ...
+	MaritalStatusD MaritalStatus = "D"
+	// MaritalStatusI ...
+	MaritalStatusI MaritalStatus = "I"
+	// MaritalStatusL ...
+	MaritalStatusL MaritalStatus = "L"
+	// MaritalStatusM ...
+	MaritalStatusM MaritalStatus = "M"
+	// MaritalStatusP ...
+	MaritalStatusP MaritalStatus = "P"
+	// MaritalStatusS ...
+	MaritalStatusS MaritalStatus = "S"
+	// MaritalStatusT ...
+	MaritalStatusT MaritalStatus = "T"
+	// MaritalStatusU ...
+	MaritalStatusU MaritalStatus = "U"
+	// MaritalStatusW ...
+	MaritalStatusW MaritalStatus = "W"
+	// MaritalStatusUnk ...
+	MaritalStatusUnk MaritalStatus = "UNK"
+)
+
+// AllMaritalStatus is a list of known marital statuses
+var AllMaritalStatus = []MaritalStatus{
+	MaritalStatusA,
+	MaritalStatusD,
+	MaritalStatusI,
+	MaritalStatusL,
+	MaritalStatusM,
+	MaritalStatusP,
+	MaritalStatusS,
+	MaritalStatusT,
+	MaritalStatusU,
+	MaritalStatusW,
+	MaritalStatusUnk,
+}
+
+// IsValid checks that the marital status is valid
+func (e MaritalStatus) IsValid() bool {
+	switch e {
+	case MaritalStatusA, MaritalStatusD, MaritalStatusI, MaritalStatusL, MaritalStatusM, MaritalStatusP, MaritalStatusS, MaritalStatusT, MaritalStatusU, MaritalStatusW, MaritalStatusUnk:
+		return true
+	}
+	return false
+}
+
+// String ...
+func (e MaritalStatus) String() string {
+	return string(e)
+}
+
+// UnmarshalGQL turns the supplied input into a marital status enum value
+func (e *MaritalStatus) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = MaritalStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid MaritalStatus", str)
+	}
+	return nil
+}
+
+// MarshalGQL writes the enum value to the supplied writer
+func (e MaritalStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+// RelationshipType defines relationship types for patients.
+//
+// See: https://www.hl7.org/fhir/valueset-relatedperson-relationshiptype.html
+type RelationshipType string
+
+// list of known relationship types
+const (
+	// RelationshipTypeC ...
+	RelationshipTypeC RelationshipType = "C"
+	// RelationshipTypeE ...
+	RelationshipTypeE RelationshipType = "E"
+	// RelationshipTypeF ...
+	RelationshipTypeF RelationshipType = "F"
+	// RelationshipTypeI ...
+	RelationshipTypeI RelationshipType = "I"
+	// RelationshipTypeN ...
+	RelationshipTypeN RelationshipType = "N"
+	// RelationshipTypeO ...
+	RelationshipTypeO RelationshipType = "O"
+	// RelationshipTypeS ...
+	RelationshipTypeS RelationshipType = "S"
+	// RelationshipTypeU ...
+	RelationshipTypeU RelationshipType = "U"
+)
+
+// AllRelationshipType is a list of all known relationship types
+var AllRelationshipType = []RelationshipType{
+	RelationshipTypeC,
+	RelationshipTypeE,
+	RelationshipTypeF,
+	RelationshipTypeI,
+	RelationshipTypeN,
+	RelationshipTypeO,
+	RelationshipTypeS,
+	RelationshipTypeU,
+}
+
+// IsValid ensures that the relationship type is valid
+func (e RelationshipType) IsValid() bool {
+	switch e {
+	case RelationshipTypeC, RelationshipTypeE, RelationshipTypeF, RelationshipTypeI, RelationshipTypeN, RelationshipTypeO, RelationshipTypeS, RelationshipTypeU:
+		return true
+	}
+	return false
+}
+
+// String ...
+func (e RelationshipType) String() string {
+	return string(e)
+}
+
+// UnmarshalGQL converts its input (if valid) into a relationship type
+func (e *RelationshipType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = RelationshipType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid RelationshipType", str)
+	}
+	return nil
+}
+
+// MarshalGQL writes the relationship type to the supplied writer
+func (e RelationshipType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+// IdentifierUse is a code system for identifier uses.
+//
+// See: https://www.hl7.org/fhir/valueset-identifier-use.html
+type IdentifierUse string
+
+// known identifier use values
+const (
+	// IdentifierUseUsual ...
+	IdentifierUseUsual IdentifierUse = "usual"
+	// IdentifierUseOfficial ...
+	IdentifierUseOfficial IdentifierUse = "official"
+	// IdentifierUseTemp ...
+	IdentifierUseTemp IdentifierUse = "temp"
+	// IdentifierUseSecondary ...
+	IdentifierUseSecondary IdentifierUse = "secondary"
+	// IdentifierUseOld ...
+	IdentifierUseOld IdentifierUse = "old"
+)
+
+// AllIdentifierUse is a list of all known identifier uses
+var AllIdentifierUse = []IdentifierUse{
+	IdentifierUseUsual,
+	IdentifierUseOfficial,
+	IdentifierUseTemp,
+	IdentifierUseSecondary,
+	IdentifierUseOld,
+}
+
+// IsValid returns True if the enum value is valid
+func (e IdentifierUse) IsValid() bool {
+	switch e {
+	case IdentifierUseUsual, IdentifierUseOfficial, IdentifierUseTemp, IdentifierUseSecondary, IdentifierUseOld:
+		return true
+	}
+	return false
+}
+
+// String ...
+func (e IdentifierUse) String() string {
+	return string(e)
+}
+
+// UnmarshalGQL translates from the supplied value to a valid enum value
+func (e *IdentifierUse) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = IdentifierUse(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid IdentifierUse", str)
+	}
+	return nil
+}
+
+// MarshalGQL writes the enum value to the supplied writer
+func (e IdentifierUse) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+// ContactPointSystem defines the type of contact it is.
+//
+// See: http://hl7.org/fhir/valueset-contact-point-system.html
+type ContactPointSystem string
+
+// known contact systems
+const (
+	// ContactPointSystemPhone ...
+	ContactPointSystemPhone ContactPointSystem = "phone"
+	// ContactPointSystemFax ...
+	ContactPointSystemFax ContactPointSystem = "fax"
+	// ContactPointSystemEmail ...
+	ContactPointSystemEmail ContactPointSystem = "email"
+	// ContactPointSystemPager ...
+	ContactPointSystemPager ContactPointSystem = "pager"
+	// ContactPointSystemURL ...
+	ContactPointSystemURL ContactPointSystem = "url"
+	// ContactPointSystemSms ...
+	ContactPointSystemSms ContactPointSystem = "sms"
+	// ContactPointSystemOther ...
+	ContactPointSystemOther ContactPointSystem = "other"
+)
+
+// AllContactPointSystem is a list of known contact systems
+var AllContactPointSystem = []ContactPointSystem{
+	ContactPointSystemPhone,
+	ContactPointSystemFax,
+	ContactPointSystemEmail,
+	ContactPointSystemPager,
+	ContactPointSystemURL,
+	ContactPointSystemSms,
+	ContactPointSystemOther,
+}
+
+// IsValid checks that the contact system is valid
+func (e ContactPointSystem) IsValid() bool {
+	switch e {
+	case ContactPointSystemPhone, ContactPointSystemFax, ContactPointSystemEmail, ContactPointSystemPager, ContactPointSystemURL, ContactPointSystemSms, ContactPointSystemOther:
+		return true
+	}
+	return false
+}
+
+// String ...
+func (e ContactPointSystem) String() string {
+	return string(e)
+}
+
+// UnmarshalGQL converts the supplied value to a contact point system
+func (e *ContactPointSystem) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ContactPointSystem(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ContactPointSystem", str)
+	}
+	return nil
+}
+
+// MarshalGQL writes the enum value to the supplied writer
+func (e ContactPointSystem) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+// ContactPointUse defines the uses of a contact.
+//
+// See: https://www.hl7.org/fhir/valueset-contact-point-use.html
+type ContactPointUse string
+
+// contact point uses
+const (
+	// ContactPointUseHome ...
+	ContactPointUseHome ContactPointUse = "home"
+	// ContactPointUseWork ...
+	ContactPointUseWork ContactPointUse = "work"
+	// ContactPointUseTemp ...
+	ContactPointUseTemp ContactPointUse = "temp"
+	// ContactPointUseOld ...
+	ContactPointUseOld ContactPointUse = "old"
+	// ContactPointUseMobile ...
+	ContactPointUseMobile ContactPointUse = "mobile"
+)
+
+// AllContactPointUse is a list of known contact point uses
+var AllContactPointUse = []ContactPointUse{
+	ContactPointUseHome,
+	ContactPointUseWork,
+	ContactPointUseTemp,
+	ContactPointUseOld,
+	ContactPointUseMobile,
+}
+
+// IsValid checks that the enum value is valid
+func (e ContactPointUse) IsValid() bool {
+	switch e {
+	case ContactPointUseHome, ContactPointUseWork, ContactPointUseTemp, ContactPointUseOld, ContactPointUseMobile:
+		return true
+	}
+	return false
+}
+
+// String ...
+func (e ContactPointUse) String() string {
+	return string(e)
+}
+
+// UnmarshalGQL converts the supplied interface to a contact point use value
+func (e *ContactPointUse) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ContactPointUse(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ContactPointUse", str)
+	}
+	return nil
+}
+
+// MarshalGQL writes the enum value to the supplied writer
+func (e ContactPointUse) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+// NameUse is used to define the uses of a human name.
+//
+// See: https://www.hl7.org/fhir/valueset-name-use.html
+type NameUse string
+
+// known name uses
+const (
+	// NameUseUsual ...
+	NameUseUsual NameUse = "usual"
+	// NameUseOfficial ...
+	NameUseOfficial NameUse = "official"
+	// NameUseTemp ...
+	NameUseTemp NameUse = "temp"
+	// NameUseNickname ...
+	NameUseNickname NameUse = "nickname"
+	// NameUseAnonymous ...
+	NameUseAnonymous NameUse = "anonymous"
+	// NameUseOld ...
+	NameUseOld NameUse = "old"
+	// NameUseMaiden ...
+	NameUseMaiden NameUse = "maiden"
+)
+
+// AllNameUse is a list of known name uses
+var AllNameUse = []NameUse{
+	NameUseUsual,
+	NameUseOfficial,
+	NameUseTemp,
+	NameUseNickname,
+	NameUseAnonymous,
+	NameUseOld,
+	NameUseMaiden,
+}
+
+// IsValid checks that the name use is valid
+func (e NameUse) IsValid() bool {
+	switch e {
+	case NameUseUsual, NameUseOfficial, NameUseTemp, NameUseNickname, NameUseAnonymous, NameUseOld, NameUseMaiden:
+		return true
+	}
+	return false
+}
+
+// String ...
+func (e NameUse) String() string {
+	return string(e)
+}
+
+// UnmarshalGQL turns the supplied value into a name use enum
+func (e *NameUse) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = NameUse(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid NameUse", str)
+	}
+	return nil
+}
+
+// MarshalGQL writes the name use enum value to the supplied writer
+func (e NameUse) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+// CalendarView is used to determine what view of a calendar to render
+type CalendarView string
+
+// calendar view constants
+const (
+	// CalendarViewDay ...
+	CalendarViewDay CalendarView = "DAY"
+	// CalendarViewWeek ...
+	CalendarViewWeek CalendarView = "WEEK"
+)
+
+// AllCalendarView is a list of calendar views
+var AllCalendarView = []CalendarView{
+	CalendarViewDay,
+	CalendarViewWeek,
+}
+
+// IsValid returns true if a calendar view is valid
+func (e CalendarView) IsValid() bool {
+	switch e {
+	case CalendarViewDay, CalendarViewWeek:
+		return true
+	}
+	return false
+}
+
+// String ...
+func (e CalendarView) String() string {
+	return string(e)
+}
+
+// UnmarshalGQL converts the input value into a calendar view
+func (e *CalendarView) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = CalendarView(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid CalendarView", str)
+	}
+	return nil
+}
+
+// MarshalGQL writes the calendar view value to the supplied writer
+func (e CalendarView) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }

@@ -31,7 +31,6 @@ enum Language {
   sw
 }
 
-
 """
 PractitionerSpecialties is a list of recognised health worker specialties.
 
@@ -73,7 +72,7 @@ enum PractitionerSpecialty {
 }
 
 # Relay spec page info
-type PageInfo {
+type PageInfo @key(fields: "hasNextPage") @key(fields: "hasPreviousPage") {
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
   startCursor: String

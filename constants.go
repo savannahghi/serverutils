@@ -121,4 +121,7 @@ const (
 
 	// HTTP client settings
 	HTTPClientTimeoutSecs = 10
+
+	//RootCollectionSuffix ...
+	RootCollectionSuffix = "ROOT_COLLECTION_SUFFIX"
 )
