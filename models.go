@@ -18,10 +18,16 @@ type PaginationInput struct {
 	Before string `json:"before"`
 }
 
+//IsEntity ...
+func (p PaginationInput) IsEntity() {}
+
 // SortInput is a generic container for strongly typed sorting parameters
 type SortInput struct {
 	SortBy []*SortParam `json:"sortBy"`
 }
+
+//IsEntity ...
+func (s SortInput) IsEntity() {}
 
 // SortParam represents a single field sort parameter
 type SortParam struct {
@@ -29,11 +35,17 @@ type SortParam struct {
 	SortOrder SortOrder `json:"sortOrder"`
 }
 
+//IsEntity ...
+func (s SortParam) IsEntity() {}
+
 // FilterInput is s generic container for strongly type filter parameters
 type FilterInput struct {
 	Search   *string        `json:"search"`
 	FilterBy []*FilterParam `json:"filterBy"`
 }
+
+//IsEntity ...
+func (f FilterInput) IsEntity() {}
 
 // FilterParam represents a single field filter parameter
 type FilterParam struct {
@@ -43,11 +55,17 @@ type FilterParam struct {
 	FieldValue          interface{} `json:"fieldValue"`
 }
 
+//IsEntity ...
+func (f FilterParam) IsEntity() {}
+
 // PhoneOptIn is used to persist and manage phone communication whitelists
 type PhoneOptIn struct {
 	MSISDN  string `json:"msisdn" firestore:"msisdn"`
 	OptedIn bool   `json:"optedIn" firestore:"optedIn"`
 }
+
+//IsEntity ...
+func (p PhoneOptIn) IsEntity() {}
 
 // USSDSessionLog is used to persist a log of USSD sessions
 type USSDSessionLog struct {
@@ -55,11 +73,17 @@ type USSDSessionLog struct {
 	SessionID string `json:"sessionID" firestore:"sessionID"`
 }
 
+//IsEntity ...
+func (p USSDSessionLog) IsEntity() {}
+
 // EmailOptIn is used to persist and manage email communication whitelists
 type EmailOptIn struct {
 	Email   string `json:"email" firestore:"optedIn"`
 	OptedIn bool   `json:"optedIn" firestore:"optedIn"`
 }
+
+//IsEntity ...
+func (e EmailOptIn) IsEntity() {}
 
 // SladeAPIListRespBase defines the fields that are common on list endpoints
 // for Slade 360 APIs
@@ -79,6 +103,9 @@ type LoginCreds struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
+
+//IsEntity ...
+func (l LoginCreds) IsEntity() {}
 
 type setupProcess struct {
 	Progress        int           `json:"progress"`
@@ -108,15 +135,24 @@ type LoginResponse struct {
 	Setup         *setupProcess   `json:"setup,omitempty"`
 }
 
+//IsEntity ...
+func (l LoginResponse) IsEntity() {}
+
 // RefreshCreds models the inputs expected from an API client when refreshing tokens
 type RefreshCreds struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+//IsEntity ...
+func (r RefreshCreds) IsEntity() {}
+
 // LogoutRequest models the inputs expected from an API client when requesting a log out
 type LogoutRequest struct {
 	UID string `json:"uid"`
 }
+
+//IsEntity ...
+func (l LogoutRequest) IsEntity() {}
 
 // EDIUserProfile is used to (de)serialialize the Slade 360 auth server
 // profile of the logged in user.
@@ -134,6 +170,9 @@ type EDIUserProfile struct {
 	Roles           []string `json:"roles"`
 	BPType          string   `json:"bp_type"`
 }
+
+//IsEntity ...
+func (e EDIUserProfile) IsEntity() {}
 
 // RefreshResponse is used to return the results of a successful token refresh to an API client
 type RefreshResponse struct {
@@ -265,6 +304,9 @@ type Attachment struct {
 	Creation    time.Time `json:"creation"`
 }
 
+//IsEntity ...
+func (a Attachment) IsEntity() {}
+
 // AttachmentInput is used to create attachments.
 type AttachmentInput struct {
 	ID          string     `json:"id"`
@@ -286,12 +328,18 @@ type CodeableConcept struct {
 	Text   string    `json:"text,omitempty"`
 }
 
+//IsEntity ...
+func (c CodeableConcept) IsEntity() {}
+
 // CodeableConceptInput is used to create codeable concepts.
 type CodeableConceptInput struct {
 	ID     *string        `json:"id"`
 	Coding []*CodingInput `json:"coding"`
 	Text   string         `json:"text"`
 }
+
+//IsEntity ...
+func (c CodeableConceptInput) IsEntity() {}
 
 // Coding description from FHIR: A reference to a code defined by a terminology system.
 type Coding struct {
@@ -407,6 +455,9 @@ type Period struct {
 	End   *time.Time `json:"end,omitempty"`
 }
 
+//IsEntity ...
+func (p Period) IsEntity() {}
+
 // PeriodInput is used to set time ranges e.g validity.
 //
 // A period should have a start, end or both. It's an error to have a period that
@@ -416,3 +467,6 @@ type PeriodInput struct {
 	Start *time.Time `json:"start"`
 	End   *time.Time `json:"end"`
 }
+
+//IsEntity ...
+func (p PeriodInput) IsEntity() {}

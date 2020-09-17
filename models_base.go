@@ -49,6 +49,9 @@ type PageInfo struct {
 	EndCursor       *string `json:"endCursor"`
 }
 
+//IsEntity ...
+func (p PageInfo) IsEntity() {}
+
 // NewString returns a pointer to the supplied string.
 func NewString(s string) *string {
 	return &s
@@ -101,3 +104,6 @@ func (c *Model) GetID() ID {
 func (c *Model) SetID(id string) {
 	c.ID = id
 }
+
+//IsEntity ...
+func (c Model) IsEntity() {}

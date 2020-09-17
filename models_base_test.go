@@ -198,3 +198,56 @@ func TestModel_IsNode(t *testing.T) {
 		})
 	}
 }
+
+func TestModelsIsEntity(t *testing.T) {
+	t1 := base.PeriodInput{}
+	t1.IsEntity()
+
+	t2 := base.Period{}
+	t2.IsEntity()
+
+	t3 := base.CodeableConceptInput{}
+	t3.IsEntity()
+
+	t4 := base.CodeableConcept{}
+	t4.IsEntity()
+
+	t5 := base.Attachment{}
+	t5.IsEntity()
+
+	t6 := base.EDIUserProfile{}
+	t6.IsEntity()
+
+	t7 := base.LogoutRequest{}
+	t7.IsEntity()
+
+	t8 := base.RefreshCreds{}
+	t8.IsEntity()
+
+	t9 := base.LoginResponse{}
+	t9.IsEntity()
+
+	t10 := base.LoginCreds{}
+	t10.IsEntity()
+
+	t11 := base.EmailOptIn{}
+	t11.IsEntity()
+
+	t12 := base.USSDSessionLog{}
+	t12.IsEntity()
+
+	t13 := base.PhoneOptIn{}
+	t13.IsEntity()
+
+	t14 := base.FilterParam{}
+	t14.IsEntity()
+
+	t15 := base.FilterInput{}
+	t15.IsEntity()
+
+	t16 := base.SortInput{}
+	t16.IsEntity()
+
+	t17 := base.PaginationInput{}
+	t17.IsEntity()
+}
