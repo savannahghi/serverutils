@@ -250,4 +250,28 @@ func TestModelsIsEntity(t *testing.T) {
 
 	t17 := base.PaginationInput{}
 	t17.IsEntity()
+
+	t18 := base.Address{}
+	t18.IsEntity()
+
+	t19 := base.Attachment{}
+	t19.IsEntity()
+
+	t20 := base.CodeableConcept{}
+	t20.IsEntity()
+
+	t21 := base.Coding{}
+	t21.IsEntity()
+
+	t22 := base.ContactPoint{}
+	t22.IsEntity()
+
+	t23 := base.HumanName{}
+	t23.IsEntity()
+
+	t24 := base.Identifier{}
+	t24.IsEntity()
+
+	t25 := base.PatientContact{}
+	t25.IsEntity()
 }

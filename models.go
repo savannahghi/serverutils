@@ -268,6 +268,9 @@ type Address struct {
 	Period     *Period     `json:"period"`
 }
 
+//IsEntity ...
+func (a Address) IsEntity() {}
+
 // AddressInput is used to create postal and physical addresses.
 //
 // IMPORTANT:
@@ -350,6 +353,9 @@ type Coding struct {
 	UserSelected *bool   `json:"userSelected"`
 }
 
+//IsEntity ...
+func (c Coding) IsEntity() {}
+
 // CodingInput is used to set coding.
 type CodingInput struct {
 	System       string `json:"system"`
@@ -385,6 +391,9 @@ type ContactPoint struct {
 	Period *Period            `json:"period"`
 }
 
+//IsEntity ...
+func (c ContactPoint) IsEntity() {}
+
 // ContactPointInput is used to input contact details e.g phone, email etc.
 type ContactPointInput struct {
 	ID     *string            `json:"id"`
@@ -407,6 +416,9 @@ type HumanName struct {
 	Suffix []*string `json:"suffix"`
 	Period *Period   `json:"period"`
 }
+
+//IsEntity ...
+func (h HumanName) IsEntity() {}
 
 // HumanNameInput is used to input patient names.
 type HumanNameInput struct {
@@ -434,6 +446,9 @@ type Identifier struct {
 	Value  *string          `json:"value,omitempty"`
 	Period *Period          `json:"period,omitempty"`
 }
+
+//IsEntity ...
+func (i Identifier) IsEntity() {}
 
 // IdentifierInput is used to create and update identifiers.
 type IdentifierInput struct {

@@ -177,6 +177,9 @@ type PatientContact struct {
 	Period       *Period            `json:"period"`
 }
 
+// IsEntity ...
+func (p PatientContact) IsEntity() {}
+
 // PatientContactInput is used to create and update patient contacts
 type PatientContactInput struct {
 	ID           *string                 `json:"id"`
