@@ -373,6 +373,9 @@ type Communication struct {
 	Preferred bool             `json:"preferred"`
 }
 
+//IsEntity ...
+func (c Communication) IsEntity() {}
+
 // CommunicationInput is used to create send communication data in GraphQL.
 type CommunicationInput struct {
 	Language  *CodeableConceptInput `json:"language"`
