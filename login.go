@@ -24,6 +24,22 @@ type authCheckFn = func(
 	firebaseApp IFirebaseApp,
 ) (bool, map[string]string, *auth.Token)
 
+// APIClient retrieves an EDI username and password from the environment,
+// logs in to Slade 360 EDI and returns an initialized
+//
+// If any error is encountered, a nil client and error are returned.
+func APIClient() (Client, error) {
+	username, err := GetEnvVar(UsernameEnvVarName)
+	if err != nil {
+		return nil, err
+	}
+	password, err := GetEnvVar(PasswordEnvVarName)
+	if err != nil {
+		return nil, err
+	}
+	return LoginClient(username, password)
+}
+
 // LoginClient returns an API client that is logged in with the supplied username and password
 func LoginClient(username string, password string) (Client, error) {
 	clientID, clientIDErr := GetEnvVar(ClientIDEnvVarName)
@@ -60,20 +76,60 @@ func LoginClient(username string, password string) (Client, error) {
 		clientID, clientSecret, apiTokenURL, apiHost, apiScheme, grantType, username, password, extraHeaders)
 }
 
-// APIClient retrieves an EDI username and password from the environment,
-// logs in to Slade 360 EDI and returns an initialized
-//
-// If any error is encountered, a nil client and error are returned.
-func APIClient() (Client, error) {
-	username, err := GetEnvVar(UsernameEnvVarName)
+// APIClientWithCredentials expects credentials variables to passed in instead of reading
+// pre-defined variables
+func APIClientWithCredentials(usernameEnvName string, passwordEnvName string, clientIDEnvVarName string,
+	clientSecretEnvVarName string, tokenURLEnvVarName string, apiHostEnvVarName string,
+	apiSchemeEnvVarName string, grantTypeEnvVarName string) (Client, error) {
+	username, err := GetEnvVar(usernameEnvName)
 	if err != nil {
 		return nil, err
 	}
-	password, err := GetEnvVar(PasswordEnvVarName)
+	password, err := GetEnvVar(passwordEnvName)
 	if err != nil {
 		return nil, err
 	}
-	return LoginClient(username, password)
+	return LoginClientWithCredentials(username, password, clientIDEnvVarName, clientSecretEnvVarName, tokenURLEnvVarName,
+		apiHostEnvVarName, apiSchemeEnvVarName, grantTypeEnvVarName)
+}
+
+// LoginClientWithCredentials uses pass envs to login
+func LoginClientWithCredentials(username string, password string, clientIDEnvVarName string,
+	clientSecretEnvVarName string, tokenURLEnvVarName string, apiHostEnvVarName string,
+	apiSchemeEnvVarName string, grantTypeEnvVarName string) (Client, error) {
+
+	clientID, clientIDErr := GetEnvVar(clientIDEnvVarName)
+	if clientIDErr != nil {
+		return nil, clientIDErr
+	}
+
+	clientSecret, clientSecretErr := GetEnvVar(clientSecretEnvVarName)
+	if clientSecretErr != nil {
+		return nil, clientSecretErr
+	}
+
+	apiTokenURL, apiTokenURLErr := GetEnvVar(tokenURLEnvVarName)
+	if apiTokenURLErr != nil {
+		return nil, apiTokenURLErr
+	}
+
+	apiHost, apiHostErr := GetEnvVar(apiHostEnvVarName)
+	if apiHostErr != nil {
+		return nil, apiHostErr
+	}
+
+	apiScheme, apiSchemeErr := GetEnvVar(apiSchemeEnvVarName)
+	if apiSchemeErr != nil {
+		return nil, apiSchemeErr
+	}
+
+	grantType, grantTypeErr := GetEnvVar(grantTypeEnvVarName)
+	if grantTypeErr != nil {
+		return nil, grantTypeErr
+	}
+	extraHeaders := make(map[string]string)
+	return NewServerClient(
+		clientID, clientSecret, apiTokenURL, apiHost, apiScheme, grantType, username, password, extraHeaders)
 }
 
 // ExtractToken extracts a token with the specified prefix from the specified header
