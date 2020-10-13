@@ -212,3 +212,73 @@ func TestGetUserTokenFromContext(t *testing.T) {
 		})
 	}
 }
+
+func TestCheckIsAnonymousUser(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{
+			name: "Anonymous user",
+			args: args{
+				ctx: base.GetAnonymousContext(t),
+			},
+			want:    true,
+			wantErr: false,
+		},
+		{
+			name: "Known user",
+			args: args{
+				ctx: base.GetAuthenticatedContext(t),
+			},
+			want:    false,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := base.CheckIsAnonymousUser(tt.args.ctx)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CheckIsAnonymousUser() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("CheckIsAnonymousUser() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetOrCreateAnonymousUser(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Anonymous user happy case",
+			args: args{
+				ctx: context.Background(),
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := base.GetOrCreateAnonymousUser(tt.args.ctx)
+			assert.NotNil(t, got)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CreateAnonymousUser() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}

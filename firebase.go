@@ -121,7 +121,7 @@ func CreateFirebaseCustomToken(ctx context.Context, uid string) (string, error) 
 func GetOrCreateFirebaseUser(ctx context.Context, email string) (*auth.UserRecord, error) {
 	authClient, err := GetFirebaseAuthClient(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get or create Firebase user: %w", err)
+		return nil, fmt.Errorf("unable to get or create Firebase client: %w", err)
 	}
 	existingUser, userErr := authClient.GetUserByEmail(ctx, email)
 	if userErr == nil {
@@ -223,4 +223,31 @@ func GetUserTokenFromContext(ctx context.Context) (*auth.Token, error) {
 		return nil, fmt.Errorf("wrong auth token type, got %#v, expected a Firebase *auth.Token", val)
 	}
 	return token, nil
+}
+
+// CheckIsAnonymousUser determines if the logged in user is an anonymous user
+func CheckIsAnonymousUser(ctx context.Context) (bool, error) {
+	authToken, err := GetUserTokenFromContext(ctx)
+	if err != nil {
+		return false, fmt.Errorf("user auth token not found in context: %w", err)
+	}
+
+	authClient, err := GetFirebaseAuthClient(ctx)
+	if err != nil {
+		return false, fmt.Errorf("unable to get or create Firebase client: %w", err)
+	}
+
+	user, err := authClient.GetUser(ctx, authToken.UID)
+	if err != nil {
+		return false, fmt.Errorf("unable to get user: %w", err)
+	}
+
+	// The firebase SDK doesn't provide an isAnonymous field in a user account
+	// We're making assumptions that the other fields will be null/empty making a user anonymous
+	// i.e no email,phoneNumber only a uid
+	if user.Email != "" || user.PhoneNumber != "" {
+		return false, nil
+	}
+
+	return true, nil
 }

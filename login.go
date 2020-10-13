@@ -200,7 +200,7 @@ func AuthenticationMiddleware(firebaseApp IFirebaseApp) func(http.Handler) http.
 	}
 }
 
-// GetFirebaseUser logs in the user with the supplied credentials and retursn their
+// GetFirebaseUser logs in the user with the supplied credentials and returns their
 // Firebase auth user record
 func GetFirebaseUser(ctx context.Context, creds *LoginCreds) (*auth.UserRecord, error) {
 	if creds == nil {
