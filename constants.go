@@ -124,4 +124,7 @@ const (
 
 	//RootCollectionSuffix ...
 	RootCollectionSuffix = "ROOT_COLLECTION_SUFFIX"
+
+	//Anonymous user identifier
+	AnonymousUser = "anonymous user"
 )
