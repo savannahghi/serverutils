@@ -127,4 +127,7 @@ const (
 
 	//Anonymous user identifier
 	AnonymousUser = "anonymous user"
+
+	// TestUserPhoneNumber is used by integration tests
+	TestUserPhoneNumber = "+254711223344"
 )

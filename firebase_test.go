@@ -253,32 +253,3 @@ func TestCheckIsAnonymousUser(t *testing.T) {
 		})
 	}
 }
-
-func TestGetOrCreateAnonymousUser(t *testing.T) {
-	type args struct {
-		ctx context.Context
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "Anonymous user happy case",
-			args: args{
-				ctx: context.Background(),
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := base.GetOrCreateAnonymousUser(tt.args.ctx)
-			assert.NotNil(t, got)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("CreateAnonymousUser() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-		})
-	}
-}

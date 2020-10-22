@@ -103,3 +103,54 @@ func getAnonymousAuthToken(ctx context.Context, t *testing.T) *auth.Token {
 
 	return authToken
 }
+
+// GetOrCreatePhoneNumberUser creates an phone number user
+// For documentation and test purposes only
+func GetOrCreatePhoneNumberUser(ctx context.Context, msisdn string) (*auth.UserRecord, error) {
+	authClient, err := GetFirebaseAuthClient(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get or create Firebase client: %w", err)
+	}
+	existingUser, userErr := authClient.GetUserByPhoneNumber(ctx, msisdn)
+
+	if userErr == nil {
+		return existingUser, nil
+	}
+
+	params := (&auth.UserToCreate{}).
+		PhoneNumber(msisdn)
+	newUser, createErr := authClient.CreateUser(ctx, params)
+	if createErr != nil {
+		return nil, createErr
+	}
+	return newUser, nil
+}
+
+// GetPhoneNumberAuthenticatedContext returns a phone number logged in context, useful for test purposes
+func GetPhoneNumberAuthenticatedContext(t *testing.T) context.Context {
+	ctx := context.Background()
+	authToken := getPhoneNumberAuthToken(ctx, t)
+	authenticatedContext := context.WithValue(ctx, AuthTokenContextKey, authToken)
+	return authenticatedContext
+}
+
+func getPhoneNumberAuthToken(ctx context.Context, t *testing.T) *auth.Token {
+	user, userErr := GetOrCreatePhoneNumberUser(ctx, TestUserPhoneNumber)
+	assert.Nil(t, userErr)
+	assert.NotNil(t, user)
+
+	customToken, tokenErr := CreateFirebaseCustomToken(ctx, user.UID)
+	assert.Nil(t, tokenErr)
+	assert.NotNil(t, customToken)
+
+	idTokens, idErr := AuthenticateCustomFirebaseToken(customToken)
+	assert.Nil(t, idErr)
+	assert.NotNil(t, idTokens)
+
+	bearerToken := idTokens.IDToken
+	authToken, err := ValidateBearerToken(ctx, bearerToken)
+	assert.Nil(t, err)
+	assert.NotNil(t, authToken)
+
+	return authToken
+}
