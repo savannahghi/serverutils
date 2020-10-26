@@ -667,3 +667,108 @@ func ReportErr(w http.ResponseWriter, err error, status int) {
 	log.Printf("%s", err)
 	WriteJSONResponse(w, ErrorMap(err), status)
 }
+
+// ValidatePhoneNumberLoginCreds checks that the credentials supplied in the indicated request are valid
+func ValidatePhoneNumberLoginCreds(w http.ResponseWriter, r *http.Request) (*PhoneNumberLoginCreds, error) {
+	creds := &PhoneNumberLoginCreds{}
+	DecodeJSONToTargetStruct(w, r, creds)
+	if creds.PhoneNumber == "" || creds.Pin == "" {
+		err := fmt.Errorf("invalid credentials, expected a phone number AND pin")
+		ReportErr(w, err, http.StatusBadRequest)
+		return nil, err
+	}
+	return creds, nil
+}
+
+// GetPhoneNumberLoginFunc returns a function that can authenticate against Firebase
+func GetPhoneNumberLoginFunc(ctx context.Context, fc IFirebaseClient) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		authClient, err := GetFirebaseAuthClient(ctx)
+		if err != nil {
+			ReportErr(w, err, http.StatusInternalServerError)
+			return
+		}
+
+		firestoreClient, err := GetFirestoreClient(ctx)
+		if err != nil {
+			ReportErr(w, err, http.StatusInternalServerError)
+			return
+		}
+
+		creds, err := ValidatePhoneNumberLoginCreds(w, r)
+		if err != nil {
+			ReportErr(w, err, http.StatusBadRequest)
+			return
+		}
+
+		msisdn := creds.PhoneNumber
+		phoneNumber, err := NormalizeMSISDN(msisdn)
+		if err != nil {
+			ReportErr(w, err, http.StatusInternalServerError)
+			return
+		}
+
+		firebaseUser, userErr := authClient.GetUserByPhoneNumber(ctx, phoneNumber)
+		if userErr != nil {
+			ReportErr(w, userErr, http.StatusInternalServerError)
+			return
+		}
+
+		collection := firestoreClient.Collection(SuffixCollection(PINCollectionName))
+		query := collection.Where("msisdn", "==", phoneNumber).Where("isValid", "==", true)
+		docs, err := query.Documents(ctx).GetAll()
+
+		if err != nil {
+			ReportErr(w, err, http.StatusInternalServerError)
+			return
+		}
+		if len(docs) != 1 {
+			pinErr := fmt.Errorf("msisdn %s pin is not one (it has %d)", phoneNumber, len(docs))
+			ReportErr(w, pinErr, http.StatusBadRequest)
+			return
+		}
+		dsnap := docs[0]
+
+		msisdnPin := &PIN{}
+		err = dsnap.DataTo(msisdnPin)
+		if err != nil {
+			ReportErr(w, err, http.StatusInternalServerError)
+			return
+		}
+
+		if msisdnPin.PIN != creds.Pin {
+			wrongPinErr := fmt.Errorf("wrong pin number supplied")
+			ReportErr(w, wrongPinErr, http.StatusUnauthorized)
+			return
+		}
+
+		customToken, err := CreateFirebaseCustomToken(ctx, firebaseUser.UID)
+		if err != nil {
+			ReportErr(w, err, http.StatusInternalServerError)
+			return
+		}
+
+		userTokens, err := AuthenticateCustomFirebaseToken(customToken)
+		if err != nil {
+			ReportErr(w, err, http.StatusInternalServerError)
+			return
+		}
+
+		loginResp := LoginResponse{
+			CustomToken:   customToken,
+			ExpiresIn:     ConvertStringToInt(w, userTokens.ExpiresIn),
+			IDToken:       userTokens.IDToken,
+			RefreshToken:  userTokens.RefreshToken,
+			UID:           firebaseUser.UID,
+			Email:         firebaseUser.Email,
+			DisplayName:   firebaseUser.DisplayName,
+			EmailVerified: firebaseUser.EmailVerified,
+			PhoneNumber:   firebaseUser.PhoneNumber,
+			PhotoURL:      firebaseUser.PhotoURL,
+			Disabled:      firebaseUser.Disabled,
+			TenantID:      firebaseUser.TenantID,
+			ProviderID:    firebaseUser.ProviderID,
+		}
+		WriteJSONResponse(w, loginResp, http.StatusOK)
+	}
+}

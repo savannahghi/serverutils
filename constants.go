@@ -129,5 +129,10 @@ const (
 	AnonymousUser = "anonymous user"
 
 	// TestUserPhoneNumber is used by integration tests
-	TestUserPhoneNumber = "+254711223344"
+	TestUserPhoneNumber        = "+254711223344"
+	TestUserPhoneNumberWithPin = "+254778990088"
+	TestUserPin                = "1234"
+
+	// Pins collection name
+	PINCollectionName = "pins"
 )
