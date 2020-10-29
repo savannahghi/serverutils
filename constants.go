@@ -135,4 +135,10 @@ const (
 
 	// Pins collection name
 	PINCollectionName = "pins"
+
+	// Secret Key for signing json web tokens
+	JWTSecretKey = "JWT_KEY"
+
+	//ServiceEnvironmentSuffix env where service is running
+	ServiceEnvironmentSuffix = "SERVICE_ENVIRONMENT_SUFFIX"
 )
