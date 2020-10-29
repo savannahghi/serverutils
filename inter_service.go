@@ -160,3 +160,56 @@ func (c InterServiceClient) MakeRequest(method string, url string, body interfac
 
 	return resp, nil
 }
+
+// jwtCheckFn is a function type for authorization and authentication checks
+// there can be several e.g an authentication check runs first then an authorization
+// check runs next if the authentication passes etc
+type jwtCheckFn = func(r *http.Request) (bool, map[string]string, *jwt.Token)
+
+// InterServiceAuthenticationMiddleware handles jwt authentication
+func InterServiceAuthenticationMiddleware() func(http.Handler) http.Handler {
+	// multiple checks can be run in sequence
+	jwtCheckFuncs := []jwtCheckFn{HasValidJWTBearerToken}
+
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+
+				errs := []map[string]string{}
+
+				for _, checkFunc := range jwtCheckFuncs {
+					shouldContinue, errMap, _ := checkFunc(r)
+					if shouldContinue {
+
+						next.ServeHTTP(w, r)
+						return
+					}
+					errs = append(errs, errMap)
+				}
+
+				WriteJSONResponse(w, errs, http.StatusUnauthorized)
+			})
+	}
+}
+
+// HasValidJWTBearerToken returns true with no errors if the request has a valid bearer token in the authorization header.
+// Otherwise, it returns false and the error in a map with the key "error"
+func HasValidJWTBearerToken(r *http.Request) (bool, map[string]string, *jwt.Token) {
+	bearerToken, err := ExtractBearerToken(r)
+	if err != nil {
+
+		return false, ErrorMap(err), nil
+	}
+
+	claims := &Claims{}
+
+	token, err := jwt.ParseWithClaims(bearerToken, claims, func(token *jwt.Token) (interface{}, error) {
+		return GetJWTKey(), nil
+	})
+
+	if err != nil {
+		return false, ErrorMap(err), nil
+	}
+
+	return true, nil, token
+}
