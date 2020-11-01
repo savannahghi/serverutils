@@ -201,9 +201,9 @@ func NewServerClient(
 		username:     username,
 		password:     password,
 	}
-	clientErr := c.Initialize()
-	if clientErr != nil {
-		return nil, clientErr
+	err := c.Initialize()
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize server client: %w", err)
 	}
 	// used to set e.g Slade 360 ERP's X-Workstation header
 	if extraHeaders != nil {
@@ -280,7 +280,16 @@ func (c *ServerClient) Refresh() error {
 		return err
 	}
 	if resp != nil && (resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices) {
-		msg := fmt.Sprintf("server error status: %d", resp.StatusCode)
+		data, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			msg := fmt.Sprintf("server error status: %d", resp.StatusCode)
+			return fmt.Errorf(msg)
+		}
+		msg := fmt.Sprintf(
+			"server error status: %d\nraw response: %s",
+			resp.StatusCode,
+			string(data),
+		)
 		return fmt.Errorf(msg)
 	}
 	authResp, decodeErr := DecodeOAUTHResponseFromJSON(resp)
@@ -324,7 +333,16 @@ func (c *ServerClient) Authenticate() error {
 		return authErr
 	}
 	if authResp != nil && (authResp.StatusCode < http.StatusOK || authResp.StatusCode >= http.StatusMultipleChoices) {
-		msg := fmt.Sprintf("server error status: %d", authResp.StatusCode)
+		data, err := ioutil.ReadAll(authResp.Body)
+		if err != nil {
+			msg := fmt.Sprintf("server error status: %d", authResp.StatusCode)
+			return fmt.Errorf(msg)
+		}
+		msg := fmt.Sprintf(
+			"server error status: %d\nraw response: %s",
+			authResp.StatusCode,
+			string(data),
+		)
 		return fmt.Errorf(msg)
 	}
 	decodedAuthResp, decodeErr := DecodeOAUTHResponseFromJSON(authResp)
@@ -379,23 +397,23 @@ func (c *ServerClient) MakeRequest(method string, url string, body io.Reader) (*
 
 // Initialize MUST be used to set up a working EDI Client
 func (c *ServerClient) Initialize() error {
-	preErr := CheckAPIClientPreconditions(c)
-	if preErr != nil {
-		return preErr
+	err := CheckAPIClientPreconditions(c)
+	if err != nil {
+		return fmt.Errorf("server client precondition check error: %w", err)
 	}
 
 	// the timeout is half an hour, to match the timeout of a Cloud Run function
 	// and to support somewhat long lived data "crawls"
 	c.httpClient = &http.Client{Timeout: time.Second * 60 * 30}
 
-	authErr := c.Authenticate()
-	if authErr != nil {
-		return authErr
+	err = c.Authenticate()
+	if err != nil {
+		return fmt.Errorf("server client authentication error: %w", err)
 	}
 
-	checkErr := CheckAPIClientPostConditions(c)
-	if checkErr != nil {
-		return checkErr
+	err = CheckAPIClientPostConditions(c)
+	if err != nil {
+		return fmt.Errorf("server client postcondition check error: %w", err)
 	}
 
 	c.SetInitialized(true)
@@ -526,7 +544,7 @@ func CheckAPIClientPreconditions(client Client) error {
 
 	username := client.Username()
 	if !govalidator.IsEmail(username) {
-		return fmt.Errorf("the Username should be a valid email address")
+		return fmt.Errorf("the username `%s` is not a valid email", username)
 	}
 
 	password := client.Password()
@@ -698,7 +716,7 @@ func GetAccessToken(clientConfig *ClientServerOptions) (string, error) {
 		clientConfig.ExtraHeaders,
 	)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("can't get server client for access token: %w", err)
 	}
 	return newServerClient.AccessToken(), nil
 }

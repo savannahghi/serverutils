@@ -3,6 +3,7 @@ package base_test
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -178,6 +179,19 @@ func TestNewServerClient(t *testing.T) {
 	apiTokenURL := base.MustGetEnvVar(base.TokenURLEnvVarName)
 	apiHost := base.MustGetEnvVar(base.APIHostEnvVarName)
 	workstationID := base.MustGetEnvVar(base.WorkstationEnvVarName)
+
+	log.Printf(
+		"Test Client Creds:\nclientID: %s\nclientSecret: %s\nusername: %s\npassword: %s\ngrantType: %s\napiScheme: %s\napiTokenURL: %s\napiHost: %s\nworkstationID: %s\n",
+		clientID,
+		clientSecret,
+		username,
+		password,
+		grantType,
+		apiScheme,
+		apiTokenURL,
+		apiHost,
+		workstationID,
+	)
 
 	type args struct {
 		clientID     string
@@ -495,6 +509,10 @@ func TestComposeAPIURL(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, client)
 
+	if client == nil {
+		return
+	}
+
 	type args struct {
 		client base.Client
 		path   string
@@ -657,9 +675,11 @@ func TestServerClient_MeURL(t *testing.T) {
 	)
 	assert.Nil(t, err)
 	assert.NotNil(t, goodClient)
-	got, err := goodClient.MeURL()
-	assert.Nil(t, err)
-	assert.Equal(t, "https://auth.healthcloud.co.ke/v1/user/me/?format=json", got)
+	if goodClient != nil {
+		got, err := goodClient.MeURL()
+		assert.Nil(t, err)
+		assert.Equal(t, "https://auth.healthcloud.co.ke/v1/user/me/?format=json", got)
+	}
 }
 
 func TestDefaultServerClient(t *testing.T) {

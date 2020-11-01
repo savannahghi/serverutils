@@ -23,50 +23,54 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-// GetServiceEnvironmentSuffic get the env suffix where the app is running
+// GetServiceEnvironmentSuffix get the env suffix where the app is running
 // e.g testing, staging, prod, local
-func GetServiceEnvironmentSuffic() string {
+func GetServiceEnvironmentSuffix() string {
 	environment := MustGetEnvVar(ServiceEnvironmentSuffix)
 
 	return environment
 }
 
-// Service used to keep record of a service and the REST paths it has
-type Service struct {
-	Name  string
-	Paths map[string]string
-}
-
 // InterServiceClient defines a client for use in interservice communication
 type InterServiceClient struct {
-	// services offering a rest api
-	Mailgun Service
+	ServiceName string
 
-	// service is the name of service initializing the client
-	service     string
 	environment string
 	apiScheme   string
 	domain      string
-
 	httpClient  *http.Client
 	accessToken string
 }
 
-// NewInterserviceClient ...
-func NewInterserviceClient(service string) (*InterServiceClient, error) {
-
-	env := GetServiceEnvironmentSuffic()
-
-	mailgun := Service{
-		Name: "mailgun",
-		Paths: map[string]string{
-			"sendEmail": "communication/send_email",
-		},
-	}
-
+// NewInterserviceClientImpl takes an implementation of the `base.Service`
+// interface and uses it to initialize a client for service to service
+// communication.
+//
+// It should be used in preference to the deprecated `NewInterserviceClient`.
+func NewInterserviceClientImpl(
+	serviceName string,
+	paths map[string]string,
+) (*InterServiceClient, error) {
+	env := GetServiceEnvironmentSuffix()
 	return &InterServiceClient{
-		service:     service,
-		Mailgun:     mailgun,
+		ServiceName: serviceName,
+		environment: env,
+		apiScheme:   "https",
+		domain:      "healthcloud.co.ke",
+		httpClient: &http.Client{
+			Timeout: time.Duration(1 * time.Minute),
+		},
+	}, nil
+}
+
+// NewInterserviceClient initializes a new interservice client
+//
+// Deprecated: a proper constructor should take service parameters rather than
+// hard code specific services within itself.
+func NewInterserviceClient(service string) (*InterServiceClient, error) {
+	env := GetServiceEnvironmentSuffix()
+	return &InterServiceClient{
+		ServiceName: service,
 		environment: env,
 		apiScheme:   "https",
 		domain:      "healthcloud.co.ke",
@@ -78,34 +82,28 @@ func NewInterserviceClient(service string) (*InterServiceClient, error) {
 
 // CreateAuthToken returns a signed JWT for use in authentication.
 func (c InterServiceClient) CreateAuthToken() (string, error) {
-
 	claims := &Claims{
 		StandardClaims: jwt.StandardClaims{
-			Issuer:    c.GenerateBaseURL(c.service),
+			Issuer:    c.GenerateBaseURL(c.ServiceName),
 			IssuedAt:  time.Now().Unix(),
 			ExpiresAt: time.Now().Add(1 * time.Minute).Unix(),
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
 	tokenString, err := token.SignedString(GetJWTKey())
 	if err != nil {
 		return "", fmt.Errorf("failed to create token with err: %v", err)
 	}
 
 	c.accessToken = tokenString
-
 	return tokenString, nil
 }
 
 // GenerateBaseURL generates a URL depending on the environment
 func (c InterServiceClient) GenerateBaseURL(service string) string {
-
 	var address string
-
 	if c.environment == "local" {
-
 		port := MustGetEnvVar("PORT")
 		address = "http://localhost:" + port
 	} else {

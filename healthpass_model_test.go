@@ -16,7 +16,7 @@ func TestPatient(t *testing.T) {
 
 	m2 := base.Patient{
 		Name: []*base.HumanName{
-			&base.HumanName{
+			{
 				Text: &name,
 			},
 		},
@@ -33,7 +33,7 @@ func TestPatient(t *testing.T) {
 
 	m4 := base.Patient{
 		Name: []*base.HumanName{
-			&base.HumanName{
+			{
 				Text: nil,
 			},
 		},

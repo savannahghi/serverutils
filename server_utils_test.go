@@ -41,13 +41,6 @@ func TestSentry(t *testing.T) {
 	}
 }
 
-func TestListenAddress(t *testing.T) {
-	addr := base.ListenAddress()
-	if addr != ":8080" {
-		t.Errorf("unexpected listen address, got %s", addr)
-	}
-}
-
 func TestErrorMap(t *testing.T) {
 	err := fmt.Errorf("test error")
 	errMap := base.ErrorMap(err)

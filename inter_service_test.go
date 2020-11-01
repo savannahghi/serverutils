@@ -16,18 +16,20 @@ import (
 )
 
 func TestGetServiceEnvironmentSuffix(t *testing.T) {
+	suffix := base.GetServiceEnvironmentSuffix()
+
 	tests := []struct {
 		name string
 		want string
 	}{
 		{
 			name: "service environment variable",
-			want: "testing",
+			want: suffix,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := base.GetServiceEnvironmentSuffic(); got != tt.want {
+			if got := base.GetServiceEnvironmentSuffix(); got != tt.want {
 				t.Errorf("base.GetServiceEnvirionmentSuffix() = %v, want %v", got, tt.want)
 			}
 		})
@@ -116,7 +118,8 @@ func TestInterServiceClient_CreateAuthToken(t *testing.T) {
 }
 
 func TestInterServiceClient_GenerateBaseURL(t *testing.T) {
-	service, _ := base.NewInterserviceClient("base")
+	service, _ := base.NewInterserviceClient("mailgun")
+	suffix := base.GetServiceEnvironmentSuffix()
 	type args struct {
 		service string
 	}
@@ -130,14 +133,20 @@ func TestInterServiceClient_GenerateBaseURL(t *testing.T) {
 			args: args{
 				service: "example",
 			},
-			want: "https://example-testing.healthcloud.co.ke",
+			want: fmt.Sprintf(
+				"https://example-%s.healthcloud.co.ke",
+				suffix,
+			),
 		},
 		{
 			name: "Generate initialized service url",
 			args: args{
-				service: service.Mailgun.Name,
+				service: service.ServiceName,
 			},
-			want: "https://mailgun-testing.healthcloud.co.ke",
+			want: fmt.Sprintf(
+				"https://mailgun-%s.healthcloud.co.ke",
+				suffix,
+			),
 		},
 	}
 	for _, tt := range tests {
@@ -152,6 +161,7 @@ func TestInterServiceClient_GenerateBaseURL(t *testing.T) {
 
 func TestInterServiceClient_GenerateRequestURL(t *testing.T) {
 	service, _ := base.NewInterserviceClient("base")
+	suffix := base.GetServiceEnvironmentSuffix()
 	type args struct {
 		service string
 		path    string
@@ -167,15 +177,15 @@ func TestInterServiceClient_GenerateRequestURL(t *testing.T) {
 				service: "example",
 				path:    "example_path",
 			},
-			want: "https://example-testing.healthcloud.co.ke/example_path",
+			want: fmt.Sprintf("https://example-%s.healthcloud.co.ke/example_path", suffix),
 		},
 		{
 			name: "Mailgun send email url path",
 			args: args{
-				service: service.Mailgun.Name,
-				path:    service.Mailgun.Paths["sendEmail"],
+				service: service.ServiceName,
+				path:    "communication/send_email",
 			},
-			want: "https://mailgun-testing.healthcloud.co.ke/communication/send_email",
+			want: fmt.Sprintf("https://%s-%s.healthcloud.co.ke/communication/send_email", service.ServiceName, suffix),
 		},
 	}
 	for _, tt := range tests {
@@ -224,8 +234,8 @@ func TestInterServiceClient_MakeRequest(t *testing.T) {
 			args: args{
 				method: http.MethodPost,
 				url: service.GenerateRequestURL(
-					service.Mailgun.Name,
-					service.Mailgun.Paths["sendEmail"],
+					service.ServiceName,
+					"/communication/send_email",
 				),
 				body: message,
 			},
@@ -308,25 +318,6 @@ func TestHasValidJWTBearerToken(t *testing.T) {
 	}
 }
 
-func createInvalidAuthToken() (string, error) {
-
-	claims := &base.Claims{
-		StandardClaims: jwt.StandardClaims{
-			IssuedAt:  time.Now().Unix(),
-			ExpiresAt: time.Now().Add(1 * time.Minute).Unix(),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	tokenString, err := token.SignedString([]byte("Just bad"))
-	if err != nil {
-		return "", fmt.Errorf("failed to create token with err: %v", err)
-	}
-
-	return tokenString, nil
-}
-
 func TestInterServiceAuthenticationMiddleware(t *testing.T) {
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
 
@@ -345,4 +336,80 @@ func TestInterServiceAuthenticationMiddleware(t *testing.T) {
 	rw1 := httptest.NewRecorder()
 	req1 := httptest.NewRequest(http.MethodPost, "/", reader)
 	h.ServeHTTP(rw1, req1)
+}
+
+func TestNewInterserviceClientImpl(t *testing.T) {
+	type args struct {
+		serviceName string
+		paths       map[string]string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "valid test service - mailgun",
+			args: args{
+				serviceName: "mailgun",
+				paths: map[string]string{
+					"sendEmail": "communication/send_email",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			srv, err := base.NewInterserviceClientImpl(tt.args.serviceName, tt.args.paths)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NewInterserviceClientImpl() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !tt.wantErr {
+				assert.NotNil(t, srv)
+				assert.NotZero(t, srv.ServiceName)
+
+				token, err := srv.CreateAuthToken()
+				assert.Nil(t, err)
+				assert.NotNil(t, token)
+
+				baseURL := srv.GenerateBaseURL(srv.ServiceName)
+				assert.NotZero(t, baseURL)
+				expectedBaseURL := fmt.Sprintf(
+					"https://%s-%s.healthcloud.co.ke",
+					srv.ServiceName,
+					base.GetServiceEnvironmentSuffix(),
+				)
+				assert.Equal(t, expectedBaseURL, baseURL)
+
+				path := "communication/send_email"
+				reqURL := srv.GenerateRequestURL(srv.ServiceName, path)
+				assert.NotZero(t, reqURL)
+				expectedReqURL := fmt.Sprintf(
+					"https://%s-%s.healthcloud.co.ke/%s",
+					srv.ServiceName,
+					base.GetServiceEnvironmentSuffix(),
+					path,
+				)
+				assert.Equal(t, expectedReqURL, reqURL)
+			}
+		})
+	}
+}
+
+func createInvalidAuthToken() (string, error) {
+	claims := &base.Claims{
+		StandardClaims: jwt.StandardClaims{
+			IssuedAt:  time.Now().Unix(),
+			ExpiresAt: time.Now().Add(1 * time.Minute).Unix(),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString([]byte("Just bad"))
+	if err != nil {
+		return "", fmt.Errorf("failed to create token with err: %v", err)
+	}
+
+	return tokenString, nil
 }

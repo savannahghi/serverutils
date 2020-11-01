@@ -51,7 +51,7 @@ func TestLoginClient_Error(t *testing.T) {
 	client, err := base.LoginClient(badUsername, badPassword)
 	assert.Nil(t, client)
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "the Username should be a valid email address")
+	assert.Contains(t, err.Error(), "the username `u` is not a valid email")
 }
 
 func TestAPIClient(t *testing.T) {
