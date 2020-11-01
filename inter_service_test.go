@@ -15,7 +15,7 @@ import (
 	"gitlab.slade360emr.com/go/base"
 )
 
-func TestGetServiceEnvirionmentSuffix(t *testing.T) {
+func TestGetServiceEnvironmentSuffix(t *testing.T) {
 	tests := []struct {
 		name string
 		want string
@@ -27,7 +27,7 @@ func TestGetServiceEnvirionmentSuffix(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := base.GetServiceEnvirionmentSuffix(); got != tt.want {
+			if got := base.GetServiceEnvironmentSuffic(); got != tt.want {
 				t.Errorf("base.GetServiceEnvirionmentSuffix() = %v, want %v", got, tt.want)
 			}
 		})

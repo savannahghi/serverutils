@@ -23,9 +23,9 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-// GetServiceEnvirionmentSuffix get the env suffix where the app is running
+// GetServiceEnvironmentSuffic get the env suffix where the app is running
 // e.g testing, staging, prod, local
-func GetServiceEnvirionmentSuffix() string {
+func GetServiceEnvironmentSuffic() string {
 	environment := MustGetEnvVar(ServiceEnvironmentSuffix)
 
 	return environment
@@ -55,7 +55,7 @@ type InterServiceClient struct {
 // NewInterserviceClient ...
 func NewInterserviceClient(service string) (*InterServiceClient, error) {
 
-	env := GetServiceEnvirionmentSuffix()
+	env := GetServiceEnvironmentSuffic()
 
 	mailgun := Service{
 		Name: "mailgun",
