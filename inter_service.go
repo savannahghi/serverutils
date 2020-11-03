@@ -44,9 +44,6 @@ type InterServiceClient struct {
 }
 
 // NewInterserviceClient initializes a new interservice client
-//
-// Deprecated: a proper constructor should take service parameters rather than
-// hard code specific services within itself.
 func NewInterserviceClient(s ISCService) (*InterServiceClient, error) {
 	return &InterServiceClient{
 		Name:              s.Name,
