@@ -15,27 +15,6 @@ import (
 	"gitlab.slade360emr.com/go/base"
 )
 
-func TestGetServiceEnvironmentSuffix(t *testing.T) {
-	suffix := base.GetServiceEnvironmentSuffix()
-
-	tests := []struct {
-		name string
-		want string
-	}{
-		{
-			name: "service environment variable",
-			want: suffix,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := base.GetServiceEnvironmentSuffix(); got != tt.want {
-				t.Errorf("base.GetServiceEnvirionmentSuffix() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestGetJWTKey(t *testing.T) {
 	os.Setenv("JWT_KEY", "an open secret")
 	tests := []struct {
@@ -57,41 +36,15 @@ func TestGetJWTKey(t *testing.T) {
 }
 
 func TestNewInterserviceClient(t *testing.T) {
-	srv, _ := base.NewInterserviceClient("base")
-	type args struct {
-		service string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *base.InterServiceClient
-		wantErr bool
-	}{
-		{
-			name: "create inter service client success",
-			args: args{
-				service: "base",
-			},
-			want:    srv,
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := base.NewInterserviceClient(tt.args.service)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("base.NewInterserviceClient() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("base.NewInterserviceClient() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	srv, err := base.NewInterserviceClient(base.ISCService{Name: "otp", RootDomain: "https://example.com"})
+	assert.Nil(t, err)
+	assert.NotNil(t, srv)
+	assert.Equal(t, "otp", srv.Name)
+	assert.Equal(t, "https://example.com", srv.RequestRootDomain)
 }
 
 func TestInterServiceClient_CreateAuthToken(t *testing.T) {
-	service, _ := base.NewInterserviceClient("base")
+	service, _ := base.NewInterserviceClient(base.ISCService{Name: "otp", RootDomain: "https://example.com"})
 	tests := []struct {
 		name    string
 		want    string
@@ -117,99 +70,14 @@ func TestInterServiceClient_CreateAuthToken(t *testing.T) {
 	}
 }
 
-func TestInterServiceClient_GenerateBaseURL(t *testing.T) {
-	service, _ := base.NewInterserviceClient("mailgun")
-	suffix := base.GetServiceEnvironmentSuffix()
-	type args struct {
-		service string
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			name: "Generate example url",
-			args: args{
-				service: "example",
-			},
-			want: fmt.Sprintf(
-				"https://example-%s.healthcloud.co.ke",
-				suffix,
-			),
-		},
-		{
-			name: "Generate initialized service url",
-			args: args{
-				service: service.ServiceName,
-			},
-			want: fmt.Sprintf(
-				"https://mailgun-%s.healthcloud.co.ke",
-				suffix,
-			),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := service
-			if got := c.GenerateBaseURL(tt.args.service); got != tt.want {
-				t.Errorf("InterServiceClient.GenerateBaseURL() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestInterServiceClient_GenerateRequestURL(t *testing.T) {
-	service, _ := base.NewInterserviceClient("base")
-	suffix := base.GetServiceEnvironmentSuffix()
-	type args struct {
-		service string
-		path    string
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			name: "Generate example url path",
-			args: args{
-				service: "example",
-				path:    "example_path",
-			},
-			want: fmt.Sprintf("https://example-%s.healthcloud.co.ke/example_path", suffix),
-		},
-		{
-			name: "Mailgun send email url path",
-			args: args{
-				service: service.ServiceName,
-				path:    "communication/send_email",
-			},
-			want: fmt.Sprintf("https://%s-%s.healthcloud.co.ke/communication/send_email", service.ServiceName, suffix),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := service
-			if got := c.GenerateRequestURL(tt.args.service, tt.args.path); got != tt.want {
-				t.Errorf("InterServiceClient.GenerateRequestURL() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestInterServiceClient_MakeRequest(t *testing.T) {
-	service, _ := base.NewInterserviceClient("base")
-	type args struct {
-		method string
-		url    string
-		body   interface{}
-	}
 
-	message := base.MailgunEMailMessage{
-		Subject: "Hello inter service email",
-		Text:    "Test Email",
-		To:      []string{"ngure.nyaga@healthcloud.co.ke"},
+	type args struct {
+		name     string
+		endpoint string
+		method   string
+		path     string
+		body     interface{}
 	}
 
 	tests := []struct {
@@ -219,47 +87,55 @@ func TestInterServiceClient_MakeRequest(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Example url bad request",
+			name: "Valid request",
 			args: args{
-				method: http.MethodPost,
-				url:    service.GenerateRequestURL("example", "example_path"),
-				body: map[string]string{
-					"example": "example_request",
-				},
+				name:     "otp",
+				endpoint: "https://example.com",
+				method:   http.MethodPost,
+				path:     "",
+				body:     nil,
 			},
-			wantErr: true,
+			wantErr: false,
 		},
 		{
-			name: "Example mailgun request",
+			name: "Invalid request",
 			args: args{
-				method: http.MethodPost,
-				url: service.GenerateRequestURL(
-					service.ServiceName,
-					"/communication/send_email",
-				),
-				body: message,
+				name:     "otp",
+				endpoint: "https://google.com",
+				method:   http.MethodPost,
+				path:     "",
+				body:     nil,
 			},
-			// TODO:Path not yet set up
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := service
-			got, err := c.MakeRequest(tt.args.method, tt.args.url, tt.args.body)
-			if (err != nil) != tt.wantErr {
+			c, _ := base.NewInterserviceClient(base.ISCService{Name: tt.args.name, RootDomain: tt.args.endpoint})
+
+			got, err := c.MakeRequest(tt.args.method, tt.args.path, tt.args.body)
+
+			if err != nil && !tt.wantErr {
 				t.Errorf("InterServiceClient.MakeRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("InterServiceClient.MakeRequest() = %v, want %v", got, tt.want)
+
+			if !tt.wantErr {
+				assert.NotNil(t, got)
+				assert.Nil(t, err)
 			}
+
+			if tt.wantErr {
+				assert.NotEqual(t, http.StatusOK, got.StatusCode)
+			}
+
 		})
 	}
+
 }
 
 func TestHasValidJWTBearerToken(t *testing.T) {
-	service, _ := base.NewInterserviceClient("base")
+	service, _ := base.NewInterserviceClient(base.ISCService{Name: "otp", RootDomain: "https://example.com"})
 
 	validTokenRequest := httptest.NewRequest(http.MethodGet, "/", nil)
 	validToken, _ := service.CreateAuthToken()
@@ -326,7 +202,7 @@ func TestInterServiceAuthenticationMiddleware(t *testing.T) {
 	rw := httptest.NewRecorder()
 	reader := bytes.NewBuffer([]byte("sample"))
 
-	service, _ := base.NewInterserviceClient("base")
+	service, _ := base.NewInterserviceClient(base.ISCService{Name: "otp", RootDomain: "https://example.com"})
 	token, _ := service.CreateAuthToken()
 	authHeader := fmt.Sprintf("Bearer %s", token)
 	req := httptest.NewRequest(http.MethodPost, "/", reader)
@@ -336,66 +212,6 @@ func TestInterServiceAuthenticationMiddleware(t *testing.T) {
 	rw1 := httptest.NewRecorder()
 	req1 := httptest.NewRequest(http.MethodPost, "/", reader)
 	h.ServeHTTP(rw1, req1)
-}
-
-func TestNewInterserviceClientImpl(t *testing.T) {
-	type args struct {
-		serviceName string
-		paths       map[string]string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "valid test service - mailgun",
-			args: args{
-				serviceName: "mailgun",
-				paths: map[string]string{
-					"sendEmail": "communication/send_email",
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			srv, err := base.NewInterserviceClientImpl(tt.args.serviceName, tt.args.paths)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("NewInterserviceClientImpl() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			if !tt.wantErr {
-				assert.NotNil(t, srv)
-				assert.NotZero(t, srv.ServiceName)
-
-				token, err := srv.CreateAuthToken()
-				assert.Nil(t, err)
-				assert.NotNil(t, token)
-
-				baseURL := srv.GenerateBaseURL(srv.ServiceName)
-				assert.NotZero(t, baseURL)
-				expectedBaseURL := fmt.Sprintf(
-					"https://%s-%s.healthcloud.co.ke",
-					srv.ServiceName,
-					base.GetServiceEnvironmentSuffix(),
-				)
-				assert.Equal(t, expectedBaseURL, baseURL)
-
-				path := "communication/send_email"
-				reqURL := srv.GenerateRequestURL(srv.ServiceName, path)
-				assert.NotZero(t, reqURL)
-				expectedReqURL := fmt.Sprintf(
-					"https://%s-%s.healthcloud.co.ke/%s",
-					srv.ServiceName,
-					base.GetServiceEnvironmentSuffix(),
-					path,
-				)
-				assert.Equal(t, expectedReqURL, reqURL)
-			}
-		})
-	}
 }
 
 func createInvalidAuthToken() (string, error) {

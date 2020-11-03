@@ -10,6 +10,17 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
+// ISCService defines the blueprint of a dependency service. This struct is here to maintain
+// uniform structure definitions
+type ISCService struct {
+	// The name of the service that is been depended upon e.g mailgun, mpesa
+	Name string
+
+	// The endpoint where the service serves requests. The dependant should know forehand where to
+	// this services lives
+	RootDomain string
+}
+
 // GetJWTKey returns a byte slice of the JWT secret key
 func GetJWTKey() []byte {
 	key := MustGetEnvVar(JWTSecretKey)
@@ -23,57 +34,21 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-// GetServiceEnvironmentSuffix get the env suffix where the app is running
-// e.g testing, staging, prod, local
-func GetServiceEnvironmentSuffix() string {
-	environment := MustGetEnvVar(ServiceEnvironmentSuffix)
-
-	return environment
-}
-
 // InterServiceClient defines a client for use in interservice communication
 type InterServiceClient struct {
-	ServiceName string
-
-	environment string
-	apiScheme   string
-	domain      string
-	httpClient  *http.Client
-	accessToken string
-}
-
-// NewInterserviceClientImpl takes an implementation of the `base.Service`
-// interface and uses it to initialize a client for service to service
-// communication.
-//
-// It should be used in preference to the deprecated `NewInterserviceClient`.
-func NewInterserviceClientImpl(
-	serviceName string,
-	paths map[string]string,
-) (*InterServiceClient, error) {
-	env := GetServiceEnvironmentSuffix()
-	return &InterServiceClient{
-		ServiceName: serviceName,
-		environment: env,
-		apiScheme:   "https",
-		domain:      "healthcloud.co.ke",
-		httpClient: &http.Client{
-			Timeout: time.Duration(1 * time.Minute),
-		},
-	}, nil
+	Name              string
+	RequestRootDomain string
+	httpClient        *http.Client
 }
 
 // NewInterserviceClient initializes a new interservice client
 //
 // Deprecated: a proper constructor should take service parameters rather than
 // hard code specific services within itself.
-func NewInterserviceClient(service string) (*InterServiceClient, error) {
-	env := GetServiceEnvironmentSuffix()
+func NewInterserviceClient(s ISCService) (*InterServiceClient, error) {
 	return &InterServiceClient{
-		ServiceName: service,
-		environment: env,
-		apiScheme:   "https",
-		domain:      "healthcloud.co.ke",
+		Name:              s.Name,
+		RequestRootDomain: s.RootDomain,
 		httpClient: &http.Client{
 			Timeout: time.Duration(1 * time.Minute),
 		},
@@ -84,7 +59,6 @@ func NewInterserviceClient(service string) (*InterServiceClient, error) {
 func (c InterServiceClient) CreateAuthToken() (string, error) {
 	claims := &Claims{
 		StandardClaims: jwt.StandardClaims{
-			Issuer:    c.GenerateBaseURL(c.ServiceName),
 			IssuedAt:  time.Now().Unix(),
 			ExpiresAt: time.Now().Add(1 * time.Minute).Unix(),
 		},
@@ -96,35 +70,18 @@ func (c InterServiceClient) CreateAuthToken() (string, error) {
 		return "", fmt.Errorf("failed to create token with err: %v", err)
 	}
 
-	c.accessToken = tokenString
 	return tokenString, nil
 }
 
-// GenerateBaseURL generates a URL depending on the environment
-func (c InterServiceClient) GenerateBaseURL(service string) string {
-	var address string
-	if c.environment == "local" {
-		port := MustGetEnvVar("PORT")
-		address = "http://localhost:" + port
-	} else {
-
-		subdomain := fmt.Sprintf("%v-%v", service, c.environment)
-		address = fmt.Sprintf("%v://%v.%v", c.apiScheme, subdomain, c.domain)
-	}
-
-	return address
-}
-
 // GenerateRequestURL generate a url with path for requested resource.
-func (c InterServiceClient) GenerateRequestURL(service string, path string) string {
-
-	address := c.GenerateBaseURL(service)
-
-	return fmt.Sprintf("%v/%v", address, path)
+func (c InterServiceClient) generateRequestURL(path string) string {
+	return fmt.Sprintf("%v/%v", c.RequestRootDomain, path)
 }
 
 // MakeRequest performs an inter service http request and returns a response
-func (c InterServiceClient) MakeRequest(method string, url string, body interface{}) (*http.Response, error) {
+func (c InterServiceClient) MakeRequest(method string, path string, body interface{}) (*http.Response, error) {
+
+	url := c.generateRequestURL(path)
 
 	token, tknErr := c.CreateAuthToken()
 	if tknErr != nil {
@@ -147,16 +104,7 @@ func (c InterServiceClient) MakeRequest(method string, url string, body interfac
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, respErr := c.httpClient.Do(req)
-	if respErr != nil {
-		return nil, respErr
-	}
-
-	if resp.StatusCode > 201 {
-		return nil, fmt.Errorf("bad response got: %v", resp.StatusCode)
-	}
-
-	return resp, nil
+	return c.httpClient.Do(req)
 }
 
 // jwtCheckFn is a function type for authorization and authentication checks
