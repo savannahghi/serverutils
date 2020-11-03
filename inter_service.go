@@ -183,3 +183,14 @@ func PathToDepsFile() string {
 func GetRunningEnvironment() string {
 	return MustGetEnvVar(Environment)
 }
+
+// GetDepFromConfig retrives a specific config from config slice
+func GetDepFromConfig(name string, config []Dep) *Dep {
+	var d Dep
+	for _, dep := range config {
+		if dep.DepName == name {
+			d = dep
+		}
+	}
+	return &d
+}

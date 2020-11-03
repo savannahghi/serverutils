@@ -229,3 +229,44 @@ func createInvalidAuthToken() (string, error) {
 
 	return tokenString, nil
 }
+
+func TestGetDepFromConfig(t *testing.T) {
+	deps := []base.Dep{
+		{
+			DepName:       "one",
+			DepRootDomain: "https://one.com",
+		},
+		{
+			DepName:       "two",
+			DepRootDomain: "https://two.com",
+		},
+		{
+			DepName:       "three",
+			DepRootDomain: "https://three.com",
+		},
+		{
+			DepName:       "four",
+			DepRootDomain: "https://four.com",
+		},
+	}
+
+	one := base.GetDepFromConfig("one", deps)
+	assert.NotNil(t, one)
+	assert.Equal(t, "one", one.DepName)
+	assert.Equal(t, "https://one.com", one.DepRootDomain)
+
+	two := base.GetDepFromConfig("two", deps)
+	assert.NotNil(t, two)
+	assert.Equal(t, "two", two.DepName)
+	assert.Equal(t, "https://two.com", two.DepRootDomain)
+
+	three := base.GetDepFromConfig("three", deps)
+	assert.NotNil(t, three)
+	assert.Equal(t, "three", three.DepName)
+	assert.Equal(t, "https://three.com", three.DepRootDomain)
+
+	four := base.GetDepFromConfig("four", deps)
+	assert.NotNil(t, four)
+	assert.Equal(t, "four", four.DepName)
+	assert.Equal(t, "https://four.com", four.DepRootDomain)
+}
