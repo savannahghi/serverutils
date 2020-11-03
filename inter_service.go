@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -158,4 +160,29 @@ func HasValidJWTBearerToken(r *http.Request) (bool, map[string]string, *jwt.Toke
 	}
 
 	return true, nil, token
+}
+
+// Dep is the dependency definition
+type Dep struct {
+	DepName       string `yaml:"depName"`
+	DepRootDomain string `yaml:"depRootDomain"`
+}
+
+//DepsConfig is the config for dependencies of a particular service
+type DepsConfig struct {
+	Staging    []Dep `yaml:"staging"`
+	Testing    []Dep `yaml:"testing"`
+	Production []Dep `yaml:"production"`
+}
+
+// PathToDepsFile return the path to deps.yaml file
+func PathToDepsFile() string {
+	cwd, _ := os.Getwd()
+	return filepath.Join(cwd, DepsFileName)
+}
+
+// GetRunningEnvironment returns the environment wheere the service is running. Importannt
+// so as to point to the correct deps
+func GetRunningEnvironment() string {
+	return MustGetEnvVar(Environment)
 }

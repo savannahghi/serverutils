@@ -138,4 +138,11 @@ const (
 
 	// Secret Key for signing json web tokens
 	JWTSecretKey = "JWT_KEY"
+
+	// The file that contains dependency definition. Each service which depends on other service
+	// via REST, need to have this file in their root
+	DepsFileName = "deps.yaml"
+
+	// env variable pointing to where this service is running e.g staging, testing, prod
+	Environment = "ENVIRONMENT"
 )
