@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -269,4 +270,10 @@ func TestGetDepFromConfig(t *testing.T) {
 	assert.NotNil(t, four)
 	assert.Equal(t, "four", four.DepName)
 	assert.Equal(t, "https://four.com", four.DepRootDomain)
+}
+
+func TestGetPathToDepsFile(t *testing.T) {
+	p := base.PathToDepsFile()
+	assert.NotEmpty(t, p)
+	assert.Equal(t, true, strings.HasSuffix(p, base.DepsFileName))
 }

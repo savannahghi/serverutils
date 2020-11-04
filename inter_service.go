@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -175,7 +177,19 @@ type DepsConfig struct {
 // PathToDepsFile return the path to deps.yaml file
 func PathToDepsFile() string {
 	cwd, _ := os.Getwd()
-	return filepath.Join(cwd, DepsFileName)
+	return getDepsPath(filepath.Join(cwd, DepsFileName))
+}
+
+// recursively get the path to the deps.yaml file
+func getDepsPath(path string) string {
+	_, err := ioutil.ReadFile(filepath.Clean(path))
+	if err != nil {
+		n := strings.Split(filepath.Dir(path), "/")
+		m := n[:len(n)-1]
+		p := filepath.Join(strings.Join(m, "/"), DepsFileName)
+		return getDepsPath(p)
+	}
+	return path
 }
 
 // GetRunningEnvironment returns the environment wheere the service is running. Importannt
