@@ -59,7 +59,8 @@ func NewInterserviceClient(s ISCService) (*InterServiceClient, error) {
 // CreateAuthToken returns a signed JWT for use in authentication.
 func (c InterServiceClient) CreateAuthToken() (string, error) {
 	claims := &Claims{
-		StandardClaims: jwt.StandardClaims{
+		jwt.StandardClaims{
+			Issuer:    c.RequestRootDomain,
 			IssuedAt:  time.Now().Unix(),
 			ExpiresAt: time.Now().Add(1 * time.Minute).Unix(),
 		},
@@ -151,6 +152,9 @@ func HasValidJWTBearerToken(r *http.Request) (bool, map[string]string, *jwt.Toke
 	claims := &Claims{}
 
 	token, err := jwt.ParseWithClaims(bearerToken, claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected sigining method")
+		}
 		return GetJWTKey(), nil
 	})
 

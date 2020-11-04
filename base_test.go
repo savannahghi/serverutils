@@ -11,6 +11,7 @@ import (
 
 func TestMain(m *testing.M) {
 	os.Setenv("MESSAGE_KEY", "this-is-a-test-key$$$")
+	os.Setenv("ENVIRONMENT", "staging")
 	err := os.Setenv("ROOT_COLLECTION_SUFFIX", "staging")
 	if err != nil {
 		log.Printf("can't set root collection suffix in env: %s", err)
