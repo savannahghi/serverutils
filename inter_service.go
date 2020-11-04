@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -101,6 +103,9 @@ func (c InterServiceClient) MakeRequest(method string, path string, body interfa
 		return nil, reqErr
 	}
 
+	r, _ := httputil.DumpRequest(req, true)
+	log.Println(string(r))
+
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
@@ -151,9 +156,6 @@ func HasValidJWTBearerToken(r *http.Request) (bool, map[string]string, *jwt.Toke
 	claims := &Claims{}
 
 	token, err := jwt.ParseWithClaims(bearerToken, claims, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected sigining method")
-		}
 		return GetJWTKey(), nil
 	})
 
