@@ -145,4 +145,13 @@ const (
 
 	// env variable pointing to where this service is running e.g staging, testing, prod
 	Environment = "ENVIRONMENT"
+
+	// running the service under staging
+	StagingEnv = "staging"
+
+	// running the service under testing
+	TestingEnv = "testing"
+
+	// running the service under production
+	ProdEnv = "prod"
 )
