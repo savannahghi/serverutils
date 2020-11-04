@@ -60,7 +60,6 @@ func NewInterserviceClient(s ISCService) (*InterServiceClient, error) {
 func (c InterServiceClient) CreateAuthToken() (string, error) {
 	claims := &Claims{
 		jwt.StandardClaims{
-			Issuer:    c.RequestRootDomain,
 			IssuedAt:  time.Now().Unix(),
 			ExpiresAt: time.Now().Add(1 * time.Minute).Unix(),
 		},
