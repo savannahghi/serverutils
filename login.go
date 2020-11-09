@@ -772,3 +772,23 @@ func GetPhoneNumberLoginFunc(ctx context.Context, fc IFirebaseClient) http.Handl
 		WriteJSONResponse(w, loginResp, http.StatusOK)
 	}
 }
+
+// NewERPClient initializes a new ERP client from the environment.
+// It assumes that the environment variables were confirmed to be present during
+// server initialization. For that reason, it will panic if an environment variable is
+// unexpectedly absent.
+func NewERPClient() (*ServerClient, error) {
+	clientID := MustGetEnvVar(ERPClientIDEnvVarName)
+	clientSecret := MustGetEnvVar(ERPClientScrtEnvVarName)
+	apiTokenURL := MustGetEnvVar(ERPTknURLEnvVarName)
+	apiHost := MustGetEnvVar(ERPHostEnvVarName)
+	apiScheme := MustGetEnvVar(ERPAPISchemeEnvVarName)
+	grantType := MustGetEnvVar(ERPGrantTypeEnvVarName)
+	username := MustGetEnvVar(ERPUsernameEnvVarName)
+	password := MustGetEnvVar(ERPPasswordEnvVarName)
+
+	extraHeaders := make(map[string]string)
+	extraHeaders["X-Workstation"] = MustGetEnvVar(ERPDefaultWorkstationID)
+
+	return NewServerClient(clientID, clientSecret, apiTokenURL, apiHost, apiScheme, grantType, username, password, extraHeaders)
+}

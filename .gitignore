@@ -3,3 +3,4 @@ env.sh
 .vscode/
 venv/
 coverage.*
+.gitmessage.txt

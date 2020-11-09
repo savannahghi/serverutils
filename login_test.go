@@ -1556,3 +1556,9 @@ func TestGetPhoneNumberLoginFunc(t *testing.T) {
 		})
 	}
 }
+
+func TestNewERPClient(t *testing.T) {
+	got, err := base.NewERPClient()
+	assert.Nil(t, err)
+	assert.NotNil(t, got)
+}

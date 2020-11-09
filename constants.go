@@ -154,4 +154,15 @@ const (
 
 	// running the service under production
 	ProdEnv = "prod"
+
+	//ERP client login env vars
+	ERPHostEnvVarName       = "ERP_HOST"
+	ERPAPISchemeEnvVarName  = "ERP_API_SCHEME"
+	ERPTknURLEnvVarName     = "ERP_TOKEN_URL"
+	ERPClientIDEnvVarName   = "ERP_CLIENT_ID"
+	ERPClientScrtEnvVarName = "ERP_CLIENT_SECRET"
+	ERPUsernameEnvVarName   = "ERP_USERNAME"
+	ERPPasswordEnvVarName   = "ERP_PASSWORD"
+	ERPGrantTypeEnvVarName  = "ERP_GRANT_TYPE"
+	ERPDefaultWorkstationID = "ERP_DEFAULT_WORKSTATION_ID"
 )
