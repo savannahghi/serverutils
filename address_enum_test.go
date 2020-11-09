@@ -223,19 +223,3 @@ func TestCountry(t *testing.T) {
 	}
 
 }
-
-func TestBranchProfileRating(t *testing.T) {
-	bpr := base.BranchProfileRating{ID: "uniquiguid"}
-	assert.NotNil(t, bpr.GetID())
-	bpr.SetID("otheruniquiguid")
-	assert.NotNil(t, bpr.GetID())
-	assert.Equal(t, "otheruniquiguid", bpr.GetID().String())
-}
-
-func TestBranchProfile(t *testing.T) {
-	bp := base.BranchProfile{ID: "uniquiguid"}
-	assert.NotNil(t, bp.GetID())
-	bp.SetID("otheruniquiguid")
-	assert.NotNil(t, bp.GetID())
-	assert.Equal(t, "otheruniquiguid", bp.GetID().String())
-}
