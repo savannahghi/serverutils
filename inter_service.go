@@ -213,3 +213,26 @@ func GetDepFromConfig(name string, config []Dep) *Dep {
 	}
 	return &d
 }
+
+// SetupISCclient returns an InterServiceClient
+func SetupISCclient(config DepsConfig, serviceName string) (*InterServiceClient, error) {
+	if GetRunningEnvironment() == StagingEnv {
+		dep := GetDepFromConfig(serviceName, config.Staging)
+		client, err := NewInterserviceClient(ISCService{Name: dep.DepName, RootDomain: dep.DepRootDomain})
+		return client, err
+	}
+
+	if GetRunningEnvironment() == TestingEnv {
+		dep := GetDepFromConfig(serviceName, config.Staging)
+		client, err := NewInterserviceClient(ISCService{Name: dep.DepName, RootDomain: dep.DepRootDomain})
+		return client, err
+	}
+
+	if GetRunningEnvironment() == ProdEnv {
+		dep := GetDepFromConfig(serviceName, config.Staging)
+		client, err := NewInterserviceClient(ISCService{Name: dep.DepName, RootDomain: dep.DepRootDomain})
+		return client, err
+	}
+
+	return nil, fmt.Errorf("failed to setup isc client")
+}
