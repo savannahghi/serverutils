@@ -5,12 +5,9 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
-	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"cloud.google.com/go/errorreporting"
 	"cloud.google.com/go/logging"
@@ -338,94 +335,77 @@ func Test_closeStackDriverErrorClient(t *testing.T) {
 	}
 }
 
-// =========================
-// TEST SERVER UTILS
-// =========================
-
-func GetGraphQLHeaders(t *testing.T) map[string]string {
-	return req.Header{
-		"Accept":        "application/json",
-		"Content-Type":  "application/json",
-		"Authorization": GetBearerTokenHeader(t),
-	}
-}
-
-func GetBearerTokenHeader(t *testing.T) string {
+func TestGetGraphQLHeaders(t *testing.T) {
 	ctx := context.Background()
-	user, err := base.GetOrCreateFirebaseUser(ctx, base.TestUserEmail)
-	if err != nil {
-		t.Errorf("can't get or create firebase user: %s", err)
-		return ""
+	authorization, err := base.GetBearerTokenHeader(ctx)
+	if assert.NoErrorf(t, err, "bearerToken Header could not be generated %s", err) {
+		assert.NotEqual(t, authorization, "")
 	}
 
-	if user == nil {
-		t.Errorf("nil firebase user")
-		return ""
+	type args struct {
+		ctx context.Context
 	}
 
-	customToken, err := base.CreateFirebaseCustomToken(ctx, user.UID)
-	if err != nil {
-		t.Errorf("can't create custom token: %s", err)
-		return ""
+	tests := []struct {
+		name    string
+		args    args
+		want    map[string]string
+		wantErr bool
+	}{
+		{
+			name: "Good Test Case",
+			args: args{
+				ctx: ctx,
+			},
+			want: req.Header{
+				"Accept":        "application/json",
+				"Content-Type":  "application/json",
+				"Authorization": authorization,
+			},
+			wantErr: false,
+		},
 	}
-
-	if customToken == "" {
-		t.Errorf("blank custom token: %s", err)
-		return ""
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := base.GetGraphQLHeaders(tt.args.ctx)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetGraphQLHeaders() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			assert.NotNil(t, got)
+		})
 	}
-
-	idTokens, err := base.AuthenticateCustomFirebaseToken(customToken)
-	if err != nil {
-		t.Errorf("can't authenticate custom token: %s", err)
-		return ""
-	}
-	if idTokens == nil {
-		t.Errorf("nil idTokens")
-		return ""
-	}
-
-	return fmt.Sprintf("Bearer %s", idTokens.IDToken)
 }
 
-func randomPort() int {
-	rand.Seed(time.Now().Unix())
-	min := 32768
-	max := 60999
-	port := rand.Intn(max-min+1) + min
-	return port
-}
+func TestGetBearerTokenHeader(t *testing.T) {
 
-// StartTestServer starts up test server
-func StartTestServer(ctx context.Context, prepareServer func(context.Context, int) *http.Server) (*http.Server, string, error) {
-	// prepare the server
-	port := randomPort()
-	srv := prepareServer(ctx, port)
-	baseURL := fmt.Sprintf("http://localhost:%d", port)
-	if srv == nil {
-		return nil, "", fmt.Errorf("nil test server")
+	ctx := context.Background()
+
+	type args struct {
+		ctx context.Context
 	}
-
-	// set up the TCP listener
-	// this is done early so that we are sure we can connect to the port in
-	// the tests; backlogs will be sent to the listener
-	l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
-	if err != nil {
-		return nil, "", fmt.Errorf("unable to listen on port %d: %w", port, err)
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "Good Test Case",
+			args: args{
+				ctx: ctx,
+			},
+			wantErr: false,
+		},
 	}
-	if l == nil {
-		return nil, "", fmt.Errorf("nil test server listener")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := base.GetBearerTokenHeader(tt.args.ctx)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetBearerTokenHeader() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			assert.NotEqual(t, got, "")
+		})
 	}
-	log.Printf("LISTENING on port %d", port)
-
-	// start serving
-	go func() {
-		err := srv.Serve(l)
-		if err != nil {
-			log.Printf("serve error: %s", err)
-		}
-	}()
-
-	// the cleanup of this server (deferred shutdown) needs to occur in the
-	// acceptance test that will use this
-	return srv, baseURL, nil
 }
