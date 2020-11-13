@@ -12,7 +12,6 @@ import (
 	"net/http/httputil"
 	"os"
 	"strconv"
-	"testing"
 	"time"
 
 	"cloud.google.com/go/errorreporting"
@@ -228,50 +227,48 @@ func CloseStackDriverErrorClient(errorClient *errorreporting.Client) {
 // =========================
 
 // GetGraphQLHeaders gets relevant GraphQLHeaders
-func GetGraphQLHeaders(t *testing.T) map[string]string {
+func GetGraphQLHeaders(ctx context.Context) (map[string]string, error) {
+	authorization, err := GetBearerTokenHeader(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("Can't Generate Bearer Token: %s", err)
+	}
 	return req.Header{
 		"Accept":        "application/json",
 		"Content-Type":  "application/json",
-		"Authorization": GetBearerTokenHeader(t),
-	}
+		"Authorization": authorization,
+	}, nil
 }
 
 // GetBearerTokenHeader gets bearer Token Header
-func GetBearerTokenHeader(t *testing.T) string {
-	ctx := context.Background()
+func GetBearerTokenHeader(ctx context.Context) (string, error) {
+
 	user, err := GetOrCreateFirebaseUser(ctx, TestUserEmail)
 	if err != nil {
-		t.Errorf("can't get or create firebase user: %s", err)
-		return ""
+		return "", fmt.Errorf("can't get or create firebase user: %s", err)
 	}
 
 	if user == nil {
-		t.Errorf("nil firebase user")
-		return ""
+		return "", fmt.Errorf("nil firebase user")
 	}
 
 	customToken, err := CreateFirebaseCustomToken(ctx, user.UID)
 	if err != nil {
-		t.Errorf("can't create custom token: %s", err)
-		return ""
+		return "", fmt.Errorf("can't create custom token: %s", err)
 	}
 
 	if customToken == "" {
-		t.Errorf("blank custom token: %s", err)
-		return ""
+		return "", fmt.Errorf("blank custom token: %s", err)
 	}
 
 	idTokens, err := AuthenticateCustomFirebaseToken(customToken)
 	if err != nil {
-		t.Errorf("can't authenticate custom token: %s", err)
-		return ""
+		return "", fmt.Errorf("can't authenticate custom token: %s", err)
 	}
 	if idTokens == nil {
-		t.Errorf("nil idTokens")
-		return ""
+		return "", fmt.Errorf("nil idTokens")
 	}
 
-	return fmt.Sprintf("Bearer %s", idTokens.IDToken)
+	return fmt.Sprintf("Bearer %s", idTokens.IDToken), nil
 }
 
 func randomPort() int {

@@ -11,6 +11,7 @@ import (
 
 	"cloud.google.com/go/errorreporting"
 	"cloud.google.com/go/logging"
+	"github.com/imroc/req"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
@@ -330,6 +331,81 @@ func Test_closeStackDriverErrorClient(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			base.CloseStackDriverErrorClient(tt.args.errorClient)
+		})
+	}
+}
+
+func TestGetGraphQLHeaders(t *testing.T) {
+	ctx := context.Background()
+	authorization, err := base.GetBearerTokenHeader(ctx)
+	if assert.NoErrorf(t, err, "bearerToken Header could not be generated %s", err) {
+		assert.NotEqual(t, authorization, "")
+	}
+
+	type args struct {
+		ctx context.Context
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		want    map[string]string
+		wantErr bool
+	}{
+		{
+			name: "Good Test Case",
+			args: args{
+				ctx: ctx,
+			},
+			want: req.Header{
+				"Accept":        "application/json",
+				"Content-Type":  "application/json",
+				"Authorization": authorization,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := base.GetGraphQLHeaders(tt.args.ctx)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetGraphQLHeaders() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			assert.NotNil(t, got)
+		})
+	}
+}
+
+func TestGetBearerTokenHeader(t *testing.T) {
+
+	ctx := context.Background()
+
+	type args struct {
+		ctx context.Context
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "Good Test Case",
+			args: args{
+				ctx: ctx,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := base.GetBearerTokenHeader(tt.args.ctx)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetBearerTokenHeader() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			assert.NotEqual(t, got, "")
 		})
 	}
 }
