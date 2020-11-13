@@ -278,6 +278,7 @@ func randomPort() int {
 	rand.Seed(time.Now().Unix())
 	min := 32768
 	max := 60999
+	/* #nosec G404 */
 	port := rand.Intn(max-min+1) + min
 	return port
 }
