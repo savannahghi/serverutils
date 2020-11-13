@@ -6,19 +6,33 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"os"
 	"strconv"
+	"time"
 
 	"cloud.google.com/go/errorreporting"
 	"cloud.google.com/go/logging"
 	"cloud.google.com/go/profiler"
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"github.com/getsentry/sentry-go"
+	"github.com/imroc/req"
 	log "github.com/sirupsen/logrus"
 	"go.opencensus.io/trace"
 )
+
+const (
+	serverTimeoutSeconds = 120
+)
+
+var allowedHeaders = []string{
+	"Authorization", "Accept", "Accept-Charset", "Accept-Language",
+	"Accept-Encoding", "Origin", "Host", "User-Agent", "Content-Length",
+	"Content-Type",
+}
 
 // Sentry initializes Sentry, for error reporting
 func Sentry() error {
@@ -216,4 +230,108 @@ func CloseStackDriverErrorClient(errorClient *errorreporting.Client) {
 	if err != nil {
 		log.WithFields(log.Fields{"error": err}).Error("Unable to close StackDriver error client")
 	}
+}
+
+// =========================
+// TEST SERVER UTILS
+// =========================
+
+// GetGraphQLHeaders gets relevant GraphQLHeaders
+func GetGraphQLHeaders(ctx context.Context) (map[string]string, error) {
+	authorization, err := GetBearerTokenHeader(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("can't Generate Bearer Token: %s", err)
+	}
+	return req.Header{
+		"Accept":        "application/json",
+		"Content-Type":  "application/json",
+		"Authorization": authorization,
+	}, nil
+}
+
+// GetBearerTokenHeader gets bearer Token Header
+func GetBearerTokenHeader(ctx context.Context) (string, error) {
+
+	user, err := GetOrCreateFirebaseUser(ctx, TestUserEmail)
+	if err != nil {
+		return "", fmt.Errorf("can't get or create firebase user: %s", err)
+	}
+
+	if user == nil {
+		return "", fmt.Errorf("nil firebase user")
+	}
+
+	customToken, err := CreateFirebaseCustomToken(ctx, user.UID)
+	if err != nil {
+		return "", fmt.Errorf("can't create custom token: %s", err)
+	}
+
+	if customToken == "" {
+		return "", fmt.Errorf("blank custom token: %s", err)
+	}
+
+	idTokens, err := AuthenticateCustomFirebaseToken(customToken)
+	if err != nil {
+		return "", fmt.Errorf("can't authenticate custom token: %s", err)
+	}
+	if idTokens == nil {
+		return "", fmt.Errorf("nil idTokens")
+	}
+
+	return fmt.Sprintf("Bearer %s", idTokens.IDToken), nil
+}
+
+func randomPort() int {
+	rand.Seed(time.Now().Unix())
+	min := 32768
+	max := 60999
+	/* #nosec G404 */
+	port := rand.Intn(max-min+1) + min
+	return port
+}
+
+// PrepareServer is the signature of a function that Knows how to prepare & initialise the server
+type PrepareServer func(ctx context.Context, port int, allowedOrigins []string) *http.Server
+
+// StartTestServer starts up test server
+func StartTestServer(ctx context.Context, prepareServer PrepareServer, allowedOrigins []string) (*http.Server, string, error) {
+	// prepare the server
+	port := randomPort()
+	srv := prepareServer(ctx, port, allowedOrigins)
+	baseURL := fmt.Sprintf("http://localhost:%d", port)
+	if srv == nil {
+		return nil, "", fmt.Errorf("nil test server")
+	}
+
+	// set up the TCP listener
+	// this is done early so that we are sure we can connect to the port in
+	// the tests; backlogs will be sent to the listener
+	l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	if err != nil || l == nil {
+		return nil, "", fmt.Errorf("unable to listen on port %d: %w", port, err)
+	}
+
+	log.Printf("LISTENING on port %d", port)
+
+	// start serving
+	go func() {
+		err := srv.Serve(l)
+		if err != nil {
+			log.Printf("serve error: %s", err)
+		}
+	}()
+
+	// the cleanup of this server (deferred shutdown) needs to occur in the
+	// acceptance test that will use this
+	return srv, baseURL, nil
+}
+
+//HealthStatusCheck endpoint to check if the server is working.
+func HealthStatusCheck(w http.ResponseWriter, r *http.Request) {
+
+	err := json.NewEncoder(w).Encode(true)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }

@@ -19,6 +19,8 @@ require (
 	github.com/google/go-cmp v0.5.3 // indirect
 	github.com/google/pprof v0.0.0-20201109224723-20978b51388d // indirect
 	github.com/google/uuid v1.1.2
+	github.com/gorilla/handlers v1.5.1
+	github.com/gorilla/mux v1.6.1
 	github.com/imroc/req v0.3.0
 	github.com/kevinburke/go.uuid v1.2.0
 	github.com/lithammer/shortuuid v3.0.0+incompatible
