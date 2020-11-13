@@ -5,16 +5,12 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
-	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"cloud.google.com/go/errorreporting"
 	"cloud.google.com/go/logging"
-	"github.com/imroc/req"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
@@ -336,96 +332,4 @@ func Test_closeStackDriverErrorClient(t *testing.T) {
 			base.CloseStackDriverErrorClient(tt.args.errorClient)
 		})
 	}
-}
-
-// =========================
-// TEST SERVER UTILS
-// =========================
-
-func GetGraphQLHeaders(t *testing.T) map[string]string {
-	return req.Header{
-		"Accept":        "application/json",
-		"Content-Type":  "application/json",
-		"Authorization": GetBearerTokenHeader(t),
-	}
-}
-
-func GetBearerTokenHeader(t *testing.T) string {
-	ctx := context.Background()
-	user, err := base.GetOrCreateFirebaseUser(ctx, base.TestUserEmail)
-	if err != nil {
-		t.Errorf("can't get or create firebase user: %s", err)
-		return ""
-	}
-
-	if user == nil {
-		t.Errorf("nil firebase user")
-		return ""
-	}
-
-	customToken, err := base.CreateFirebaseCustomToken(ctx, user.UID)
-	if err != nil {
-		t.Errorf("can't create custom token: %s", err)
-		return ""
-	}
-
-	if customToken == "" {
-		t.Errorf("blank custom token: %s", err)
-		return ""
-	}
-
-	idTokens, err := base.AuthenticateCustomFirebaseToken(customToken)
-	if err != nil {
-		t.Errorf("can't authenticate custom token: %s", err)
-		return ""
-	}
-	if idTokens == nil {
-		t.Errorf("nil idTokens")
-		return ""
-	}
-
-	return fmt.Sprintf("Bearer %s", idTokens.IDToken)
-}
-
-func randomPort() int {
-	rand.Seed(time.Now().Unix())
-	min := 32768
-	max := 60999
-	port := rand.Intn(max-min+1) + min
-	return port
-}
-
-// StartTestServer starts up test server
-func StartTestServer(ctx context.Context, prepareServer func(context.Context, int) *http.Server) (*http.Server, string, error) {
-	// prepare the server
-	port := randomPort()
-	srv := prepareServer(ctx, port)
-	baseURL := fmt.Sprintf("http://localhost:%d", port)
-	if srv == nil {
-		return nil, "", fmt.Errorf("nil test server")
-	}
-
-	// set up the TCP listener
-	// this is done early so that we are sure we can connect to the port in
-	// the tests; backlogs will be sent to the listener
-	l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
-	if err != nil {
-		return nil, "", fmt.Errorf("unable to listen on port %d: %w", port, err)
-	}
-	if l == nil {
-		return nil, "", fmt.Errorf("nil test server listener")
-	}
-	log.Printf("LISTENING on port %d", port)
-
-	// start serving
-	go func() {
-		err := srv.Serve(l)
-		if err != nil {
-			log.Printf("serve error: %s", err)
-		}
-	}()
-
-	// the cleanup of this server (deferred shutdown) needs to occur in the
-	// acceptance test that will use this
-	return srv, baseURL, nil
 }
