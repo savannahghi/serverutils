@@ -24,6 +24,16 @@ import (
 	"go.opencensus.io/trace"
 )
 
+const (
+	serverTimeoutSeconds = 120
+)
+
+var allowedHeaders = []string{
+	"Authorization", "Accept", "Accept-Charset", "Accept-Language",
+	"Accept-Encoding", "Origin", "Host", "User-Agent", "Content-Length",
+	"Content-Type",
+}
+
 // Sentry initializes Sentry, for error reporting
 func Sentry() error {
 	dsn, err := GetEnvVar(DSNEnvVarName)
@@ -280,11 +290,14 @@ func randomPort() int {
 	return port
 }
 
+// PrepareServer is the signature of a function that Knows how to prepare & initialise the server
+type PrepareServer func(ctx context.Context, port int, allowedOrigins []string) *http.Server
+
 // StartTestServer starts up test server
-func StartTestServer(ctx context.Context, prepareServer func(context.Context, int) *http.Server) (*http.Server, string, error) {
+func StartTestServer(ctx context.Context, prepareServer PrepareServer, allowedOrigins []string) (*http.Server, string, error) {
 	// prepare the server
 	port := randomPort()
-	srv := prepareServer(ctx, port)
+	srv := prepareServer(ctx, port, allowedOrigins)
 	baseURL := fmt.Sprintf("http://localhost:%d", port)
 	if srv == nil {
 		return nil, "", fmt.Errorf("nil test server")
@@ -294,12 +307,10 @@ func StartTestServer(ctx context.Context, prepareServer func(context.Context, in
 	// this is done early so that we are sure we can connect to the port in
 	// the tests; backlogs will be sent to the listener
 	l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
-	if err != nil {
+	if err != nil || l == nil {
 		return nil, "", fmt.Errorf("unable to listen on port %d: %w", port, err)
 	}
-	if l == nil {
-		return nil, "", fmt.Errorf("nil test server listener")
-	}
+
 	log.Printf("LISTENING on port %d", port)
 
 	// start serving
@@ -313,4 +324,14 @@ func StartTestServer(ctx context.Context, prepareServer func(context.Context, in
 	// the cleanup of this server (deferred shutdown) needs to occur in the
 	// acceptance test that will use this
 	return srv, baseURL, nil
+}
+
+//HealthStatusCheck endpoint to check if the server is working.
+func HealthStatusCheck(w http.ResponseWriter, r *http.Request) {
+
+	err := json.NewEncoder(w).Encode(true)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }

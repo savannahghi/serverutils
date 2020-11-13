@@ -33,7 +33,21 @@ func GetAuthenticatedContextAndToken(t *testing.T) (context.Context, *auth.Token
 	return authenticatedContext, authToken
 }
 
+// GetAuthenticatedContextAndBearerToken returns a logged in context and bearer token.
+// It is useful for test purposes
+func GetAuthenticatedContextAndBearerToken(t *testing.T) (context.Context, string) {
+	ctx := context.Background()
+	authToken, bearerToken := getAuthTokenAndBearerToken(ctx, t)
+	authenticatedContext := context.WithValue(ctx, AuthTokenContextKey, authToken)
+	return authenticatedContext, bearerToken
+}
+
 func getAuthToken(ctx context.Context, t *testing.T) *auth.Token {
+	authToken, _ := getAuthTokenAndBearerToken(ctx, t)
+	return authToken
+}
+
+func getAuthTokenAndBearerToken(ctx context.Context, t *testing.T) (*auth.Token, string) {
 	user, userErr := GetOrCreateFirebaseUser(ctx, TestUserEmail)
 	assert.Nil(t, userErr)
 	assert.NotNil(t, user)
@@ -51,7 +65,7 @@ func getAuthToken(ctx context.Context, t *testing.T) *auth.Token {
 	assert.Nil(t, err)
 	assert.NotNil(t, authToken)
 
-	return authToken
+	return authToken, bearerToken
 }
 
 // GetOrCreateAnonymousUser creates an anonymous user

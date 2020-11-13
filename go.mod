@@ -17,6 +17,8 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/getsentry/sentry-go v0.7.0
 	github.com/google/uuid v1.1.2
+	github.com/gorilla/handlers v1.5.1
+	github.com/gorilla/mux v1.6.1
 	github.com/imroc/req v0.3.0
 	github.com/kevinburke/go.uuid v1.2.0
 	github.com/lithammer/shortuuid v3.0.0+incompatible
