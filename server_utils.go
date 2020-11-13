@@ -230,7 +230,7 @@ func CloseStackDriverErrorClient(errorClient *errorreporting.Client) {
 func GetGraphQLHeaders(ctx context.Context) (map[string]string, error) {
 	authorization, err := GetBearerTokenHeader(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("Can't Generate Bearer Token: %s", err)
+		return nil, fmt.Errorf("can't Generate Bearer Token: %s", err)
 	}
 	return req.Header{
 		"Accept":        "application/json",
