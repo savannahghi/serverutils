@@ -2,21 +2,28 @@ package base_test
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"cloud.google.com/go/errorreporting"
 	"cloud.google.com/go/logging"
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 =======
 >>>>>>> 2e0acd5... chore: investigate strange test behaviour
+=======
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
+>>>>>>> 095a85d... chore: investigate strange test behaviour
 	"github.com/imroc/req"
 
 	log "github.com/sirupsen/logrus"
