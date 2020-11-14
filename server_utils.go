@@ -24,16 +24,6 @@ import (
 	"go.opencensus.io/trace"
 )
 
-const (
-	serverTimeoutSeconds = 120
-)
-
-var allowedHeaders = []string{
-	"Authorization", "Accept", "Accept-Charset", "Accept-Language",
-	"Accept-Encoding", "Origin", "Host", "User-Agent", "Content-Length",
-	"Content-Type",
-}
-
 // Sentry initializes Sentry, for error reporting
 func Sentry() error {
 	dsn, err := GetEnvVar(DSNEnvVarName)
