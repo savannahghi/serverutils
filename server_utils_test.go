@@ -18,8 +18,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/imroc/req"
 
-	"github.com/imroc/req"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
@@ -343,68 +341,6 @@ func Test_closeStackDriverErrorClient(t *testing.T) {
 	}
 }
 
-
-func TestGetGraphQLHeaders(t *testing.T) {
-
-
-	authenticatedContext, bearerToken := base.GetAuthenticatedContextAndBearerToken(t)
-	authHeader := fmt.Sprintf("Bearer %s", bearerToken)
-	authorization, err := base.GetBearerTokenHeader(ctx)
-
-	if assert.NoErrorf(t, err, "bearerToken Header could not be generated %s", err) {
-		assert.NotEqual(t, authorization, "")
-	}
-
-	type args struct {
-		ctx context.Context
-	}
-
-	tests := []struct {
-		name    string
-		args    args
-		want    map[string]string
-		wantErr bool
-	}{
-
-		// TODO: Find out why the bad test case has some weird behaviour
-		// {
-		// 	name: "context with no authorization header",
-		// 	args: args{
-		// 		ctx: context.Background(),
-		// 	},
-		// 	want:    nil,
-		// 	wantErr: true,
-		// },
-		{
-			name: "context with authorization header",
-			args: args{
-				ctx: authenticatedContext,
-
-		{
-			name: "Good Test Case",
-			args: args{
-				ctx: ctx,
-			},
-			want: req.Header{
-				"Accept":        "application/json",
-				"Content-Type":  "application/json",
-				"Authorization": authHeader,
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := base.GetGraphQLHeaders(tt.args.ctx)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetGraphQLHeaders() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			assert.NotEmpty(t, got)
-		})
-	}
-}
-
 func TestGetGraphQLHeaders(t *testing.T) {
 
 	authenticatedContext, bearerToken := base.GetAuthenticatedContextAndBearerToken(t)
@@ -485,10 +421,6 @@ func TestGetBearerTokenHeader(t *testing.T) {
 		})
 	}
 }
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 548b0ce... fix: Written server utils test
 
 func TestStartTestServer(t *testing.T) {
 
@@ -496,18 +428,13 @@ func TestStartTestServer(t *testing.T) {
 	srv, baseURL, serverErr := base.StartTestServer(ctx, healthCheckServer, []string{
 		"http://localhost:5000",
 	})
-<<<<<<< HEAD
-=======
-	defer srv.Close()
->>>>>>> 548b0ce... fix: Written server utils test
+
 	if serverErr != nil {
 		t.Errorf("Unable to start test server %s", serverErr)
 		return
 	}
-<<<<<<< HEAD
 	defer srv.Close()
-=======
->>>>>>> 548b0ce... fix: Written server utils test
+
 	if srv == nil {
 		t.Errorf("nil test server %s", serverErr)
 		return
