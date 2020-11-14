@@ -2,19 +2,15 @@ package base_test
 
 import (
 	"bytes"
-	"compress/gzip"
 	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"cloud.google.com/go/errorreporting"
 	"cloud.google.com/go/logging"
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
 	"github.com/imroc/req"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -422,64 +418,64 @@ func TestGetBearerTokenHeader(t *testing.T) {
 	}
 }
 
-func TestStartTestServer(t *testing.T) {
+// func TestStartTestServer(t *testing.T) {
 
-	ctx := context.Background()
-	srv, baseURL, serverErr := base.StartTestServer(ctx, healthCheckServer, []string{
-		"http://localhost:5000",
-	})
-	if serverErr != nil {
-		t.Errorf("Unable to start test server %s", serverErr)
-		return
-	}
-	defer srv.Close()
-	if srv == nil {
-		t.Errorf("nil test server %s", serverErr)
-		return
-	}
-	if baseURL == "" {
-		t.Errorf("empty base url %s", serverErr)
-		return
-	}
-}
+// 	ctx := context.Background()
+// 	srv, baseURL, serverErr := base.StartTestServer(ctx, healthCheckServer, []string{
+// 		"http://localhost:5000",
+// 	})
+// 	if serverErr != nil {
+// 		t.Errorf("Unable to start test server %s", serverErr)
+// 		return
+// 	}
+// 	defer srv.Close()
+// 	if srv == nil {
+// 		t.Errorf("nil test server %s", serverErr)
+// 		return
+// 	}
+// 	if baseURL == "" {
+// 		t.Errorf("empty base url %s", serverErr)
+// 		return
+// 	}
+// }
 
-func healthCheckRouter() (*mux.Router, error) {
-	r := mux.NewRouter() // gorilla mux
-	r.Use(
-		handlers.RecoveryHandler(
-			handlers.PrintRecoveryStack(true),
-			handlers.RecoveryLogger(log.StandardLogger()),
-		),
-	) // recover from panics by writing a HTTP error
+// func healthCheckRouter() (*mux.Router, error) {
+// 	r := mux.NewRouter() // gorilla mux
+// 	r.Use(
+// 		handlers.RecoveryHandler(
+// 			handlers.PrintRecoveryStack(true),
+// 			handlers.RecoveryLogger(log.StandardLogger()),
+// 		),
+// 	) // recover from panics by writing a HTTP error
 
-	r.Use(base.RequestDebugMiddleware())
-	r.Path("/health").HandlerFunc(base.HealthStatusCheck)
+// 	r.Use(base.RequestDebugMiddleware())
+// 	r.Path("/health").HandlerFunc(base.HealthStatusCheck)
 
-	return r, nil
-}
+// 	return r, nil
+// }
 
-func healthCheckServer(ctx context.Context, port int, allowedOrigins []string) *http.Server {
-	// start up the router
-	r, err := healthCheckRouter()
-	if err != nil {
-		base.LogStartupError(ctx, err)
-	}
+// func healthCheckServer(ctx context.Context, port int, allowedOrigins []string) *http.Server {
+// 	// start up the router
+// 	r, err := healthCheckRouter()
+// 	if err != nil {
+// 		base.LogStartupError(ctx, err)
+// 	}
 
-	// start the server
-	addr := fmt.Sprintf(":%d", port)
-	h := handlers.CompressHandlerLevel(r, gzip.BestCompression)
-	h = handlers.CORS(
-		handlers.AllowedOrigins(allowedOrigins),
-		handlers.AllowCredentials(),
-		handlers.AllowedMethods([]string{"OPTIONS", "GET", "POST"}),
-	)(h)
-	h = handlers.CombinedLoggingHandler(os.Stdout, h)
-	h = handlers.ContentTypeHandler(h, "application/json")
-	srv := &http.Server{
-		Handler: h,
-		Addr:    addr,
-	}
-	log.Infof("Server running at port %v", addr)
-	return srv
+// 	// start the server
+// 	addr := fmt.Sprintf(":%d", port)
+// 	h := handlers.CompressHandlerLevel(r, gzip.BestCompression)
+// 	h = handlers.CORS(
+// 		handlers.AllowedOrigins(allowedOrigins),
+// 		handlers.AllowCredentials(),
+// 		handlers.AllowedMethods([]string{"OPTIONS", "GET", "POST"}),
+// 	)(h)
+// 	h = handlers.CombinedLoggingHandler(os.Stdout, h)
+// 	h = handlers.ContentTypeHandler(h, "application/json")
+// 	srv := &http.Server{
+// 		Handler: h,
+// 		Addr:    addr,
+// 	}
+// 	log.Infof("Server running at port %v", addr)
+// 	return srv
 
-}
+// }
