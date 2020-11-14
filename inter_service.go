@@ -16,6 +16,10 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
+const (
+	iscJWTExpireMinutes = 60
+)
+
 // ISCService defines the blueprint of a dependency service. This struct is here to maintain
 // uniform structure definitions
 type ISCService struct {
@@ -63,7 +67,7 @@ func (c InterServiceClient) CreateAuthToken() (string, error) {
 	claims := &Claims{
 		jwt.StandardClaims{
 			IssuedAt:  time.Now().Unix(),
-			ExpiresAt: time.Now().Add(1 * time.Minute).Unix(),
+			ExpiresAt: time.Now().Add(iscJWTExpireMinutes * time.Minute).Unix(),
 		},
 	}
 
