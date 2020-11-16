@@ -13,7 +13,6 @@ import (
 
 	"cloud.google.com/go/errorreporting"
 	"cloud.google.com/go/logging"
-
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/imroc/req"
@@ -430,13 +429,11 @@ func TestStartTestServer(t *testing.T) {
 	srv, baseURL, serverErr := base.StartTestServer(ctx, healthCheckServer, []string{
 		"http://localhost:5000",
 	})
-
 	if serverErr != nil {
 		t.Errorf("Unable to start test server %s", serverErr)
 		return
 	}
 	defer srv.Close()
-
 	if srv == nil {
 		t.Errorf("nil test server %s", serverErr)
 		return
