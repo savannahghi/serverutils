@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"firebase.google.com/go/auth"
+	"github.com/imroc/req"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -167,4 +168,35 @@ func getPhoneNumberAuthToken(ctx context.Context, t *testing.T) *auth.Token {
 	assert.NotNil(t, authToken)
 
 	return authToken
+}
+
+// GetDefaultHeaders returns headers used in inter service communication acceptance tests
+func GetDefaultHeaders(t *testing.T, rootDomain string, serviceName string) map[string]string {
+	return req.Header{
+		"Accept":        "application/json",
+		"Content-Type":  "application/json",
+		"Authorization": GetInterserviceBearerTokenHeader(t, rootDomain, serviceName),
+	}
+}
+
+// GetInterserviceBearerTokenHeader returns a valid isc bearer token header
+func GetInterserviceBearerTokenHeader(t *testing.T, rootDomain string, serviceName string) string {
+	isc := GetInterserviceClient(t, rootDomain, serviceName)
+	authToken, err := isc.CreateAuthToken()
+	assert.Nil(t, err)
+	assert.NotZero(t, authToken)
+	bearerHeader := fmt.Sprintf("Bearer %s", authToken)
+	return bearerHeader
+}
+
+// GetInterserviceClient returns an isc client used in acceptance testing
+func GetInterserviceClient(t *testing.T, rootDomain string, serviceName string) *InterServiceClient {
+	service := ISCService{
+		Name:       serviceName,
+		RootDomain: rootDomain,
+	}
+	isc, err := NewInterserviceClient(service)
+	assert.Nil(t, err)
+	assert.NotNil(t, isc)
+	return isc
 }
