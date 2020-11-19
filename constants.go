@@ -32,6 +32,9 @@ const (
 	// local server when necessary e.g when running tests on CI or a local developer setup
 	GoogleApplicationCredentialsEnvVarName = "GOOGLE_APPLICATION_CREDENTIALS"
 
+	// GoogleProjectNumberEnvVarName is a numeric project number that
+	GoogleProjectNumberEnvVarName = "GOOGLE_PROJECT_NUMBER"
+
 	// FDLDomainEnvironmentVariableName is the name of the domain used for short
 	// links.
 	//

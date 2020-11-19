@@ -12,12 +12,12 @@ require (
 	github.com/99designs/gqlgen v0.13.0
 	github.com/agnivade/levenshtein v1.1.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef
-	github.com/aws/aws-sdk-go v1.35.28 // indirect
+	github.com/aws/aws-sdk-go v1.35.31 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/getsentry/sentry-go v0.7.0
+	github.com/getsentry/sentry-go v0.8.0
 	github.com/google/go-cmp v0.5.3 // indirect
-	github.com/google/pprof v0.0.0-20201109224723-20978b51388d // indirect
+	github.com/google/pprof v0.0.0-20201117184057-ae444373da19 // indirect
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.6.1
@@ -32,13 +32,12 @@ require (
 	github.com/vektah/gqlparser/v2 v2.1.0
 	github.com/vmihailenco/msgpack v4.0.4+incompatible
 	go.opencensus.io v0.22.5
-	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b // indirect
 	golang.org/x/oauth2 v0.0.0-20201109201403-9fd604954f58
-	golang.org/x/sys v0.0.0-20201113233024-12cec1faf1ba // indirect
-	golang.org/x/tools v0.0.0-20201116002733-ac45abd4c88c // indirect
+	golang.org/x/sys v0.0.0-20201118182958-a01c418693c7 // indirect
+	golang.org/x/tools v0.0.0-20201119054027-25dc3e1ccc3c // indirect
 	google.golang.org/api v0.35.0
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20201113130914-ce600e9a6f9e // indirect
+	google.golang.org/genproto v0.0.0-20201117123952-62d171c70ae1 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 	moul.io/http2curl v1.0.0
 )
