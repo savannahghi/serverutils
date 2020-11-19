@@ -60,11 +60,11 @@ func RequestDebugMiddleware() func(http.Handler) http.Handler {
 				if err != nil {
 					log.Errorf("Unable to read request body for debugging: error %#v", err)
 				}
-				req, err := httputil.DumpRequest(r, true)
-				if err != nil {
-					log.Errorf("Unable to dump cloned request for debugging: error %#v", err)
-				}
 				if IsDebug() {
+					req, err := httputil.DumpRequest(r, true)
+					if err != nil {
+						log.Errorf("Unable to dump cloned request for debugging: error %#v", err)
+					}
 					log.Printf("Raw request: %v", string(req))
 				}
 				r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
