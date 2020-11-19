@@ -375,8 +375,9 @@ func ValidateAccessToken(accessToken string) (bool, *LoginCreds, error) {
 	if err != nil {
 		return false, creds, err
 	}
-	log.Printf("Access token URL: %s", url)
-
+	if IsDebug() {
+		log.Printf("Access token URL: %s", url)
+	}
 	payload := map[string]string{
 		"token":      accessToken,
 		"token_type": "access_token",
@@ -565,9 +566,13 @@ func PostFirebaseRefreshRequest(
 	if resp != nil && resp.StatusCode > http.StatusPartialContent {
 		rawResp, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			log.Printf("Unable to read Firebase refresh request HTTP response")
+			if IsDebug() {
+				log.Printf("Unable to read Firebase refresh request HTTP response")
+			}
 		}
-		log.Printf("Firebase refresh request raw response: %s", string(rawResp))
+		if IsDebug() {
+			log.Printf("Firebase refresh request raw response: %s", string(rawResp))
+		}
 		ReportErr(w, fmt.Errorf("firebase auth refresh error: %d", resp.StatusCode), http.StatusInternalServerError)
 		return nil
 	}
@@ -664,7 +669,9 @@ func ValidateLoginCreds(w http.ResponseWriter, r *http.Request) (*LoginCreds, er
 
 // ReportErr writes the indicated error to supplied response writer and also logs it
 func ReportErr(w http.ResponseWriter, err error, status int) {
-	log.Printf("%s", err)
+	if IsDebug() {
+		log.Printf("%s", err)
+	}
 	WriteJSONResponse(w, ErrorMap(err), status)
 }
 

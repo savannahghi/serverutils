@@ -14,7 +14,9 @@ func TestMain(m *testing.M) {
 	os.Setenv("ENVIRONMENT", "staging")
 	err := os.Setenv("ROOT_COLLECTION_SUFFIX", "staging")
 	if err != nil {
-		log.Printf("can't set root collection suffix in env: %s", err)
+		if base.IsDebug() {
+			log.Printf("can't set root collection suffix in env: %s", err)
+		}
 		os.Exit(-1)
 	}
 	rc := m.Run()

@@ -107,8 +107,10 @@ func (c InterServiceClient) MakeRequest(method string, path string, body interfa
 		return nil, reqErr
 	}
 
-	r, _ := httputil.DumpRequest(req, true)
-	log.Println(string(r))
+	if IsDebug() {
+		r, _ := httputil.DumpRequest(req, true)
+		log.Println(string(r))
+	}
 
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Accept", "application/json")

@@ -180,18 +180,20 @@ func TestNewServerClient(t *testing.T) {
 	apiHost := base.MustGetEnvVar(base.APIHostEnvVarName)
 	workstationID := base.MustGetEnvVar(base.WorkstationEnvVarName)
 
-	log.Printf(
-		"Test Client Creds:\nclientID: %s\nclientSecret: %s\nusername: %s\npassword: %s\ngrantType: %s\napiScheme: %s\napiTokenURL: %s\napiHost: %s\nworkstationID: %s\n",
-		clientID,
-		clientSecret,
-		username,
-		password,
-		grantType,
-		apiScheme,
-		apiTokenURL,
-		apiHost,
-		workstationID,
-	)
+	if base.IsDebug() {
+		log.Printf(
+			"Test Client Creds:\nclientID: %s\nclientSecret: %s\nusername: %s\npassword: %s\ngrantType: %s\napiScheme: %s\napiTokenURL: %s\napiHost: %s\nworkstationID: %s\n",
+			clientID,
+			clientSecret,
+			username,
+			password,
+			grantType,
+			apiScheme,
+			apiTokenURL,
+			apiHost,
+			workstationID,
+		)
+	}
 
 	type args struct {
 		clientID     string

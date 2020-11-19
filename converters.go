@@ -72,8 +72,10 @@ func ConvertInterfaceMap(inp map[string]interface{}) map[string]string {
 		val, ok := v.(string)
 		if !ok {
 			val = fmt.Sprintf("invalid string value: %#v", v)
-			log.Printf(
-				"non string value in map[string]interface{} that is to be converted into map[string]string: %#v", v)
+			if IsDebug() {
+				log.Printf(
+					"non string value in map[string]interface{} that is to be converted into map[string]string: %#v", v)
+			}
 		}
 		out[k] = val
 	}

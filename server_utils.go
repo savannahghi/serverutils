@@ -301,13 +301,17 @@ func StartTestServer(ctx context.Context, prepareServer PrepareServer, allowedOr
 		return nil, "", fmt.Errorf("unable to listen on port %d: %w", port, err)
 	}
 
-	log.Printf("LISTENING on port %d", port)
+	if IsDebug() {
+		log.Printf("LISTENING on port %d", port)
+	}
 
 	// start serving
 	go func() {
 		err := srv.Serve(l)
 		if err != nil {
-			log.Printf("serve error: %s", err)
+			if IsDebug() {
+				log.Printf("serve error: %s", err)
+			}
 		}
 	}()
 

@@ -160,7 +160,9 @@ func DefaultServerClient() (*ServerClient, error) {
 	workstationID, err := GetEnvVar(WorkstationEnvVarName)
 	if err != nil {
 		// this is optional
-		log.Printf("%s env var not found", WorkstationEnvVarName)
+		if IsDebug() {
+			log.Printf("%s env var not found", WorkstationEnvVarName)
+		}
 	}
 
 	customHeaders := map[string]string{
@@ -388,8 +390,10 @@ func (c *ServerClient) MakeRequest(method string, url string, body io.Reader) (*
 	contentType := resp.Header.Get("Content-Type")
 	if contentType != "application/json" {
 		bs, err := ioutil.ReadAll(resp.Body)
-		log.Printf("Mismatched content type error: %s\n", err)
-		log.Printf("Mismatched content type body: %s\b", string(bs))
+		if IsDebug() {
+			log.Printf("Mismatched content type error: %s\n", err)
+			log.Printf("Mismatched content type body: %s\b", string(bs))
+		}
 		return nil, fmt.Errorf("expected application/json Content-Type, got " + contentType)
 	}
 	return resp, nil
