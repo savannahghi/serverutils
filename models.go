@@ -509,3 +509,12 @@ type PIN struct {
 
 //IsEntity ...
 func (p PIN) IsEntity() {}
+
+// FinancialYearAndCurrency generic struct for the default financial year and default currency
+type FinancialYearAndCurrency struct {
+	ID           *string `json:"id"`
+	Active       *bool   `json:"active"`
+	Organisation *string `json:"organisation"`
+	IsDefault    bool    `json:"is_default,omitempty"`
+	ISOCode      *string `json:"iso_code,omitempty"`
+}

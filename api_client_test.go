@@ -743,3 +743,34 @@ func TestServerClient_Refresh(t *testing.T) {
 	err = c.Refresh()
 	assert.Nil(t, err)
 }
+
+func TestFetchERPIdenties(t *testing.T) {
+	o := base.FetchDefaultOrganisation()
+	c := base.FetchCashAccount()
+	m := base.FetchMpesaAccount()
+	w := base.FetchtWellnessAccount()
+	assert.NotNil(t, o)
+	assert.NotNil(t, c)
+	assert.NotNil(t, m)
+	assert.NotNil(t, w)
+}
+
+func TestFetchDefaultFinancialYear(t *testing.T) {
+	c, err := base.NewERPClient()
+	assert.Nil(t, err)
+	assert.NotNil(t, c)
+	y, err := base.FetchDefaultFinancialYear(c)
+	assert.Nil(t, err)
+	assert.NotNil(t, y)
+	assert.NotNil(t, y.ID)
+}
+
+func TestFetchDefaultCurrency(t *testing.T) {
+	c, err := base.NewERPClient()
+	assert.Nil(t, err)
+	assert.NotNil(t, c)
+	y, err := base.FetchDefaultCurrency(c)
+	assert.Nil(t, err)
+	assert.NotNil(t, y)
+	assert.NotNil(t, y.ID)
+}

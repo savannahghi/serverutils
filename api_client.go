@@ -742,3 +742,54 @@ func NewPostRequest(url string, values url.Values, headers map[string]string, ti
 	client := &http.Client{Timeout: time.Duration(timeoutDuration) * time.Second}
 	return client.Do(req)
 }
+
+// FetchDefaultOrganisation get the default Organisation from env
+func FetchDefaultOrganisation() *string {
+	o := MustGetEnvVar(ERPOrganisation)
+	return &o
+}
+
+// FetchCashAccount get cash account from env
+func FetchCashAccount() *string {
+	c := MustGetEnvVar(ERPCashAccount)
+	return &c
+}
+
+// FetchMpesaAccount gets mpesa account from env
+func FetchMpesaAccount() *string {
+	m := MustGetEnvVar(ERPMpesaAccount)
+	return &m
+}
+
+// FetchtWellnessAccount get the wellness account from env
+func FetchtWellnessAccount() *string {
+	w := MustGetEnvVar(ERPWellnessAccount)
+	return &w
+}
+
+// FetchDefaultFinancialYear retrieves the default financial year
+func FetchDefaultFinancialYear(c Client) (*FinancialYearAndCurrency, error) {
+	var resp struct {
+		Results []FinancialYearAndCurrency `json:"results"`
+	}
+	params := url.Values{}
+	params.Add("active", "true")
+	if err := ReadRequestToTarget(c, "GET", GetDefaultFinancialYear, params.Encode(), nil, &resp); err != nil {
+		return nil, fmt.Errorf("error %v", err)
+	}
+	return &resp.Results[0], nil
+}
+
+// FetchDefaultCurrency gets the default currency
+func FetchDefaultCurrency(c Client) (*FinancialYearAndCurrency, error) {
+	var resp struct {
+		Results []FinancialYearAndCurrency `json:"results"`
+	}
+	params := url.Values{}
+	params.Add("active", "true")
+	params.Add("is_default", "true")
+	if err := ReadRequestToTarget(c, "GET", GetDefaultCurrency, params.Encode(), nil, &resp); err != nil {
+		return nil, fmt.Errorf("error %v", err)
+	}
+	return &resp.Results[0], nil
+}

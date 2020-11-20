@@ -168,4 +168,14 @@ const (
 	ERPPasswordEnvVarName   = "ERP_PASSWORD"
 	ERPGrantTypeEnvVarName  = "ERP_GRANT_TYPE"
 	ERPDefaultWorkstationID = "ERP_DEFAULT_WORKSTATION_ID"
+	ERPOrganisation         = "ERP_ORGANISATION"
+	ERPCashAccount          = "ERP_CASH_ACCOUNT"
+	ERPMpesaAccount         = "ERP_MPESA_ACCOUNT"
+	ERPWellnessAccount      = "ERP_WELLNESS_ACCOUNT"
+
+	// GetDefaultFinancialYear gets the default financial year
+	GetDefaultFinancialYear = "/api/common/financialyears/"
+
+	// GetDefaultCurrency gets the default currency
+	GetDefaultCurrency = "/api/common/currencys/"
 )
