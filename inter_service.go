@@ -229,13 +229,13 @@ func SetupISCclient(config DepsConfig, serviceName string) (*InterServiceClient,
 	}
 
 	if GetRunningEnvironment() == TestingEnv {
-		dep := GetDepFromConfig(serviceName, config.Staging)
+		dep := GetDepFromConfig(serviceName, config.Testing)
 		client, err := NewInterserviceClient(ISCService{Name: dep.DepName, RootDomain: dep.DepRootDomain})
 		return client, err
 	}
 
 	if GetRunningEnvironment() == ProdEnv {
-		dep := GetDepFromConfig(serviceName, config.Staging)
+		dep := GetDepFromConfig(serviceName, config.Production)
 		client, err := NewInterserviceClient(ISCService{Name: dep.DepName, RootDomain: dep.DepRootDomain})
 		return client, err
 	}
