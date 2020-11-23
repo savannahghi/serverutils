@@ -793,3 +793,27 @@ func FetchDefaultCurrency(c Client) (*FinancialYearAndCurrency, error) {
 	}
 	return &resp.Results[0], nil
 }
+
+// RespondWithError writes an error response
+func RespondWithError(w http.ResponseWriter, code int, err error) {
+	errMap := ErrorMap(err)
+	errBytes, err := json.Marshal(errMap)
+	if err != nil {
+		errBytes = []byte(fmt.Sprintf("error: %s", err))
+	}
+	RespondWithJSON(w, code, errBytes)
+}
+
+// RespondWithJSON writes a JSON response
+func RespondWithJSON(w http.ResponseWriter, code int, payload []byte) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	_, err := w.Write(payload)
+	if err != nil {
+		log.Printf(
+			"unable to write payload `%s` to the http.ResponseWriter: %s",
+			string(payload),
+			err,
+		)
+	}
+}
