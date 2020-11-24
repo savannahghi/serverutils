@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go v0.72.0
 	cloud.google.com/go/firestore v1.3.0
 	cloud.google.com/go/logging v1.1.2
+	cloud.google.com/go/pubsub v1.8.3
 	cloud.google.com/go/storage v1.12.0 // indirect
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.4
 	firebase.google.com/go v3.13.0+incompatible
@@ -23,6 +24,7 @@ require (
 	github.com/imroc/req v0.3.0
 	github.com/kevinburke/go.uuid v1.2.0
 	github.com/lithammer/shortuuid v3.0.0+incompatible
+	github.com/rs/xid v1.2.1
 	github.com/segmentio/ksuid v1.0.3
 	github.com/shopspring/decimal v1.2.0
 	github.com/sirupsen/logrus v1.7.0
