@@ -72,7 +72,6 @@ func TestInterServiceClient_CreateAuthToken(t *testing.T) {
 }
 
 func TestInterServiceClient_MakeRequest(t *testing.T) {
-
 	type args struct {
 		name     string
 		endpoint string
@@ -197,7 +196,6 @@ func TestHasValidJWTBearerToken(t *testing.T) {
 
 func TestInterServiceAuthenticationMiddleware(t *testing.T) {
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
-
 	mw := base.InterServiceAuthenticationMiddleware()
 	h := mw(next)
 	rw := httptest.NewRecorder()
@@ -276,4 +274,17 @@ func TestGetPathToDepsFile(t *testing.T) {
 	p := base.PathToDepsFile()
 	assert.NotEmpty(t, p)
 	assert.Equal(t, true, strings.HasSuffix(p, base.DepsFileName))
+}
+
+func TestLoadDepsFromYAML(t *testing.T) {
+	got, err := base.LoadDepsFromYAML()
+	if err != nil {
+		t.Errorf("can't load deps from YAML: %v", err)
+		return
+	}
+
+	if got == nil {
+		t.Errorf("got back nil deps")
+		return
+	}
 }

@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -241,4 +242,21 @@ func SetupISCclient(config DepsConfig, serviceName string) (*InterServiceClient,
 	}
 
 	return nil, fmt.Errorf("failed to setup isc client")
+}
+
+// LoadDepsFromYAML loads the interservice dependency config from a deps.yaml
+// file that is at the default location
+func LoadDepsFromYAML() (*DepsConfig, error) {
+	var config DepsConfig
+
+	file, err := ioutil.ReadFile(filepath.Clean(PathToDepsFile()))
+	if err != nil {
+		return nil, fmt.Errorf("can't read deps file: %w", err)
+	}
+
+	if err := yaml.Unmarshal(file, &config); err != nil {
+		return nil, fmt.Errorf("can't unmarshal deps YAML: %w", err)
+	}
+
+	return &config, nil
 }
