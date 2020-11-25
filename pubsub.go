@@ -313,7 +313,7 @@ func NamespacePubsubIdentifier(
 func PublishToPubsub(
 	ctx context.Context,
 	pubsubClient *pubsub.Client,
-	topicName string,
+	topicID string,
 	environment string,
 	serviceName string,
 	version string,
@@ -327,12 +327,6 @@ func PublishToPubsub(
 		return fmt.Errorf("nil payload")
 	}
 
-	topicID := NamespacePubsubIdentifier(
-		serviceName,
-		topicName,
-		environment,
-		version,
-	)
 	t := pubsubClient.Topic(topicID)
 	topicExists, err := t.Exists(ctx)
 	if err != nil {
@@ -345,7 +339,7 @@ func PublishToPubsub(
 	result := t.Publish(ctx, &pubsub.Message{
 		Data: payload,
 		Attributes: map[string]string{
-			"topicID": topicName,
+			"topicID": topicID,
 		},
 	})
 
@@ -357,7 +351,7 @@ func PublishToPubsub(
 	}
 	t.Stop() // clear the queue and stop the publishing goroutines
 	log.Printf(
-		"published to %s (%s), got back message ID %s", topicID, topicName, msgID)
+		"published to %s (%s), got back message ID %s", topicID, topicID, msgID)
 
 	return nil
 }
