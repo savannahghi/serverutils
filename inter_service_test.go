@@ -17,6 +17,10 @@ import (
 )
 
 func TestGetJWTKey(t *testing.T) {
+	existingJWTKey, err := base.GetEnvVar("JWT_KEY")
+	if err != nil {
+		existingJWTKey = "an open secret"
+	}
 	os.Setenv("JWT_KEY", "an open secret")
 	tests := []struct {
 		name string
@@ -33,6 +37,7 @@ func TestGetJWTKey(t *testing.T) {
 				t.Errorf("base.GetJWTKey() = %v, want %v", got, tt.want)
 			}
 		})
+		os.Setenv("JWT_KEY", existingJWTKey)
 	}
 }
 

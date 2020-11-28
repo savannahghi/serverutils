@@ -18,11 +18,11 @@ require (
 	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/google/pprof v0.0.0-20201117184057-ae444373da19 // indirect
 	github.com/google/uuid v1.1.2
-	github.com/gorilla/context v0.0.0-20160226214623-1ea25387ff6f // indirect
 	github.com/gorilla/handlers v1.5.1
-	github.com/gorilla/mux v1.6.1
+	github.com/gorilla/mux v1.7.4
 	github.com/imroc/req v0.3.0
 	github.com/kevinburke/go.uuid v1.2.0
+	github.com/kr/pretty v0.2.0 // indirect
 	github.com/lithammer/shortuuid v3.0.0+incompatible
 	github.com/rs/xid v1.2.1
 	github.com/segmentio/ksuid v1.0.3

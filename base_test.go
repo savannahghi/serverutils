@@ -19,7 +19,16 @@ func TestMain(m *testing.M) {
 		}
 		os.Exit(-1)
 	}
+	existingDebug, err := base.GetEnvVar("DEBUG")
+	if err != nil {
+		existingDebug = "false"
+	}
+
+	os.Setenv("DEBUG", "true")
+
 	rc := m.Run()
+	// Restore DEBUG envar to original value after running test
+	os.Setenv("DEBUG", existingDebug)
 
 	// rc 0 means we've passed,
 	// and CoverMode will be non empty if run with -cover
