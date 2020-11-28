@@ -3,6 +3,7 @@ package base
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -35,4 +36,24 @@ func GetGSUITEDelegatedAuthorityTokenSource(ctx context.Context) (oauth2.TokenSo
 
 	ts := config.TokenSource(ctx)
 	return ts, nil
+}
+
+// GetLoggedInUserUID retrieves the logged in user's Firebase UID from the
+// supplied context and returns an error if it does not succeed
+func GetLoggedInUserUID(ctx context.Context) (string, error) {
+	authToken, err := GetUserTokenFromContext(ctx)
+	if err != nil {
+		return "", fmt.Errorf("auth token not found in context: %w", err)
+	}
+	return authToken.UID, nil
+}
+
+// MustGetLoggedInUserUID retrieves the logged in user's Firebase UID from the
+// supplied context and panics if it does not succeed
+func MustGetLoggedInUserUID(ctx context.Context) string {
+	authToken, err := GetUserTokenFromContext(ctx)
+	if err != nil {
+		log.Panicf("unable to get auth token from context: %s", err)
+	}
+	return authToken.UID
 }
