@@ -729,21 +729,19 @@ func GetPhoneNumberLoginFunc(ctx context.Context, fc IFirebaseClient) http.Handl
 			ReportErr(w, err, http.StatusInternalServerError)
 			return
 		}
-		if len(docs) != 1 {
-			pinErr := fmt.Errorf("msisdn %s pin is not one (it has %d)", phoneNumber, len(docs))
-			ReportErr(w, pinErr, http.StatusBadRequest)
-			return
-		}
-		dsnap := docs[0]
 
-		msisdnPin := &PIN{}
-		err = dsnap.DataTo(msisdnPin)
-		if err != nil {
-			ReportErr(w, err, http.StatusInternalServerError)
-			return
+		var pins []string
+		for _, dsnap := range docs {
+			msisdnPin := &PIN{}
+			err = dsnap.DataTo(msisdnPin)
+			if err != nil {
+				ReportErr(w, err, http.StatusInternalServerError)
+				return
+			}
+			pins = append(pins, msisdnPin.PIN)
 		}
 
-		if msisdnPin.PIN != creds.Pin {
+		if !StringSliceContains(pins, creds.Pin) {
 			wrongPinErr := fmt.Errorf("wrong pin number supplied")
 			ReportErr(w, wrongPinErr, http.StatusUnauthorized)
 			return

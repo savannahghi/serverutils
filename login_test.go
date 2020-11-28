@@ -1541,7 +1541,7 @@ func TestGetPhoneNumberLoginFunc(t *testing.T) {
 				w: httptest.NewRecorder(),
 				r: noPinLoginCredsReq,
 			},
-			wantStatusCode: http.StatusBadRequest,
+			wantStatusCode: http.StatusUnauthorized,
 		},
 	}
 	for _, tt := range tests {
