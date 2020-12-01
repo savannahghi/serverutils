@@ -10,6 +10,7 @@ import (
 	"net/http/httputil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -17,8 +18,9 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// Inter service token expire minutes. Specify after how long a token will expire
 const (
-	iscJWTExpireMinutes = 60
+	ISCExpireEnvVarName = "INTER_SERVICE_TOKEN_EXPIRE_MINUTES"
 )
 
 // ISCService defines the blueprint of a dependency service. This struct is here to maintain
@@ -65,10 +67,20 @@ func NewInterserviceClient(s ISCService) (*InterServiceClient, error) {
 
 // CreateAuthToken returns a signed JWT for use in authentication.
 func (c InterServiceClient) CreateAuthToken() (string, error) {
+	var expireMinutes int
+	expireMinutesStr, err := GetEnvVar(ISCExpireEnvVarName)
+	if err != nil {
+		// Fallback for when the env var is not set
+		expireMinutesStr = "60"
+	}
+	expireMinutes, err = strconv.Atoi(expireMinutesStr)
+	if err != nil {
+		return "", fmt.Errorf("misconfigured ENV: %w", err)
+	}
 	claims := &Claims{
 		jwt.StandardClaims{
 			IssuedAt:  time.Now().Unix(),
-			ExpiresAt: time.Now().Add(iscJWTExpireMinutes * time.Minute).Unix(),
+			ExpiresAt: time.Now().Add(time.Duration(expireMinutes) * time.Minute).Unix(),
 		},
 	}
 

@@ -3,6 +3,7 @@ package base_test
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -76,6 +77,52 @@ func TestInterServiceClient_CreateAuthToken(t *testing.T) {
 	}
 }
 
+func TestInterServiceClient_CreateAuthErrTest(t *testing.T) {
+	// Obtain the current value of ISCExpireEnvVarName
+	currentIscExpire, err := base.GetEnvVar(base.ISCExpireEnvVarName)
+	if err != nil {
+		log.Printf("no INTER_SERVICE_TOKEN_EXPIRE_MINUTES variable set")
+	}
+
+	// Set the ISCExpireEnvVarName to a non-int value
+	err = os.Setenv(base.ISCExpireEnvVarName, "not a valid int")
+	if err != nil {
+		t.Errorf("can't set ISC expire env var name: %v", err)
+		return
+	}
+
+	// Run the test, expect an error
+	client, err := base.NewInterserviceClient(
+		base.ISCService{
+			Name:       "otp",
+			RootDomain: "https://example.com",
+		},
+	)
+
+	if err != nil {
+		t.Errorf(" failed initialize a new interservice client: %v", err)
+		return
+	}
+
+	token, err := client.CreateAuthToken()
+
+	// We expect an error here
+	if err == nil {
+		t.Error("expected create auth token to raise an error but it didn't")
+		return
+	}
+	if token != "" {
+		t.Errorf("expected a blank token but got: %s", token)
+		return
+	}
+
+	// Restore ISCExpireEnvVarName to what it was before the test
+	err = os.Setenv(base.ISCExpireEnvVarName, currentIscExpire)
+	if err != nil {
+		t.Errorf("unable to restore ISC expire env var: %v", err)
+		return
+	}
+}
 func TestInterServiceClient_MakeRequest(t *testing.T) {
 	type args struct {
 		name     string
