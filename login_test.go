@@ -716,7 +716,6 @@ func Test_logoutFirebase(t *testing.T) {
 	}
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			fmt.Println(name)
 			base.LogoutFirebase(tc.ctx, tc.rw, tc.fc, &tc.req)
 			assert.Equal(t, tc.expectedStatusCode, tc.rw.Code)
 			assert.Contains(t, tc.rw.Body.String(), tc.expectedResponse)

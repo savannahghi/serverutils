@@ -251,3 +251,25 @@ func CheckIsAnonymousUser(ctx context.Context) (bool, error) {
 
 	return true, nil
 }
+
+// CreateFirebasePhoneNumberAuthToken create a phone number and and auth token
+func CreateFirebasePhoneNumberAuthToken(ctx context.Context, phoneNumber string) (*auth.Token, error) {
+	user, userErr := GetOrCreatePhoneNumberUser(ctx, phoneNumber)
+	if userErr != nil {
+		return nil, fmt.Errorf("GetOrCreatePhoneNumberUser: unable to get or create user %w", userErr)
+	}
+	customToken, tokenErr := CreateFirebaseCustomToken(ctx, user.UID)
+	if tokenErr != nil {
+		return nil, fmt.Errorf("CreateFirebaseCustomToken: unable to get or create custom token %w", tokenErr)
+	}
+	idTokens, idErr := AuthenticateCustomFirebaseToken(customToken)
+	if idErr != nil {
+		return nil, fmt.Errorf("AuthenticateCustomFirebaseToken: unable to authenticate token %w", tokenErr)
+	}
+	bearerToken := idTokens.IDToken
+	authToken, err := ValidateBearerToken(ctx, bearerToken)
+	if err != nil {
+		return nil, fmt.Errorf("ValidateBearerToken: unable to validate token %w", err)
+	}
+	return authToken, nil
+}

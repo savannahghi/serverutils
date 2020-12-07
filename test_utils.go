@@ -144,30 +144,11 @@ func GetOrCreatePhoneNumberUser(ctx context.Context, msisdn string) (*auth.UserR
 // GetPhoneNumberAuthenticatedContext returns a phone number logged in context, useful for test purposes
 func GetPhoneNumberAuthenticatedContext(t *testing.T) context.Context {
 	ctx := context.Background()
-	authToken := getPhoneNumberAuthToken(ctx, t)
-	authenticatedContext := context.WithValue(ctx, AuthTokenContextKey, authToken)
-	return authenticatedContext
-}
-
-func getPhoneNumberAuthToken(ctx context.Context, t *testing.T) *auth.Token {
-	user, userErr := GetOrCreatePhoneNumberUser(ctx, TestUserPhoneNumber)
-	assert.Nil(t, userErr)
-	assert.NotNil(t, user)
-
-	customToken, tokenErr := CreateFirebaseCustomToken(ctx, user.UID)
-	assert.Nil(t, tokenErr)
-	assert.NotNil(t, customToken)
-
-	idTokens, idErr := AuthenticateCustomFirebaseToken(customToken)
-	assert.Nil(t, idErr)
-	assert.NotNil(t, idTokens)
-
-	bearerToken := idTokens.IDToken
-	authToken, err := ValidateBearerToken(ctx, bearerToken)
+	authToken, err := CreateFirebasePhoneNumberAuthToken(ctx, TestUserPhoneNumber)
 	assert.Nil(t, err)
 	assert.NotNil(t, authToken)
-
-	return authToken
+	authenticatedContext := context.WithValue(ctx, AuthTokenContextKey, authToken)
+	return authenticatedContext
 }
 
 // GetDefaultHeaders returns headers used in inter service communication acceptance tests
