@@ -2,10 +2,10 @@ package base
 
 // Cover is used to save a user's insurance details.
 type Cover struct {
-	PayerName      string `json:"payerName,omitempty" firestore:"payerName"`
-	PayerSladeCode int    `json:"payerSladeCode,omitempty" firestore:"payerSladeCode"`
-	MemberNumber   string `json:"memberNumber,omitempty" firestore:"memberNumber"`
-	MemberName     string `json:"memberName,omitempty" firestore:"memberName"`
+	PayerName      string `json:"payer_name,omitempty" firestore:"payerName"`
+	PayerSladeCode int    `json:"payer_slade_code,omitempty" firestore:"payerSladeCode"`
+	MemberNumber   string `json:"member_number,omitempty" firestore:"memberNumber"`
+	MemberName     string `json:"member_name,omitempty" firestore:"memberName"`
 }
 
 // VerifiedEmail represents an email and it's verification status
@@ -35,20 +35,20 @@ type UserProfile struct {
 	// a profile contains a user's contact details
 	Msisdns        []string         `json:"msisdns,omitempty" firestore:"msisdns"`
 	Emails         []string         `json:"emails,omitempty" firestore:"emails"`
-	PushTokens     []string         `json:"pushTokens,omitempty" firestore:"pushTokens"`
-	VerifiedEmails []VerifiedEmail  `json:"verifiedEmails,omitempty" firestore:"verifiedEmails"`
-	VerifiedPhones []VerifiedMsisdn `json:"verifiedPhones,omitempty" firestore:"verifiedPhones"`
+	PushTokens     []string         `json:"push_tokens,omitempty" firestore:"pushTokens"`
+	VerifiedEmails []VerifiedEmail  `json:"verified_emails,omitempty" firestore:"verifiedEmails"`
+	VerifiedPhones []VerifiedMsisdn `json:"verified_phones,omitempty" firestore:"verifiedPhones"`
 
 	// we determine if a user is "live" by examining fields on their profile
-	TermsAccepted                      bool  `json:"termsAccepted,omitempty" firestore:"termsAccepted"`
-	IsApproved                         bool  `json:"isApproved,omitempty" firestore:"isApproved"`
+	TermsAccepted                      bool  `json:"terms_accepted,omitempty" firestore:"termsAccepted"`
+	IsApproved                         bool  `json:"is_approved,omitempty" firestore:"isApproved"`
 	Active                             bool  `json:"active" firestore:"active"`
-	PractitionerApproved               *bool `json:"practitionerApproved,omitempty" firestore:"practitionerApproved"`
-	PractitionerTermsOfServiceAccepted *bool `json:"practitionerTermsOfServiceAccepted,omitempty" firestore:"practitionerTermsOfServiceAccepted"`
+	PractitionerApproved               *bool `json:"practitioner_approved,omitempty" firestore:"practitionerApproved"`
+	PractitionerTermsOfServiceAccepted *bool `json:"practitioner_term_of_service_accepted,omitempty" firestore:"practitionerTermsOfServiceAccepted"`
 
 	// a user's profile photo can be stored as base 64 encoded PNG
-	PhotoBase64      string      `json:"photoBase64,omitempty" firestore:"photoBase64"`
-	PhotoContentType ContentType `json:"photoContentType,omitempty" firestore:"photoContentType"`
+	PhotoBase64      string      `json:"photo_base64,omitempty" firestore:"photoBase64"`
+	PhotoContentType ContentType `json:"photo_content_type,omitempty" firestore:"photoContentType"`
 
 	// a user can have zero or more insurance covers
 	Covers []Cover `json:"covers,omitempty" firestore:"covers"`
@@ -56,22 +56,22 @@ type UserProfile struct {
 	// a user's biodata is stored on the profile
 	Name        *string  `json:"name,omitempty" firestore:"name"`
 	Bio         *string  `json:"bio,omitempty" firestore:"bio"`
-	DateOfBirth *Date    `json:"dateOfBirth,omitempty" firestore:"dateOfBirth,omitempty"`
+	DateOfBirth *Date    `json:"date_of_birth,omitempty" firestore:"dateOfBirth,omitempty"`
 	Gender      *Gender  `json:"gender,omitempty" firestore:"gender,omitempty"`
 	Language    Language `json:"language,omitempty" firestore:"language"`
-	PatientID   *string  `json:"patientID,omitempty" firestore:"patientID"`
+	PatientID   *string  `json:"patient_id,omitempty" firestore:"patientID"`
 
 	// testers are whitelisted via their profiles
-	IsTester                   bool `json:"isTester,omitempty" firestore:"isTester"`
-	CanExperiment              bool `json:"canExperiment,omitempty" firestore:"canExperiment"`
-	AskAgainToSetIsTester      bool `json:"askAgainToSetIsTester,omitempty" firestore:"askAgainToSetIsTester"`
-	AskAgainToSetCanExperiment bool `json:"askAgainToSetCanExperiment,omitempty" firestore:"askAgainToSetCanExperiment"`
+	IsTester                   bool `json:"is_tester,omitempty" firestore:"isTester"`
+	CanExperiment              bool `json:"can_experiment,omitempty" firestore:"canExperiment"`
+	AskAgainToSetIsTester      bool `json:"ask_again_to_set_is_tester,omitempty" firestore:"askAgainToSetIsTester"`
+	AskAgainToSetCanExperiment bool `json:"ask_again_to_set_can_experiment,omitempty" firestore:"askAgainToSetCanExperiment"`
 
 	// these flags are used to determine paths to take/omit in the UI
-	HasPin                  bool `json:"hasPin,omitempty" firestore:"hasPin"`
-	HasSupplierAccount      bool `json:"hasSupplierAccount,omitempty" firestore:"hasSupplierAccount"`
-	HasCustomerAccount      bool `json:"hasCustomerAccount,omitempty" firestore:"hasCustomerAccount"`
-	PractitionerHasServices bool `json:"practitionerHasServices,omitempty" firestore:"practitionerHasServices"`
+	HasPin                  bool `json:"has_pin,omitempty" firestore:"hasPin"`
+	HasSupplierAccount      bool `json:"has_supplier_account,omitempty" firestore:"hasSupplierAccount"`
+	HasCustomerAccount      bool `json:"has_customer_account,omitempty" firestore:"hasCustomerAccount"`
+	PractitionerHasServices bool `json:"practitioner_has_services,omitempty" firestore:"practitionerHasServices"`
 }
 
 // IsEntity marks a profile as a GraphQL entity
