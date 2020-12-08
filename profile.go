@@ -41,7 +41,7 @@ type UserProfile struct {
 
 	// we determine if a user is "live" by examining fields on their profile
 	TermsAccepted                      bool  `json:"terms_accepted,omitempty" firestore:"termsAccepted"`
-	IsApproved                         bool  `json:"is_approved,omitempty" firestore:"isApproved"`
+	IsApproved                         bool  `json:"is_approved" firestore:"isApproved"`
 	Active                             bool  `json:"active" firestore:"active"`
 	PractitionerApproved               *bool `json:"practitioner_approved,omitempty" firestore:"practitionerApproved"`
 	PractitionerTermsOfServiceAccepted *bool `json:"practitioner_term_of_service_accepted,omitempty" firestore:"practitionerTermsOfServiceAccepted"`
@@ -62,15 +62,15 @@ type UserProfile struct {
 	PatientID   *string  `json:"patient_id,omitempty" firestore:"patientID"`
 
 	// testers are whitelisted via their profiles
-	IsTester                   bool `json:"is_tester,omitempty" firestore:"isTester"`
+	IsTester                   bool `json:"is_tester" firestore:"isTester"`
 	CanExperiment              bool `json:"can_experiment,omitempty" firestore:"canExperiment"`
 	AskAgainToSetIsTester      bool `json:"ask_again_to_set_is_tester,omitempty" firestore:"askAgainToSetIsTester"`
 	AskAgainToSetCanExperiment bool `json:"ask_again_to_set_can_experiment,omitempty" firestore:"askAgainToSetCanExperiment"`
 
 	// these flags are used to determine paths to take/omit in the UI
-	HasPin                  bool `json:"has_pin,omitempty" firestore:"hasPin"`
-	HasSupplierAccount      bool `json:"has_supplier_account,omitempty" firestore:"hasSupplierAccount"`
-	HasCustomerAccount      bool `json:"has_customer_account,omitempty" firestore:"hasCustomerAccount"`
+	HasPin                  bool `json:"has_pin" firestore:"hasPin"`
+	HasSupplierAccount      bool `json:"has_supplier_account" firestore:"hasSupplierAccount"`
+	HasCustomerAccount      bool `json:"has_customer_account" firestore:"hasCustomerAccount"`
 	PractitionerHasServices bool `json:"practitioner_has_services,omitempty" firestore:"practitionerHasServices"`
 }
 
