@@ -489,15 +489,6 @@ type PeriodInput struct {
 //IsEntity ...
 func (p PeriodInput) IsEntity() {}
 
-// PhoneNumberLoginCreds is used to (de)serialize the login username and password
-type PhoneNumberLoginCreds struct {
-	PhoneNumber string `json:"phonenumber"`
-	Pin         string `json:"pin"`
-}
-
-//IsEntity ...
-func (l PhoneNumberLoginCreds) IsEntity() {}
-
 // PIN is used to store a PIN (Personal Identifiation Number) associated
 // to a phone number sign up to Firebase
 type PIN struct {
