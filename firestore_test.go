@@ -753,3 +753,53 @@ func TestDeleteNode(t *testing.T) {
 		})
 	}
 }
+
+func TestDeleteCollection(t *testing.T) {
+	ctx := base.GetAuthenticatedContext(t)
+	firestoreClient := GetFirestoreClient(t)
+	collection := "test_collection_deletion"
+	data := map[string]string{
+		"a_key_for_testing": "random-test-key-value",
+	}
+	id, err := base.SaveDataToFirestore(firestoreClient, collection, data)
+	if err != nil {
+		t.Errorf("unable to save data to firestore: %v", err)
+		return
+	}
+	if id == "" {
+		t.Errorf("id got is empty")
+		return
+	}
+
+	ref := firestoreClient.Collection(collection)
+
+	type args struct {
+		ctx       context.Context
+		client    *firestore.Client
+		ref       *firestore.CollectionRef
+		batchSize int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "good case - successfully deleted collection",
+			args: args{
+				ctx:       ctx,
+				client:    firestoreClient,
+				ref:       ref,
+				batchSize: 10,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := base.DeleteCollection(tt.args.ctx, tt.args.client, tt.args.ref, tt.args.batchSize); (err != nil) != tt.wantErr {
+				t.Errorf("DeleteCollection() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

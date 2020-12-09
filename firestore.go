@@ -9,6 +9,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/google/uuid"
+	"google.golang.org/api/iterator"
 )
 
 // UnixEpoch is used as our version of "time zero".
@@ -283,4 +284,38 @@ func UpdateNode(ctx context.Context, id string, node Node) (time.Time, error) {
 		return UnixEpoch, err
 	}
 	return result.UpdateTime, nil
+}
+
+// DeleteCollection deletes a firestore collection
+func DeleteCollection(
+	ctx context.Context,
+	client *firestore.Client,
+	ref *firestore.CollectionRef,
+	batchSize int) error {
+	for {
+		iter := ref.Limit(batchSize).Documents(ctx)
+		numDeleted := 0
+		batch := client.Batch()
+		for {
+			doc, err := iter.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				return err
+			}
+
+			batch.Delete(doc.Ref)
+			numDeleted++
+		}
+
+		if numDeleted == 0 {
+			return nil
+		}
+
+		_, err := batch.Commit(ctx)
+		if err != nil {
+			return err
+		}
+	}
 }
