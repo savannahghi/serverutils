@@ -181,3 +181,23 @@ func GetInterserviceClient(t *testing.T, rootDomain string, serviceName string) 
 	assert.NotNil(t, isc)
 	return isc
 }
+
+// GetAuthenticatedContextFromUID creates an auth.Token given a valid uid
+func GetAuthenticatedContextFromUID(ctx context.Context, uid string) (*auth.Token, error) {
+	customToken, err := CreateFirebaseCustomToken(ctx, uid)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create an authenticated token: %w", err)
+	}
+
+	idTokens, err := AuthenticateCustomFirebaseToken(customToken)
+	if err != nil {
+		return nil, fmt.Errorf("failed to authenticated custom token: %w", err)
+	}
+
+	authToken, err := ValidateBearerToken(ctx, idTokens.IDToken)
+	if err != nil {
+		return nil, fmt.Errorf("failed to validate bearer token: %w", err)
+	}
+
+	return authToken, nil
+}
