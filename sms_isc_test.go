@@ -110,3 +110,60 @@ func TestSendSMS(t *testing.T) {
 		})
 	}
 }
+
+func TestVerifyOTP(t *testing.T) {
+	client, _ := base.NewInterserviceClient(base.ISCService{
+		Name:       "otp",
+		RootDomain: "https://otp-staging.healthcloud.co.ke",
+	})
+	// generate the OTP first to be used for a happy case
+	OTPCode, err := base.SendOTPHelper(base.TestUserPhoneNumber, client)
+	if err != nil {
+		t.Errorf("TestVerifyOTP: unable to send OTP")
+		return
+	}
+	type args struct {
+		msisdn           string
+		verificationCode string
+		client           *base.InterServiceClient
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{
+			name: "verify OTP success: OTP generated and verified on same number",
+			args: args{
+				msisdn:           base.TestUserPhoneNumber,
+				verificationCode: OTPCode,
+				client:           client,
+			},
+			wantErr: false,
+			want:    true,
+		},
+		{
+			name: "verify OTP failure: OTP not generated and verified on same number",
+			args: args{
+				msisdn:           base.TestUserPhoneNumberWithPin,
+				verificationCode: OTPCode,
+				client:           client,
+			},
+			wantErr: true,
+			want:    false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := base.VerifyOTP(tt.args.msisdn, tt.args.verificationCode, tt.args.client)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("VerifyOTP() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("VerifyOTP() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

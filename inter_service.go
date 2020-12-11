@@ -114,7 +114,6 @@ func (c InterServiceClient) MakeRequest(method string, path string, body interfa
 	}
 
 	payload := bytes.NewBuffer(encoded)
-
 	req, reqErr := http.NewRequest(method, url, payload)
 	if reqErr != nil {
 		return nil, reqErr

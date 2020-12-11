@@ -60,6 +60,8 @@ func MustNormalizeMSISDN(msisdn string) string {
 	return cleaned
 }
 
+// TODO! to be deprecated once services adopt `VerifyOTP`
+
 // ValidateMSISDN returns an error if the MSISDN format is wrong or the
 // supplied verification code is not valid
 func ValidateMSISDN(
