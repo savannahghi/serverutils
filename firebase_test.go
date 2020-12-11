@@ -2,7 +2,6 @@ package base_test
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -50,7 +49,6 @@ func TestGetOrCreateFirebaseUser(t *testing.T) {
 		email string
 	}{
 		{email: base.TestUserEmail},
-		{email: fmt.Sprintf("test.bewell.%s@healthcloud.co.ke", uuid.New().String())},
 	}
 	for _, tc := range tests {
 		user, err := base.GetOrCreateFirebaseUser(ctx, tc.email)

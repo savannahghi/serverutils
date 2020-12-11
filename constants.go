@@ -47,7 +47,7 @@ const (
 	ServerPublicDomainEnvironmentVariableName = "SERVER_PUBLIC_DOMAIN"
 
 	// TestUserEmail is used by integration tests
-	TestUserEmail = "automated.test.user.bewell-app-ci@healthcloud.co.ke"
+	TestUserEmail = "be.well@bewell.co.ke"
 
 	// OTPCollectionName is the name of the collection used to persist single
 	// use verification codes on Firebase
@@ -61,7 +61,7 @@ const (
 	IdentifierCollectionName = "identifiers"
 
 	// DefaultCalendarEmail is the email address that "owns" the calendar by default
-	DefaultCalendarEmail = "be.well@healthcloud.co.ke"
+	DefaultCalendarEmail = "be.well@bewell.co.ke"
 
 	// BeWellVirtualPayerSladeCode is the Slade Code for the virtual provider used by the Be.Well app for e.g telemedicine
 	BeWellVirtualPayerSladeCode = 2019 // PRO-4683
