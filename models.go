@@ -2,7 +2,6 @@ package base
 
 import (
 	"net/url"
-	"time"
 )
 
 // QueryParam is an interface used for filter and sort parameters
@@ -195,38 +194,6 @@ type FirebaseRefreshResponse struct {
 // AccessTokenPayload is used to accept access token verification requests from API clients
 type AccessTokenPayload struct {
 	AccessToken string `json:"accessToken"`
-}
-
-// Attachment is for containing or referencing attachments - additional data
-// content defined in other formats. The most common use of this type is to
-// include images or reports in some report format such as PDF. However, it can
-// be used for any data that has a MIME type.
-type Attachment struct {
-	ID          string    `json:"id"`
-	ContentType string    `json:"contentType"`
-	Language    string    `json:"language"`
-	Data        string    `json:"data"`
-	URL         string    `json:"url"`
-	Size        int64     `json:"size"`
-	Hash        string    `json:"hash"`
-	Title       string    `json:"title"`
-	Creation    time.Time `json:"creation"`
-}
-
-//IsEntity ...
-func (a Attachment) IsEntity() {}
-
-// AttachmentInput is used to create attachments.
-type AttachmentInput struct {
-	ID          string     `json:"id"`
-	ContentType string     `json:"contentType"`
-	Language    string     `json:"language"`
-	Data        string     `json:"data"`
-	URL         string     `json:"url"`
-	Size        int64      `json:"size"`
-	Hash        string     `json:"hash"`
-	Title       string     `json:"title"`
-	Creation    *time.Time `json:"creation"`
 }
 
 // PIN is used to store a PIN (Personal Identifiation Number) associated

@@ -200,10 +200,6 @@ func TestModel_IsNode(t *testing.T) {
 }
 
 func TestModelsIsEntity(t *testing.T) {
-
-	t5 := base.Attachment{}
-	t5.IsEntity()
-
 	t6 := base.EDIUserProfile{}
 	t6.IsEntity()
 
@@ -239,7 +235,4 @@ func TestModelsIsEntity(t *testing.T) {
 
 	t17 := base.PaginationInput{}
 	t17.IsEntity()
-
-	t19 := base.Attachment{}
-	t19.IsEntity()
 }
