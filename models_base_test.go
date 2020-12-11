@@ -272,9 +272,6 @@ func TestModelsIsEntity(t *testing.T) {
 	t24 := base.Identifier{}
 	t24.IsEntity()
 
-	t25 := base.PatientContact{}
-	t25.IsEntity()
-
 	t26 := base.Communication{}
 	t26.IsEntity()
 }
