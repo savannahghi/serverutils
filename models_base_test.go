@@ -200,17 +200,6 @@ func TestModel_IsNode(t *testing.T) {
 }
 
 func TestModelsIsEntity(t *testing.T) {
-	t1 := base.PeriodInput{}
-	t1.IsEntity()
-
-	t2 := base.Period{}
-	t2.IsEntity()
-
-	t3 := base.CodeableConceptInput{}
-	t3.IsEntity()
-
-	t4 := base.CodeableConcept{}
-	t4.IsEntity()
 
 	t5 := base.Attachment{}
 	t5.IsEntity()
@@ -251,27 +240,6 @@ func TestModelsIsEntity(t *testing.T) {
 	t17 := base.PaginationInput{}
 	t17.IsEntity()
 
-	t18 := base.Address{}
-	t18.IsEntity()
-
 	t19 := base.Attachment{}
 	t19.IsEntity()
-
-	t20 := base.CodeableConcept{}
-	t20.IsEntity()
-
-	t21 := base.Coding{}
-	t21.IsEntity()
-
-	t22 := base.ContactPoint{}
-	t22.IsEntity()
-
-	t23 := base.HumanName{}
-	t23.IsEntity()
-
-	t24 := base.Identifier{}
-	t24.IsEntity()
-
-	t26 := base.Communication{}
-	t26.IsEntity()
 }
