@@ -6,6 +6,8 @@ import (
 	"gitlab.slade360emr.com/go/base"
 )
 
+const testPhone = "+254723002959"
+
 func TestSendSMS(t *testing.T) {
 
 	// Note: This is a very brittle test case.
@@ -14,12 +16,12 @@ func TestSendSMS(t *testing.T) {
 	// But I (Farad) felt this is the best way of doing it i.e. Acceptance Testing
 	newSmsIsc, _ := base.NewInterserviceClient(base.ISCService{
 		Name:       "sms",
-		RootDomain: "https://sms-testing.healthcloud.co.ke",
+		RootDomain: "https://sms-staging.healthcloud.co.ke",
 	})
 
 	newTwilioIsc, _ := base.NewInterserviceClient(base.ISCService{
 		Name:       "twilio",
-		RootDomain: "https://twilio-testing.healthcloud.co.ke",
+		RootDomain: "https://twilio-staging.healthcloud.co.ke",
 	})
 
 	smsEndPoint := "internal/send_sms"
@@ -38,7 +40,7 @@ func TestSendSMS(t *testing.T) {
 		{
 			name: "good test case",
 			args: args{
-				phoneNumbers: []string{"+12028569601", "+254703499071"},
+				phoneNumbers: []string{testPhone},
 				message:      "Test Text Message",
 				smsIscClient: base.SmsISC{
 					Isc:      newSmsIsc,
@@ -54,7 +56,7 @@ func TestSendSMS(t *testing.T) {
 		{
 			name: "bad test case: Empty Message",
 			args: args{
-				phoneNumbers: []string{"+12028569601", "+254703499071"},
+				phoneNumbers: []string{testPhone},
 				message:      "",
 				smsIscClient: base.SmsISC{
 					Isc:      newSmsIsc,
