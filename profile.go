@@ -39,6 +39,9 @@ type UserProfile struct {
 	VerifiedEmails []VerifiedEmail  `json:"verified_emails,omitempty" firestore:"verifiedEmails"`
 	VerifiedPhones []VerifiedMsisdn `json:"verified_phones,omitempty" firestore:"verifiedPhones"`
 
+	// should be true for admins
+	IsAdmin bool `json:"isAdmin" firestore:"isAdmin"`
+
 	// we determine if a user is "live" by examining fields on their profile
 	TermsAccepted                      bool  `json:"terms_accepted,omitempty" firestore:"termsAccepted"`
 	IsApproved                         bool  `json:"is_approved" firestore:"isApproved"`
