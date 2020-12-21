@@ -17,23 +17,22 @@ import (
 
 // defaults
 const (
-	LogoURL       = "https://assets.healthcloud.co.ke/bewell_logo.png"
-	BlankImageURL = "https://assets.healthcloud.co.ke/1px.png"
-
-	linkSchemaFile       = "link.schema.json"
-	messageSchemaFile    = "message.schema.json"
-	actionSchemaFile     = "action.schema.json"
-	nudgeSchemaFile      = "nudge.schema.json"
-	itemSchemaFile       = "item.schema.json"
-	feedSchemaFile       = "feed.schema.json"
-	contextSchemaFile    = "context.schema.json"
-	payloadSchemaFile    = "payload.schema.json"
-	eventSchemaFile      = "event.schema.json"
-	statusSchemaFile     = "status.schema.json"
-	visibilitySchemaFile = "visibility.schema.json"
-
-	fallbackSchemaHost   = "https://schema.healthcloud.co.ke"
-	schemaHostEnvVarName = "SCHEMA_HOST"
+	LogoURL              = "https://assets.healthcloud.co.ke/bewell_logo.png"
+	BlankImageURL        = "https://assets.healthcloud.co.ke/1px.png"
+	SampleVideoURL       = "https://www.youtube.com/watch?v=bPiofmZGb8o"
+	FallbackSchemaHost   = "https://schema.healthcloud.co.ke"
+	SchemaHostEnvVarName = "SCHEMA_HOST"
+	LinkSchemaFile       = "link.schema.json"
+	MessageSchemaFile    = "message.schema.json"
+	ActionSchemaFile     = "action.schema.json"
+	NudgeSchemaFile      = "nudge.schema.json"
+	ItemSchemaFile       = "item.schema.json"
+	FeedSchemaFile       = "feed.schema.json"
+	ContextSchemaFile    = "context.schema.json"
+	PayloadSchemaFile    = "payload.schema.json"
+	EventSchemaFile      = "event.schema.json"
+	StatusSchemaFile     = "status.schema.json"
+	VisibilitySchemaFile = "visibility.schema.json"
 )
 
 // Element is a building block of a feed e.g a nudge, action, feed item etc
@@ -43,89 +42,10 @@ type Element interface {
 	ValidateAndMarshal() ([]byte, error)
 }
 
-// getSchemaURL serves JSON schema from this server and only falls back to a
-// remote schema host when the local server cannot serve the JSON schema files.
-// This has been done so as to reduce the impact of the network and DNS on the
-// schema validation process - a critical path activity.
-func getSchemaURL() string {
-	schemaHost, err := GetEnvVar(schemaHostEnvVarName)
-	if err != nil {
-		log.Printf("can't get env var `%s`: %s", schemaHostEnvVarName, err)
-	}
-
-	client := http.Client{
-		Timeout: time.Second * 1, // aggressive timeout
-	}
-	req, err := http.NewRequest(http.MethodGet, schemaHost, nil)
-	if err != nil {
-		log.Printf("can't create request to local schema URL: %s", err)
-	}
-	if err == nil {
-		resp, err := client.Do(req)
-		if err != nil {
-			log.Printf("error accessing schema URL: %s", err)
-		}
-		if err == nil {
-			if resp.StatusCode != http.StatusOK {
-				log.Printf("schema URL error status code: %s", resp.Status)
-			}
-			if resp.StatusCode == http.StatusOK {
-				return schemaHost // we want this case to be the most common
-			}
-		}
-	}
-
-	// fall back to an externally hosted schema
-	return fallbackSchemaHost
-}
-
-func validateAgainstSchema(sch string, b []byte) error {
-	schemaURL := fmt.Sprintf("%s/%s", getSchemaURL(), sch)
-	schemaLoader := gojsonschema.NewReferenceLoader(schemaURL)
-	documentLoader := gojsonschema.NewStringLoader(string(b))
-	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
-	if err != nil {
-		return fmt.Errorf(
-			"failed to validate `%s` against %s, got %#v: %w",
-			string(b),
-			sch,
-			result,
-			err,
-		)
-	}
-	if !result.Valid() {
-		errMsgs := []string{}
-		for _, vErr := range result.Errors() {
-			errType := vErr.Type()
-			val := vErr.Value()
-			context := vErr.Context().String()
-			field := vErr.Field()
-			desc := vErr.Description()
-			descFormat := vErr.DescriptionFormat()
-			details := vErr.Details()
-			errMsg := fmt.Sprintf(
-				"errType: %s\nval: %s\ncontext: %s\nfield: %s\ndesc: %s\ndescFormat: %s\ndetails: %s\n",
-				errType,
-				val,
-				context,
-				field,
-				desc,
-				descFormat,
-				details,
-			)
-			errMsgs = append(errMsgs, errMsg)
-		}
-		return fmt.Errorf(
-			"the result of validating `%s` against %s is not valid: %#v",
-			string(b),
-			sch,
-			errMsgs,
-		)
-	}
-	return nil
-}
-
-func validateAndUnmarshal(sch string, b []byte, el Element) error {
+// ValidateAndUnmarshal validates JSON against a named feed schema
+// file then unmarshals it into the supplied feed element, which should be a
+// pointer.
+func ValidateAndUnmarshal(sch string, b []byte, el Element) error {
 	err := validateAgainstSchema(sch, b)
 	if err != nil {
 		return fmt.Errorf("invalid JSON: %w", err)
@@ -137,7 +57,9 @@ func validateAndUnmarshal(sch string, b []byte, el Element) error {
 	return nil
 }
 
-func validateAndMarshal(sch string, el Element) ([]byte, error) {
+// ValidateAndMarshal marshals a feed element to JSON, checks it against the
+// indicated schema file and returns it if it is valid.
+func ValidateAndMarshal(sch string, el Element) ([]byte, error) {
 	bs, err := json.Marshal(el)
 	if err != nil {
 		return nil, fmt.Errorf("can't marshal %T to JSON: %w", el, err)
@@ -181,7 +103,7 @@ type Action struct {
 // ValidateAndUnmarshal checks that the input data is valid as per the
 // relevant JSON schema and unmarshals it if it is
 func (ac *Action) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(actionSchemaFile, b, ac)
+	err := ValidateAndUnmarshal(ActionSchemaFile, b, ac)
 	if err != nil {
 		return fmt.Errorf("invalid action JSON: %w", err)
 	}
@@ -190,7 +112,7 @@ func (ac *Action) ValidateAndUnmarshal(b []byte) error {
 
 // ValidateAndMarshal validates against JSON schema then marshals to JSON
 func (ac *Action) ValidateAndMarshal() ([]byte, error) {
-	return validateAndMarshal(actionSchemaFile, ac)
+	return ValidateAndMarshal(ActionSchemaFile, ac)
 }
 
 // IsEntity marks this as an Apollo federation GraphQL entity
@@ -214,7 +136,7 @@ type Event struct {
 // ValidateAndUnmarshal checks that the input data is valid as per the
 // relevant JSON schema and unmarshals it if it is
 func (ev *Event) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(eventSchemaFile, b, ev)
+	err := ValidateAndUnmarshal(EventSchemaFile, b, ev)
 	if err != nil {
 		return fmt.Errorf("invalid event JSON: %w", err)
 	}
@@ -223,7 +145,7 @@ func (ev *Event) ValidateAndUnmarshal(b []byte) error {
 
 // ValidateAndMarshal validates against JSON schema then marshals to JSON
 func (ev *Event) ValidateAndMarshal() ([]byte, error) {
-	return validateAndMarshal(eventSchemaFile, ev)
+	return ValidateAndMarshal(EventSchemaFile, ev)
 }
 
 // IsEntity marks this as an Apollo federation GraphQL entity
@@ -250,7 +172,7 @@ type Context struct {
 // ValidateAndUnmarshal checks that the input data is valid as per the
 // relevant JSON schema and unmarshals it if it is
 func (ct *Context) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(contextSchemaFile, b, ct)
+	err := ValidateAndUnmarshal(ContextSchemaFile, b, ct)
 	if err != nil {
 		return fmt.Errorf("invalid context JSON: %w", err)
 	}
@@ -259,7 +181,7 @@ func (ct *Context) ValidateAndUnmarshal(b []byte) error {
 
 // ValidateAndMarshal validates against JSON schema then marshals to JSON
 func (ct *Context) ValidateAndMarshal() ([]byte, error) {
-	return validateAndMarshal(contextSchemaFile, ct)
+	return ValidateAndMarshal(ContextSchemaFile, ct)
 }
 
 // Payload carries the actual 'business data' carried by the event.
@@ -271,7 +193,7 @@ type Payload struct {
 // ValidateAndUnmarshal checks that the input data is valid as per the
 // relevant JSON schema and unmarshals it if it is
 func (pl *Payload) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(payloadSchemaFile, b, pl)
+	err := ValidateAndUnmarshal(PayloadSchemaFile, b, pl)
 	if err != nil {
 		return fmt.Errorf("invalid payload JSON: %w", err)
 	}
@@ -280,7 +202,7 @@ func (pl *Payload) ValidateAndUnmarshal(b []byte) error {
 
 // ValidateAndMarshal validates against JSON schema then marshals to JSON
 func (pl *Payload) ValidateAndMarshal() ([]byte, error) {
-	return validateAndMarshal(payloadSchemaFile, pl)
+	return ValidateAndMarshal(PayloadSchemaFile, pl)
 }
 
 // Nudge represents a "prompt" for a user e.g to set a PIN
@@ -325,7 +247,7 @@ type Nudge struct {
 // ValidateAndUnmarshal checks that the input data is valid as per the
 // relevant JSON schema and unmarshals it if it is
 func (nu *Nudge) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(nudgeSchemaFile, b, nu)
+	err := ValidateAndUnmarshal(NudgeSchemaFile, b, nu)
 	if err != nil {
 		return fmt.Errorf("invalid nudge JSON: %w", err)
 	}
@@ -334,7 +256,7 @@ func (nu *Nudge) ValidateAndUnmarshal(b []byte) error {
 
 // ValidateAndMarshal verifies against JSON schema then marshals to JSON
 func (nu *Nudge) ValidateAndMarshal() ([]byte, error) {
-	return validateAndMarshal(nudgeSchemaFile, nu)
+	return ValidateAndMarshal(NudgeSchemaFile, nu)
 }
 
 // IsEntity marks this as an Apollo federation GraphQL entity
@@ -410,7 +332,7 @@ type Item struct {
 // ValidateAndUnmarshal checks that the input data is valid as per the
 // relevant JSON schema and unmarshals it if it is
 func (it *Item) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(itemSchemaFile, b, it)
+	err := ValidateAndUnmarshal(ItemSchemaFile, b, it)
 	if err != nil {
 		return fmt.Errorf("invalid item JSON: %w", err)
 	}
@@ -428,7 +350,7 @@ func (it *Item) ValidateAndMarshal() ([]byte, error) {
 		return nil, fmt.Errorf("an icon must be a PNG image")
 	}
 
-	return validateAndMarshal(itemSchemaFile, it)
+	return ValidateAndMarshal(ItemSchemaFile, it)
 }
 
 // IsEntity marks this as an Apollo federation GraphQL entity
@@ -461,7 +383,7 @@ type Message struct {
 // ValidateAndUnmarshal checks that the input data is valid as per the
 // relevant JSON schema and unmarshals it if it is
 func (msg *Message) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(messageSchemaFile, b, msg)
+	err := ValidateAndUnmarshal(MessageSchemaFile, b, msg)
 	if err != nil {
 		return fmt.Errorf("invalid message JSON: %w", err)
 	}
@@ -470,7 +392,7 @@ func (msg *Message) ValidateAndUnmarshal(b []byte) error {
 
 // ValidateAndMarshal validates against JSON schema then marshals to JSON
 func (msg *Message) ValidateAndMarshal() ([]byte, error) {
-	return validateAndMarshal(messageSchemaFile, msg)
+	return ValidateAndMarshal(MessageSchemaFile, msg)
 }
 
 // Link holds references to media that is part of the feed.
@@ -521,7 +443,7 @@ func (l *Link) validateLinkType() error {
 // ValidateAndUnmarshal checks that the input data is valid as per the
 // relevant JSON schema and unmarshals it if it is
 func (l *Link) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(linkSchemaFile, b, l)
+	err := ValidateAndUnmarshal(LinkSchemaFile, b, l)
 	if err != nil {
 		return fmt.Errorf("invalid video JSON: %w", err)
 	}
@@ -535,7 +457,7 @@ func (l *Link) ValidateAndMarshal() ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("can't marshal invalid link: %w", err)
 	}
-	return validateAndMarshal(linkSchemaFile, l)
+	return ValidateAndMarshal(LinkSchemaFile, l)
 }
 
 // ActionType defines the types for global actions
@@ -1043,4 +965,128 @@ func GetPNGImageLink(url string, title string, description string, thumbnailURL 
 		Description: description,
 		Thumbnail:   thumbnailURL,
 	}
+}
+
+// GetSVGImageLink returns an initialized PNG image link.
+//
+// It is used in testing and default data generation.
+func GetSVGImageLink(url string, title string, description string, thumbnailURL string) Link {
+	return Link{
+		ID:          ksuid.New().String(),
+		URL:         url,
+		LinkType:    LinkTypeSvgImage,
+		Title:       title,
+		Description: description,
+		Thumbnail:   thumbnailURL,
+	}
+}
+
+// GetYoutubeVideoLink returns an initialized YouTube video link.
+//
+// It is used in testing and default data generation.
+func GetYoutubeVideoLink(url string, title string, description string, thumbnailURL string) Link {
+	return Link{
+		ID:          ksuid.New().String(),
+		URL:         url,
+		LinkType:    LinkTypeYoutubeVideo,
+		Title:       title,
+		Description: description,
+		Thumbnail:   thumbnailURL,
+	}
+}
+
+// GetPDFDocumentLink returns an initialized PDF document link.
+//
+// It is used in testing and default data generation.
+func GetPDFDocumentLink(url string, title string, description string, thumbnailURL string) Link {
+	return Link{
+		ID:          ksuid.New().String(),
+		URL:         url,
+		LinkType:    LinkTypePdfDocument,
+		Title:       title,
+		Description: description,
+		Thumbnail:   thumbnailURL,
+	}
+}
+
+// getSchemaURL serves JSON schema from this server and only falls back to a
+// remote schema host when the local server cannot serve the JSON schema files.
+// This has been done so as to reduce the impact of the network and DNS on the
+// schema validation process - a critical path activity.
+func getSchemaURL() string {
+	schemaHost, err := GetEnvVar(SchemaHostEnvVarName)
+	if err != nil {
+		log.Printf("can't get env var `%s`: %s", SchemaHostEnvVarName, err)
+	}
+
+	client := http.Client{
+		Timeout: time.Second * 1, // aggressive timeout
+	}
+	req, err := http.NewRequest(http.MethodGet, schemaHost, nil)
+	if err != nil {
+		log.Printf("can't create request to local schema URL: %s", err)
+	}
+	if err == nil {
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Printf("error accessing schema URL: %s", err)
+		}
+		if err == nil {
+			if resp.StatusCode != http.StatusOK {
+				log.Printf("schema URL error status code: %s", resp.Status)
+			}
+			if resp.StatusCode == http.StatusOK {
+				return schemaHost // we want this case to be the most common
+			}
+		}
+	}
+
+	// fall back to an externally hosted schema
+	return FallbackSchemaHost
+}
+
+func validateAgainstSchema(sch string, b []byte) error {
+	schemaURL := fmt.Sprintf("%s/%s", getSchemaURL(), sch)
+	schemaLoader := gojsonschema.NewReferenceLoader(schemaURL)
+	documentLoader := gojsonschema.NewStringLoader(string(b))
+	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
+	if err != nil {
+		return fmt.Errorf(
+			"failed to validate `%s` against %s, got %#v: %w",
+			string(b),
+			sch,
+			result,
+			err,
+		)
+	}
+	if !result.Valid() {
+		errMsgs := []string{}
+		for _, vErr := range result.Errors() {
+			errType := vErr.Type()
+			val := vErr.Value()
+			context := vErr.Context().String()
+			field := vErr.Field()
+			desc := vErr.Description()
+			descFormat := vErr.DescriptionFormat()
+			details := vErr.Details()
+			errMsg := fmt.Sprintf(
+				"errType: %s\nval: %s\ncontext: %s\nfield: %s\ndesc: %s\ndescFormat: %s\ndetails: %s\n",
+				errType,
+				val,
+				context,
+				field,
+				desc,
+				descFormat,
+				details,
+			)
+			errMsgs = append(errMsgs, errMsg)
+		}
+		return fmt.Errorf(
+			"the result of validating `%s` against %s is not valid: %#v",
+			string(b),
+			sch,
+			errMsgs,
+		)
+	}
+	return nil
 }

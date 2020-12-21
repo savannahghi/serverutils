@@ -2365,3 +2365,110 @@ func TestLink_ValidateAndMarshal(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateAndUnmarshal(t *testing.T) {
+	msg := base.Message{
+		ID:             ksuid.New().String(),
+		SequenceNumber: 1,
+		Text:           ksuid.New().String(),
+		ReplyTo:        ksuid.New().String(),
+		PostedByUID:    ksuid.New().String(),
+		PostedByName:   ksuid.New().String(),
+		Timestamp:      time.Now(),
+	}
+	msgBytes, err := json.Marshal(msg)
+	if err != nil {
+		t.Errorf("can't marshal message to JSON: %w", err)
+		return
+	}
+	type args struct {
+		sch string
+		b   []byte
+		el  base.Element
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "valid case",
+			args: args{
+				sch: base.MessageSchemaFile,
+				b:   msgBytes,
+				el:  &base.Message{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid case",
+			args: args{
+				sch: base.MessageSchemaFile,
+				b:   []byte("this should not pass validation"),
+				el:  &base.Message{},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := base.ValidateAndUnmarshal(tt.args.sch, tt.args.b, tt.args.el); (err != nil) != tt.wantErr {
+				t.Errorf("ValidateAndUnmarshal() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestValidateAndMarshal(t *testing.T) {
+	msg := base.Message{
+		ID:             ksuid.New().String(),
+		SequenceNumber: 1,
+		Text:           ksuid.New().String(),
+		ReplyTo:        ksuid.New().String(),
+		PostedByUID:    ksuid.New().String(),
+		PostedByName:   ksuid.New().String(),
+		Timestamp:      time.Now(),
+	}
+	type args struct {
+		sch string
+		el  base.Element
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantNil bool
+		wantErr bool
+	}{
+		{
+			name: "valid case",
+			args: args{
+				sch: base.MessageSchemaFile,
+				el:  &msg,
+			},
+			wantNil: false,
+			wantErr: false,
+		},
+		{
+			name: "invalid case",
+			args: args{
+				sch: base.MessageSchemaFile,
+				el:  &base.Message{},
+			},
+			wantNil: true,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := base.ValidateAndMarshal(tt.args.sch, tt.args.el)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ValidateAndMarshal() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantNil && got == nil {
+				t.Errorf("ValidateAndMarshal() got unexpected nil")
+				return
+			}
+		})
+	}
+}
