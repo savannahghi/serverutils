@@ -179,3 +179,36 @@ const (
 	// GetDefaultCurrency gets the default currency
 	GetDefaultCurrency = "/api/common/currencys/"
 )
+
+// bewell admin permissions.
+// this is not exhausive. More will be added on a need by need basis after analysis of the application
+// and assert what actions need to the admin-permissioned
+const (
+	// TODO(dexter) add more permissions
+	SuperAdmin  = "SUPER_ADMIN"
+	Admin       = "ADMIN"
+	CreateAdmin = "CREATE_ADMIN"
+	RemoveAdmin = "REMOVE_ADMIN"
+
+	// whether an admin can add a supplier
+	AddSupplier = "ADD_SUPPLIER"
+
+	// whether an admin can remove a supplier
+	RemoveSupplier = "REMOVE_SUPPLIER"
+
+	// whether an admin can suspend a supplier
+	SuspendSupplier = "SUSPEND_SUPPLIER"
+
+	// whether an admin can unsuspend a supplier
+	UnSuspendSupplier = "UNSUSPEND_SUPPLIER"
+
+	// whether an admin can view and process(approve/reject) kyc requests
+	ProcessKYC = "PROCESS_KYC"
+)
+
+// DefaultSuperAdminPermissions generic permissions for super admins. This permissions should be given to the bewell dev team
+var DefaultSuperAdminPermissions []string = []string{SuperAdmin, CreateAdmin, RemoveAdmin, AddSupplier, RemoveSupplier,
+	SuspendSupplier, UnSuspendSupplier, ProcessKYC}
+
+// DefaultAdminPermissions generic permissions for admins. This permissions should be given to sil support/rm team
+var DefaultAdminPermissions []string = []string{SuperAdmin, AddSupplier, SuspendSupplier, UnSuspendSupplier, ProcessKYC}

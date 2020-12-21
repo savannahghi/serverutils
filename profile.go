@@ -39,8 +39,12 @@ type UserProfile struct {
 	VerifiedEmails []VerifiedEmail  `json:"verified_emails,omitempty" firestore:"verifiedEmails"`
 	VerifiedPhones []VerifiedMsisdn `json:"verified_phones,omitempty" firestore:"verifiedPhones"`
 
-	// should be true for admins
+	// This is a generic compuated indicator that the logged is user has elevared privileges. its serves for both super_admins and admins.
+	// to truly assert what a super admin/admin can and cannot do, use the permissions slice which should be populated with
+	// fine grain persmissions.
 	IsAdmin bool `json:"isAdmin" firestore:"isAdmin"`
+	// Permissions for the admin
+	Permissions []string `json:"permissions,omitempty" firestore:"permissions"`
 
 	// we determine if a user is "live" by examining fields on their profile
 	TermsAccepted                      bool  `json:"terms_accepted,omitempty" firestore:"termsAccepted"`
