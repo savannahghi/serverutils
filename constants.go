@@ -184,7 +184,6 @@ const (
 // this is not exhausive. More will be added on a need by need basis after analysis of the application
 // and assert what actions need to the admin-permissioned
 const (
-	// TODO(dexter) add more permissions
 	SuperAdmin  = "SUPER_ADMIN"
 	Admin       = "ADMIN"
 	CreateAdmin = "CREATE_ADMIN"
@@ -206,9 +205,26 @@ const (
 	ProcessKYC = "PROCESS_KYC"
 )
 
-// DefaultSuperAdminPermissions generic permissions for super admins. This permissions should be given to the bewell dev team
-var DefaultSuperAdminPermissions []string = []string{SuperAdmin, CreateAdmin, RemoveAdmin, AddSupplier, RemoveSupplier,
-	SuspendSupplier, UnSuspendSupplier, ProcessKYC}
+// DefaultSuperAdminPermissions generic permissions for super admins.
+// These permissions should be given to the Be.Well dev team.
+var DefaultSuperAdminPermissions []string = []string{
+	SuperAdmin,
+	CreateAdmin,
+	RemoveAdmin,
+	AddSupplier,
+	RemoveSupplier,
+	SuspendSupplier,
+	UnSuspendSupplier,
+	ProcessKYC,
+}
 
-// DefaultAdminPermissions generic permissions for admins. This permissions should be given to sil support/rm team
-var DefaultAdminPermissions []string = []string{SuperAdmin, AddSupplier, SuspendSupplier, UnSuspendSupplier, ProcessKYC}
+// DefaultAdminPermissions generic permissions for admins.
+// These permissions should be given to SIL customer happiness and relationship
+// management staff.
+var DefaultAdminPermissions []string = []string{
+	SuperAdmin,
+	AddSupplier,
+	SuspendSupplier,
+	UnSuspendSupplier,
+	ProcessKYC,
+}
