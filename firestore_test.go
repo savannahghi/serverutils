@@ -25,21 +25,21 @@ func (d Dummy) SetID(string) {}
 
 func TestSuffixCollection_staging(t *testing.T) {
 	col := "otp"
-	expect := fmt.Sprintf("%v_%v", col, "staging")
+	expect := fmt.Sprintf("%v_bewell_%v", col, "staging")
 	s := base.SuffixCollection(col)
 	assert.Equal(t, expect, s)
 }
 
 func TestServiceSuffixCollection_testing(t *testing.T) {
 	col := "otp"
-	expect := fmt.Sprintf("%v_%v", col, "staging")
+	expect := fmt.Sprintf("%v_bewell_%v", col, "staging")
 	s := base.SuffixCollection(col)
 	assert.Equal(t, expect, s)
 }
 
 func Test_getCollectionName(t *testing.T) {
 	n1 := &Dummy{}
-	assert.Equal(t, "dummy_staging", base.GetCollectionName(n1))
+	assert.Equal(t, "dummy_bewell_staging", base.GetCollectionName(n1))
 }
 
 func Test_validatePaginationParameters(t *testing.T) {

@@ -24,15 +24,15 @@ func GetCollectionName(n Node) string {
 	return SuffixCollection(strings.ToLower(lastPart))
 }
 
-// GetFirestoreEnvirionmentSuffix get the env suffix where the app is running
-func GetFirestoreEnvirionmentSuffix() string {
+// GetFirestoreEnvironmentSuffix get the env suffix where the app is running
+func GetFirestoreEnvironmentSuffix() string {
 	return MustGetEnvVar("ROOT_COLLECTION_SUFFIX")
 }
 
 // SuffixCollection adds a suffix to the collection name. This will aid in separating
 // collections for different environments
 func SuffixCollection(c string) string {
-	return fmt.Sprintf("%v_%v", c, GetFirestoreEnvirionmentSuffix())
+	return fmt.Sprintf("%v_bewell_%v", c, GetFirestoreEnvironmentSuffix())
 }
 
 // ValidatePaginationParameters ensures that the supplied pagination parameters make sense
