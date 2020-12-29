@@ -141,7 +141,7 @@ type UserProfile struct {
 	Covers []Cover `json:"covers,omitempty" firestore:"covers"`
 
 	// a user's biodata is stored on the profile
-	BioData *BioData
+	UserBioData BioData `json:"userBioData,omitempty" firestore:"userBioData"`
 }
 
 // IsEntity marks a profile as a GraphQL entity
