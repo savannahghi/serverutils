@@ -1,15 +1,24 @@
 package base
 
+import "time"
+
 /* #nosec */
 const (
-	tokenMinLength             = 12
-	apiPasswordMinLength       = 3
-	TokenExpiryRatio           = 0.95 // Refresh access tokens after 95% of the time is spent
-	meURLFragment              = "v1/user/me/?format=json"
-	DateLayout                 = "2006-01-02"
-	DateTimeFormatLayout       = "2006-01-02T15:04:05+03:00"
+	tokenMinLength = 12
+
+	apiPasswordMinLength = 3
+
+	TokenExpiryRatio = 0.95 // Refresh access tokens after 95% of the time is spent
+
+	meURLFragment = "v1/user/me/?format=json"
+
+	DateLayout = "2006-01-02"
+
+	DateTimeFormatLayout = "2006-01-02T15:04:05+03:00"
+
 	introspectionURLEnvVarName = "AUTH_SERVER_INTROSPECTION_URL"
-	defaultRegion              = "KE"
+
+	defaultRegion = "KE"
 
 	// Sep is a separator, used to create "opaque" IDs
 	Sep = "|"
@@ -178,4 +187,8 @@ const (
 
 	// GetDefaultCurrency gets the default currency
 	GetDefaultCurrency = "/api/common/currencys/"
+)
+
+var (
+	timeLocation, _ = time.LoadLocation("Africa/Nairobi")
 )
