@@ -190,5 +190,7 @@ const (
 )
 
 var (
+
+	// TimeLocation default timezone
 	TimeLocation, _ = time.LoadLocation("Africa/Nairobi")
 )
