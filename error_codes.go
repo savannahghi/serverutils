@@ -41,10 +41,22 @@ const (
 	// ProfileNotFound errors means a user profile does not exist with the provided parameters
 	// This occures when fetching a user profile either by UID, ID , PHONE NUMBER or EMAIL and no
 	// matching record is found
-	// it's value is 6
+	// it's value is 7
 	ProfileNotFound
 
 	// PINMismatch errors means that the provided PINS do not match (are not similar)
 	// it's value is 8
 	PINMismatch
+
+	// PINNotFound errors means a user PIN does not exist with the provided parameters
+	// This occurs when fetching a PIN by the user's user profile ID and no
+	// matching record is found. This should never occur and if it does then i means
+	// there is a serious issue with our data
+	// it's value is 9
+	PINNotFound
+
+	// UserNotFound errors means that a user's firebase auth account does not exists. This occurs
+	// when fectching a firebase user by either a phone number or an email and their record is not found
+	// it's value is 10
+	UserNotFound
 )
