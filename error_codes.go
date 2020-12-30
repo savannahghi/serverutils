@@ -56,7 +56,7 @@ const (
 	PINNotFound
 
 	// UserNotFound errors means that a user's firebase auth account does not exists. This occurs
-	// when fectching a firebase user by either a phone number or an email and their record is not found
+	// when fetcching a firebase user by either a phone number or an email and their record is not found
 	// it's value is 10
 	UserNotFound
 )

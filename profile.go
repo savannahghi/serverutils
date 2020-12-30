@@ -78,7 +78,7 @@ func (c Cover) IsEntity() {}
 type BioData struct {
 	FirstName   string `json:"firstName" firestore:"firstName"`
 	LastName    string `json:"lastName" firestore:"lastName"`
-	DateOfBirth Date   `json:"dateOfBirth" firestore:"dateOfBirth"`
+	DateOfBirth *Date  `json:"dateOfBirth" firestore:"dateOfBirth"`
 	Gender      Gender `json:"gender" firestore:"gender"`
 }
 
@@ -92,11 +92,12 @@ type VerifiedIdentifier struct {
 // UserProfileRepository defines signatures that a repeository that acts on the userprofile should
 // implement. Repository heres means a storage unit like firebase or mongodb or pg.
 type UserProfileRepository interface {
+	UpdateUserName(ctx context.Context, id string, phoneNumber string) error
 	UpdatePrimaryPhoneNumber(ctx context.Context, id string, phoneNumber string) error
 	UpdatePrimaryEmailAddress(ctx context.Context, id string, emailAddress string) error
 	UpdateSecondaryPhoneNumbers(ctx context.Context, id string, phoneNumbers []string) error
 	UpdateSecondaryEmailAddresses(ctx context.Context, id string, emailAddresses []string) error
-	UpdateSuspended(ctx context.Context, id string) bool
+	UpdateSuspended(ctx context.Context, id string, status bool) bool
 	UpdatePhotoUploadID(ctx context.Context, id string, uploadID string) error
 	UpdateCovers(ctx context.Context, id string, covers []Cover) error
 	UpdatePushTokens(ctx context.Context, id string, pushToken string) error
@@ -147,6 +148,11 @@ type UserProfile struct {
 // IsEntity marks a profile as a GraphQL entity
 func (u UserProfile) IsEntity() {}
 
+// UpdateProfileUserName updates the profiles username attribute
+func (u UserProfile) UpdateProfileUserName(ctx context.Context, repo UserProfileRepository, userName string) error {
+	return repo.UpdateUserName(ctx, u.ID, userName)
+}
+
 // UpdateProfilePrimaryPhoneNumber update the primary phone number for this user profile
 func (u UserProfile) UpdateProfilePrimaryPhoneNumber(ctx context.Context, repo UserProfileRepository, phoneNumber string) error {
 	return repo.UpdatePrimaryPhoneNumber(ctx, u.ID, phoneNumber)
@@ -158,11 +164,36 @@ func (u UserProfile) UpdateProfilePrimaryEmailAddress(ctx context.Context, repo 
 }
 
 // UpdateProfileSecondaryPhoneNumbers update the primary phone number for this user profile
-func (u UserProfile) UpdateProfileSecondaryPhoneNumbers(repo UserProfileRepository) {
-	// TODO: add implementation
+func (u UserProfile) UpdateProfileSecondaryPhoneNumbers(ctx context.Context, repo UserProfileRepository, phoneNumbers []string) error {
+	return repo.UpdateSecondaryPhoneNumbers(ctx, u.ID, phoneNumbers)
 }
 
 // UpdateProfileSecondaryEmailAddresses update the primary phone number for this user profile
-func (u UserProfile) UpdateProfileSecondaryEmailAddresses(repo UserProfileRepository) {
-	// TODO: add implementation
+func (u UserProfile) UpdateProfileSecondaryEmailAddresses(ctx context.Context, repo UserProfileRepository, emailAddresses []string) error {
+	return repo.UpdateSecondaryEmailAddresses(ctx, u.ID, emailAddresses)
+}
+
+// UpdateProfileSuspended update the profiles Suspended attribute
+func (u UserProfile) UpdateProfileSuspended(ctx context.Context, repo UserProfileRepository, status bool) bool {
+	return repo.UpdateSuspended(ctx, u.ID, status)
+}
+
+// UpdateProfilePhotoUploadID updates the profiles PhotoUploadID attribute
+func (u UserProfile) UpdateProfilePhotoUploadID(ctx context.Context, repo UserProfileRepository, uploadID string) error {
+	return repo.UpdatePhotoUploadID(ctx, u.ID, uploadID)
+}
+
+// UpdateProfileCovers updates the profile covers attribute
+func (u UserProfile) UpdateProfileCovers(ctx context.Context, repo UserProfileRepository, covers []Cover) error {
+	return repo.UpdateCovers(ctx, u.ID, covers)
+}
+
+// UpdateProfilePushTokens updates the profiles pushTokens
+func (u UserProfile) UpdateProfilePushTokens(ctx context.Context, repo UserProfileRepository, pushToken string) error {
+	return repo.UpdatePushTokens(ctx, u.ID, pushToken)
+}
+
+//UpdateProfileBioData updates the profile biodata
+func (u UserProfile) UpdateProfileBioData(ctx context.Context, repo UserProfileRepository, data BioData) error {
+	return repo.UpdateBioData(ctx, u.ID, data)
 }
