@@ -92,15 +92,16 @@ type VerifiedIdentifier struct {
 // UserProfileRepository defines signatures that a repeository that acts on the userprofile should
 // implement. Repository heres means a storage unit like firebase or mongodb or pg.
 type UserProfileRepository interface {
-	UpdateUserName(ctx context.Context, id string, phoneNumber string) error
+	UpdateUserName(ctx context.Context, id string, userName string) error
 	UpdatePrimaryPhoneNumber(ctx context.Context, id string, phoneNumber string) error
 	UpdatePrimaryEmailAddress(ctx context.Context, id string, emailAddress string) error
 	UpdateSecondaryPhoneNumbers(ctx context.Context, id string, phoneNumbers []string) error
 	UpdateSecondaryEmailAddresses(ctx context.Context, id string, emailAddresses []string) error
-	UpdateSuspended(ctx context.Context, id string, status bool) bool
+	UpdateVerifiedIdentifiers(ctx context.Context, id string, identifiers []VerifiedIdentifier) error
+	UpdateSuspended(ctx context.Context, id string, status bool) error
 	UpdatePhotoUploadID(ctx context.Context, id string, uploadID string) error
 	UpdateCovers(ctx context.Context, id string, covers []Cover) error
-	UpdatePushTokens(ctx context.Context, id string, pushToken string) error
+	UpdatePushTokens(ctx context.Context, id string, pushToken []string) error
 	UpdateBioData(ctx context.Context, id string, data BioData) error
 }
 
@@ -118,14 +119,21 @@ type UserProfile struct {
 	// and these providers point to the same user
 	VerifiedIdentifiers []VerifiedIdentifier `json:"verifiedIdentifiers" firestore:"verifiedIdentifiers"`
 
-	// a profile contains a user's contact details
-	PrimaryPhone            string   `json:"primaryPhone" firestore:"primaryPhone"`
-	PrimaryEmailAddress     string   `json:"primaryEmailAddress" firestore:"primaryEmailAddress"`
-	SecondaryPhoneNumbers   []string `json:"secondaryPhoneNumbers" firestore:"secondaryPhoneNumbers"`
+	// this is the first class unique attribute of a user profile.  A user profile MUST HAVE A PRIMARY PHONE NUMBER
+	PrimaryPhone string `json:"primaryPhone" firestore:"primaryPhone"`
+
+	// this is the second class unique attribute of a user profile. This can be updated as the user desires
+	PrimaryEmailAddress string `json:"primaryEmailAddress" firestore:"primaryEmailAddress"`
+
+	// these are all phone numbers associated with a user. These phone numbers can be promoted to PRIMARY PHONE NUMBER
+	// and/or used for account recovery
+	SecondaryPhoneNumbers []string `json:"secondaryPhoneNumbers" firestore:"secondaryPhoneNumbers"`
+
 	SecondaryEmailAddresses []string `json:"secondaryEmailAddresses " firestore:"secondaryEmailAddresses"`
 
 	PushTokens []string `json:"pushTokens,omitempty" firestore:"pushTokens"`
 
+	// what the user is allowed to do. Only valid for admins
 	Permissions []PermissionType `json:"permissions,omitempty" firestore:"permissions"`
 
 	// we determine if a user is "live" by examining fields on their profile
@@ -149,51 +157,56 @@ type UserProfile struct {
 func (u UserProfile) IsEntity() {}
 
 // UpdateProfileUserName updates the profiles username attribute
-func (u UserProfile) UpdateProfileUserName(ctx context.Context, repo UserProfileRepository, userName string) error {
+func (u *UserProfile) UpdateProfileUserName(ctx context.Context, repo UserProfileRepository, userName string) error {
 	return repo.UpdateUserName(ctx, u.ID, userName)
 }
 
 // UpdateProfilePrimaryPhoneNumber update the primary phone number for this user profile
-func (u UserProfile) UpdateProfilePrimaryPhoneNumber(ctx context.Context, repo UserProfileRepository, phoneNumber string) error {
+func (u *UserProfile) UpdateProfilePrimaryPhoneNumber(ctx context.Context, repo UserProfileRepository, phoneNumber string) error {
 	return repo.UpdatePrimaryPhoneNumber(ctx, u.ID, phoneNumber)
 }
 
 // UpdateProfilePrimaryEmailAddress update the primary phone number for this user profile
-func (u UserProfile) UpdateProfilePrimaryEmailAddress(ctx context.Context, repo UserProfileRepository, email string) error {
+func (u *UserProfile) UpdateProfilePrimaryEmailAddress(ctx context.Context, repo UserProfileRepository, email string) error {
 	return repo.UpdatePrimaryEmailAddress(ctx, u.ID, email)
 }
 
 // UpdateProfileSecondaryPhoneNumbers update the primary phone number for this user profile
-func (u UserProfile) UpdateProfileSecondaryPhoneNumbers(ctx context.Context, repo UserProfileRepository, phoneNumbers []string) error {
+func (u *UserProfile) UpdateProfileSecondaryPhoneNumbers(ctx context.Context, repo UserProfileRepository, phoneNumbers []string) error {
 	return repo.UpdateSecondaryPhoneNumbers(ctx, u.ID, phoneNumbers)
 }
 
 // UpdateProfileSecondaryEmailAddresses update the primary phone number for this user profile
-func (u UserProfile) UpdateProfileSecondaryEmailAddresses(ctx context.Context, repo UserProfileRepository, emailAddresses []string) error {
+func (u *UserProfile) UpdateProfileSecondaryEmailAddresses(ctx context.Context, repo UserProfileRepository, emailAddresses []string) error {
 	return repo.UpdateSecondaryEmailAddresses(ctx, u.ID, emailAddresses)
 }
 
+// UpdateProfileVerifiedIdentifiers updatess profile's verified identifiers
+func (u *UserProfile) UpdateProfileVerifiedIdentifiers(ctx context.Context, repo UserProfileRepository, identifiers []VerifiedIdentifier) error {
+	return repo.UpdateVerifiedIdentifiers(ctx, u.ID, identifiers)
+}
+
 // UpdateProfileSuspended update the profiles Suspended attribute
-func (u UserProfile) UpdateProfileSuspended(ctx context.Context, repo UserProfileRepository, status bool) bool {
+func (u *UserProfile) UpdateProfileSuspended(ctx context.Context, repo UserProfileRepository, status bool) error {
 	return repo.UpdateSuspended(ctx, u.ID, status)
 }
 
 // UpdateProfilePhotoUploadID updates the profiles PhotoUploadID attribute
-func (u UserProfile) UpdateProfilePhotoUploadID(ctx context.Context, repo UserProfileRepository, uploadID string) error {
+func (u *UserProfile) UpdateProfilePhotoUploadID(ctx context.Context, repo UserProfileRepository, uploadID string) error {
 	return repo.UpdatePhotoUploadID(ctx, u.ID, uploadID)
 }
 
 // UpdateProfileCovers updates the profile covers attribute
-func (u UserProfile) UpdateProfileCovers(ctx context.Context, repo UserProfileRepository, covers []Cover) error {
+func (u *UserProfile) UpdateProfileCovers(ctx context.Context, repo UserProfileRepository, covers []Cover) error {
 	return repo.UpdateCovers(ctx, u.ID, covers)
 }
 
 // UpdateProfilePushTokens updates the profiles pushTokens
-func (u UserProfile) UpdateProfilePushTokens(ctx context.Context, repo UserProfileRepository, pushToken string) error {
+func (u *UserProfile) UpdateProfilePushTokens(ctx context.Context, repo UserProfileRepository, pushToken []string) error {
 	return repo.UpdatePushTokens(ctx, u.ID, pushToken)
 }
 
 //UpdateProfileBioData updates the profile biodata
-func (u UserProfile) UpdateProfileBioData(ctx context.Context, repo UserProfileRepository, data BioData) error {
+func (u *UserProfile) UpdateProfileBioData(ctx context.Context, repo UserProfileRepository, data BioData) error {
 	return repo.UpdateBioData(ctx, u.ID, data)
 }
