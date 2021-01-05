@@ -98,6 +98,7 @@ type UserProfileRepository interface {
 	UpdateSecondaryPhoneNumbers(ctx context.Context, id string, phoneNumbers []string) error
 	UpdateSecondaryEmailAddresses(ctx context.Context, id string, emailAddresses []string) error
 	UpdateVerifiedIdentifiers(ctx context.Context, id string, identifiers []VerifiedIdentifier) error
+	UpdateVerifiedUIDS(ctx context.Context, id string, uids []string) error
 	UpdateSuspended(ctx context.Context, id string, status bool) error
 	UpdatePhotoUploadID(ctx context.Context, id string, uploadID string) error
 	UpdateCovers(ctx context.Context, id string, covers []Cover) error
@@ -118,6 +119,12 @@ type UserProfile struct {
 	// VerifiedIdentifiers represent various ways the user has been able to login
 	// and these providers point to the same user
 	VerifiedIdentifiers []VerifiedIdentifier `json:"verifiedIdentifiers" firestore:"verifiedIdentifiers"`
+
+	// uids associated with a profile. Theses UIDS should match those in the verfiedIdentifiers.
+	// the purpose of having verifiedUIDS is enbale ease querying of the profile using firebase query constructs.
+	// when we migrate to postgres, this will be retired
+	// the length of verfiedIdentifiers and verifiedUIDS should match
+	VerifiedUIDS []string `json:"verifiedUIDS" firestore:"verifiedUIDS"`
 
 	// this is the first class unique attribute of a user profile.  A user profile MUST HAVE A PRIMARY PHONE NUMBER
 	PrimaryPhone string `json:"primaryPhone" firestore:"primaryPhone"`
@@ -184,6 +191,11 @@ func (u *UserProfile) UpdateProfileSecondaryEmailAddresses(ctx context.Context, 
 // UpdateProfileVerifiedIdentifiers updatess profile's verified identifiers
 func (u *UserProfile) UpdateProfileVerifiedIdentifiers(ctx context.Context, repo UserProfileRepository, identifiers []VerifiedIdentifier) error {
 	return repo.UpdateVerifiedIdentifiers(ctx, u.ID, identifiers)
+}
+
+// UpdateProfileVerifiedUIDS updatess profile's UIDs
+func (u *UserProfile) UpdateProfileVerifiedUIDS(ctx context.Context, repo UserProfileRepository, uids []string) error {
+	return repo.UpdateVerifiedUIDS(ctx, u.ID, uids)
 }
 
 // UpdateProfileSuspended update the profiles Suspended attribute
