@@ -1,6 +1,7 @@
 package base
 
 import (
+	"fmt"
 	"net/url"
 	"time"
 )
@@ -254,4 +255,16 @@ type UploadInput struct {
 	Language    string `json:"language"`
 	Base64data  string `json:"base64data"`
 	Filename    string `json:"filename"`
+}
+
+// CustomError represents a custom error struct
+// Reference https://blog.golang.org/error-handling-and-go
+type CustomError struct {
+	Err     error
+	Message string
+	Code    int
+}
+
+func (e *CustomError) Error() string {
+	return fmt.Sprintf("%d: %s", e.Code, e.Message)
 }
