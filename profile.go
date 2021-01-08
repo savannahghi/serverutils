@@ -109,7 +109,7 @@ type UserProfileRepository interface {
 // UserProfile serializes the profile of the logged in user.
 type UserProfile struct {
 	// globally unique identifier for a profile
-	ID *string `json:"id" firestore:"id"`
+	ID string `json:"id" firestore:"id"`
 
 	// unique user name. Synonymous to a handle
 	// e.g @juliusowino
@@ -165,60 +165,60 @@ func (u UserProfile) IsEntity() {}
 
 // UpdateProfileUserName updates the profiles username attribute
 func (u *UserProfile) UpdateProfileUserName(ctx context.Context, repo UserProfileRepository, userName string) error {
-	return repo.UpdateUserName(ctx, *u.ID, userName)
+	return repo.UpdateUserName(ctx, u.ID, userName)
 }
 
 // UpdateProfilePrimaryPhoneNumber update the primary phone number for this user profile
 func (u *UserProfile) UpdateProfilePrimaryPhoneNumber(ctx context.Context, repo UserProfileRepository, phoneNumber string) error {
-	return repo.UpdatePrimaryPhoneNumber(ctx, *u.ID, phoneNumber)
+	return repo.UpdatePrimaryPhoneNumber(ctx, u.ID, phoneNumber)
 }
 
 // UpdateProfilePrimaryEmailAddress update the primary phone number for this user profile
 func (u *UserProfile) UpdateProfilePrimaryEmailAddress(ctx context.Context, repo UserProfileRepository, email string) error {
-	return repo.UpdatePrimaryEmailAddress(ctx, *u.ID, email)
+	return repo.UpdatePrimaryEmailAddress(ctx, u.ID, email)
 }
 
 // UpdateProfileSecondaryPhoneNumbers update the primary phone number for this user profile
 func (u *UserProfile) UpdateProfileSecondaryPhoneNumbers(ctx context.Context, repo UserProfileRepository, phoneNumbers []string) error {
-	return repo.UpdateSecondaryPhoneNumbers(ctx, *u.ID, phoneNumbers)
+	return repo.UpdateSecondaryPhoneNumbers(ctx, u.ID, phoneNumbers)
 }
 
 // UpdateProfileSecondaryEmailAddresses update the primary phone number for this user profile
 func (u *UserProfile) UpdateProfileSecondaryEmailAddresses(ctx context.Context, repo UserProfileRepository, emailAddresses []string) error {
-	return repo.UpdateSecondaryEmailAddresses(ctx, *u.ID, emailAddresses)
+	return repo.UpdateSecondaryEmailAddresses(ctx, u.ID, emailAddresses)
 }
 
 // UpdateProfileVerifiedIdentifiers updatess profile's verified identifiers
 func (u *UserProfile) UpdateProfileVerifiedIdentifiers(ctx context.Context, repo UserProfileRepository, identifiers []VerifiedIdentifier) error {
-	return repo.UpdateVerifiedIdentifiers(ctx, *u.ID, identifiers)
+	return repo.UpdateVerifiedIdentifiers(ctx, u.ID, identifiers)
 }
 
 // UpdateProfileVerifiedUIDS updatess profile's UIDs
 func (u *UserProfile) UpdateProfileVerifiedUIDS(ctx context.Context, repo UserProfileRepository, uids []string) error {
-	return repo.UpdateVerifiedUIDS(ctx, *u.ID, uids)
+	return repo.UpdateVerifiedUIDS(ctx, u.ID, uids)
 }
 
 // UpdateProfileSuspended update the profiles Suspended attribute
 func (u *UserProfile) UpdateProfileSuspended(ctx context.Context, repo UserProfileRepository, status bool) error {
-	return repo.UpdateSuspended(ctx, *u.ID, status)
+	return repo.UpdateSuspended(ctx, u.ID, status)
 }
 
 // UpdateProfilePhotoUploadID updates the profiles PhotoUploadID attribute
 func (u *UserProfile) UpdateProfilePhotoUploadID(ctx context.Context, repo UserProfileRepository, uploadID string) error {
-	return repo.UpdatePhotoUploadID(ctx, *u.ID, uploadID)
+	return repo.UpdatePhotoUploadID(ctx, u.ID, uploadID)
 }
 
 // UpdateProfileCovers updates the profile covers attribute
 func (u *UserProfile) UpdateProfileCovers(ctx context.Context, repo UserProfileRepository, covers []Cover) error {
-	return repo.UpdateCovers(ctx, *u.ID, covers)
+	return repo.UpdateCovers(ctx, u.ID, covers)
 }
 
 // UpdateProfilePushTokens updates the profiles pushTokens
 func (u *UserProfile) UpdateProfilePushTokens(ctx context.Context, repo UserProfileRepository, pushToken []string) error {
-	return repo.UpdatePushTokens(ctx, *u.ID, pushToken)
+	return repo.UpdatePushTokens(ctx, u.ID, pushToken)
 }
 
 //UpdateProfileBioData updates the profile biodata
 func (u *UserProfile) UpdateProfileBioData(ctx context.Context, repo UserProfileRepository, data BioData) error {
-	return repo.UpdateBioData(ctx, *u.ID, data)
+	return repo.UpdateBioData(ctx, u.ID, data)
 }
