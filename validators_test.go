@@ -276,44 +276,162 @@ func TestValidateEmail(t *testing.T) {
 	}
 }
 
-func TestMustNormalizeMSISDN(t *testing.T) {
-	type args struct {
-		msisdn string
-	}
+func TestIsMSISDNValid(t *testing.T) {
+
 	tests := []struct {
-		name string
-		args args
-		want string
+		name   string
+		msisdn string
+		want   bool
 	}{
 		{
-			name: "valid E164 input",
-			args: args{
-				msisdn: "+254722000000",
-			},
-			want: "+254722000000",
+			name:   "valid : kenyan with code",
+			msisdn: "+254722000000",
+			want:   true,
 		},
 		{
-			name: "valid non E164 input",
-			args: args{
-				msisdn: "0722000000",
-			},
-			want: "+254722000000",
+			name:   "valid : kenyan with code and spaces",
+			msisdn: "+254 722 000 000",
+			want:   true,
+		},
+		{
+			name:   "valid : kenyan without code",
+			msisdn: "0722000000",
+			want:   true,
+		},
+		{
+			name:   "valid : kenyan without code and spaces",
+			msisdn: "0722 000 000",
+			want:   true,
+		},
+		{
+			name:   "valid : kenyan without plus sign",
+			msisdn: "+254722000000",
+			want:   true,
+		},
+		{
+			name:   "valid : kenyan without plus sign and spaces",
+			msisdn: "+254 722 000 000",
+			want:   true,
+		},
+		{
+			name:   "invalid : kenyan with alphanumeric1",
+			msisdn: "+25472abc0000",
+			want:   false,
+		},
+		{
+			name:   "invalid : kenyan with alphanumeric2",
+			msisdn: "072abc0000",
+			want:   false,
+		},
+		{
+			name:   "invalid : kenyan with unwanted characters : asterisk",
+			msisdn: "072*120000",
+			want:   false,
+		},
+		{
+			name:   "invalid : kenyan without code with plus sign as prefix",
+			msisdn: "+0722000000",
+			want:   false,
+		},
+		{
+			name:   "valid : international with code",
+			msisdn: "(+351)282435050",
+			want:   true,
+		},
+		{
+			name:   "valid : international with code and spaces",
+			msisdn: "(+351) 282 43 50 50",
+			want:   true,
+		},
+		{
+			name:   "valid : international with extension",
+			msisdn: "1-234-567-8901 ext1234",
+			want:   true,
+		},
+		{
+			name:   "ivalid : international with alphanumeric",
+			msisdn: "90191919qwe",
+			want:   false,
+		},
+		{
+			name:   "invalid : international with unwanted characters : asterisk",
+			msisdn: "(+351) 282 *3 50 50",
+			want:   false,
+		},
+		{
+			name:   "invalid : international with unwanted characters : assorted",
+			msisdn: "(+351) $82 *3 50 50",
+			want:   false,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := base.MustNormalizeMSISDN(tt.args.msisdn); got != tt.want {
-				t.Errorf("MustNormalizeMSISDN() = %v, want %v", got, tt.want)
+			if got := base.IsMSISDNValid(tt.msisdn); got != tt.want {
+				t.Errorf("IsMSISDNValid() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestMustNormalizeMSISDN_Panic_Scenarios(t *testing.T) {
-	invalid := "not a number"
-	assert.Panics(t, func() {
-		base.MustNormalizeMSISDN(invalid)
-	})
+func TestMustNormalizeMSISDN(t *testing.T) {
+	type args struct {
+		msisdn string
+	}
+	validOutput := "+254722000000"
+	tests := []struct {
+		name    string
+		args    args
+		want    *string
+		wantErr bool
+	}{
+		{
+			name: "valid : E164 input",
+			args: args{
+				msisdn: "+254722000000",
+			},
+			want:    &validOutput,
+			wantErr: false,
+		},
+		{
+			name: "valid: non E164 input",
+			args: args{
+				msisdn: "0722000000",
+			},
+			want:    &validOutput,
+			wantErr: false,
+		},
+		{
+			name: "invalid: non E164 input with alphanumeric",
+			args: args{
+				msisdn: "0722abc000",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "invalid: E164 input with alphanumeric",
+			args: args{
+				msisdn: "+254722wer0000",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := base.MustNormalizeMSISDN(tt.args.msisdn)
+			if tt.wantErr {
+				assert.Nil(t, got)
+				assert.NotNil(t, err)
+			}
+			if !tt.wantErr {
+				assert.Nil(t, err)
+				assert.NotNil(t, got)
+				assert.Equal(t, *tt.want, *got)
+			}
+		})
+	}
 }
 
 func TestIntSliceContains(t *testing.T) {
@@ -505,7 +623,7 @@ func TestNormalizeMSISDN(t *testing.T) {
 				t.Errorf("NormalizeMSISDN() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got != tt.want {
+			if *got != tt.want {
 				t.Errorf("NormalizeMSISDN() = %v, want %v", got, tt.want)
 			}
 		})

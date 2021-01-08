@@ -93,7 +93,7 @@ func VerifyOTP(msisdn string, otp string, otpClient *InterServiceClient) (bool, 
 		return false, fmt.Errorf("nil OTP client")
 	}
 
-	_, err := NormalizeMSISDN(msisdn)
+	normalized, err := NormalizeMSISDN(msisdn)
 	if err != nil {
 		return false, fmt.Errorf("invalid phone format: %w", err)
 	}
@@ -104,7 +104,7 @@ func VerifyOTP(msisdn string, otp string, otpClient *InterServiceClient) (bool, 
 	}
 
 	verifyPayload := VerifyOTP{
-		Msisdn:           msisdn,
+		Msisdn:           *normalized,
 		VerificationCode: otp,
 	}
 
@@ -156,6 +156,7 @@ func SendOTPHelper(msisdn string, otpClient *InterServiceClient) (string, error)
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("unable to generate otp, with status code %v", resp.StatusCode)
 	}
+
 	// read the response
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -165,14 +166,11 @@ func SendOTPHelper(msisdn string, otpClient *InterServiceClient) (string, error)
 	// continue
 	resp.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
-	// Decode and store result to a variable
-	type otpResponse struct {
-		OTP string `json:"otp"`
-	}
 	// store the response in a variable and return
-	OTPResp := &otpResponse{}
-	if err := json.NewDecoder(resp.Body).Decode(OTPResp); err != nil {
+	var OTPResp string
+	if err := json.NewDecoder(resp.Body).Decode(&OTPResp); err != nil {
 		return "", fmt.Errorf("InternalServerError: unable to decode verify OTP response: %v", err)
 	}
-	return OTPResp.OTP, nil
+
+	return OTPResp, nil
 }

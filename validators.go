@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -34,30 +35,43 @@ func ValidateEmail(
 	return nil
 }
 
+// IsMSISDNValid uses regular expression to validate the a phone number
+// DISCLAIMER : the length of the phone number is NOT considered in this function. It the expected the output will be the input of another function
+// thas parses it a a valid phone number.
+func IsMSISDNValid(msisdn string) bool {
+	re := regexp.MustCompile(`^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[\-\.\ \\\/]?)?((?:\(?\d{1,}\)?[\-\.\ \\\/]?){0,})(?:[\-\.\ \\\/]?(?:#|ext\.?|extension|x)[\-\.\ \\\/]?(\d+))?$`)
+	return re.MatchString(msisdn)
+}
+
 // NormalizeMSISDN validates the input phone number.
 // For valid phone numbers, it normalizes them to international format
 // e.g +254723002959
-func NormalizeMSISDN(msisdn string) (string, error) {
+func NormalizeMSISDN(msisdn string) (*string, error) {
+	if !IsMSISDNValid(msisdn) {
+		return nil, fmt.Errorf("invalid phone number: %s", msisdn)
+	}
 	num, err := libphonenumber.Parse(msisdn, defaultRegion)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	formatted := libphonenumber.Format(num, libphonenumber.INTERNATIONAL)
 	cleaned := strings.ReplaceAll(formatted, " ", "")
 	cleaned = strings.ReplaceAll(cleaned, "-", "")
-	return cleaned, nil
+	return &cleaned, nil
 }
 
-// MustNormalizeMSISDN validates the input phone number. It panics when given
-// a phone number that is not valid.
-func MustNormalizeMSISDN(msisdn string) string {
+// MustNormalizeMSISDN validates the input phone number otherwise it panics
+func MustNormalizeMSISDN(msisdn string) (*string, error) {
+	if !IsMSISDNValid(msisdn) {
+		return nil, fmt.Errorf("invalid phone number: %s", msisdn)
+	}
 	num, err := libphonenumber.Parse(msisdn, defaultRegion)
 	if err != nil {
-		log.Panicf("invalid phone number: %s", err)
+		log.Panic(fmt.Sprintf("invalid phone number: %s", msisdn))
 	}
 	formatted := libphonenumber.Format(num, libphonenumber.INTERNATIONAL)
 	cleaned := strings.ReplaceAll(formatted, " ", "")
-	return cleaned
+	return &cleaned, nil
 }
 
 // ValidateMSISDN returns an error if the MSISDN format is wrong or the
@@ -86,7 +100,7 @@ func ValidateMSISDN(
 		if err != nil {
 			return "", fmt.Errorf("unable to save USSD session: %v", err)
 		}
-		return normalized, nil
+		return *normalized, nil
 	}
 
 	// check if the OTP is on file / known
@@ -116,7 +130,7 @@ func ValidateMSISDN(
 		}
 	}
 
-	return normalized, nil
+	return *normalized, nil
 }
 
 // ValidateAndSaveMSISDN returns an error if the MSISDN format is wrong or the

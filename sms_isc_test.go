@@ -119,7 +119,7 @@ func TestVerifyOTP(t *testing.T) {
 	// generate the OTP first to be used for a happy case
 	OTPCode, err := base.SendOTPHelper(base.TestUserPhoneNumber, client)
 	if err != nil {
-		t.Errorf("TestVerifyOTP: unable to send OTP")
+		t.Errorf("TestVerifyOTP: unable to send OTP %v", err)
 		return
 	}
 	type args struct {
