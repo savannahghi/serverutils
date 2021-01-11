@@ -19,7 +19,7 @@ lint_and_test:
     - errcheck -ignore 'os:.*,' $(go list ./... | grep -v /vendor/)
     - misspell -error .
     - gosec ./...
-    - go-acc -o coverage.txt --ignore generated,cmd,graph ./... -- -v --failfast
+    - go-acc -o coverage.txt --ignore generated,cmd,graph ./... 
     - grep -v "generated.go" coverage.txt | grep -v "_gen.go" | grep -v "mocks.go" > coverage.out
     - go tool cover -html=coverage.out -o coverage.html
     - gocov convert coverage.out > coverage.json

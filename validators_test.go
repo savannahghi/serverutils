@@ -289,11 +289,6 @@ func TestIsMSISDNValid(t *testing.T) {
 			want:   true,
 		},
 		{
-			name:   "valid : kenyan with code and spaces",
-			msisdn: "+254 722 000 000",
-			want:   true,
-		},
-		{
 			name:   "valid : kenyan without code",
 			msisdn: "0722000000",
 			want:   true,
@@ -324,6 +319,11 @@ func TestIsMSISDNValid(t *testing.T) {
 			want:   false,
 		},
 		{
+			name:   "invalid : kenyan short length",
+			msisdn: "0720000",
+			want:   false,
+		},
+		{
 			name:   "invalid : kenyan with unwanted characters : asterisk",
 			msisdn: "072*120000",
 			want:   false,
@@ -332,21 +332,6 @@ func TestIsMSISDNValid(t *testing.T) {
 			name:   "invalid : kenyan without code with plus sign as prefix",
 			msisdn: "+0722000000",
 			want:   false,
-		},
-		{
-			name:   "valid : international with code",
-			msisdn: "(+351)282435050",
-			want:   true,
-		},
-		{
-			name:   "valid : international with code and spaces",
-			msisdn: "(+351) 282 43 50 50",
-			want:   true,
-		},
-		{
-			name:   "valid : international with extension",
-			msisdn: "1-234-567-8901 ext1234",
-			want:   true,
 		},
 		{
 			name:   "ivalid : international with alphanumeric",
@@ -362,6 +347,11 @@ func TestIsMSISDNValid(t *testing.T) {
 			name:   "invalid : international with unwanted characters : assorted",
 			msisdn: "(+351) $82 *3 50 50",
 			want:   false,
+		},
+		{
+			name:   "valid : usa number",
+			msisdn: "+12028569601",
+			want:   true,
 		},
 	}
 

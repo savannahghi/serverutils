@@ -36,11 +36,16 @@ func ValidateEmail(
 }
 
 // IsMSISDNValid uses regular expression to validate the a phone number
-// DISCLAIMER : the length of the phone number is NOT considered in this function. It the expected the output will be the input of another function
-// thas parses it a a valid phone number.
 func IsMSISDNValid(msisdn string) bool {
+	if len(msisdn) < 10 {
+		return false
+	}
+	reKen := regexp.MustCompile(`^(?:254|\+254|0)?((7|1)(?:(?:[129][0-9])|(?:0[0-8])|(4[0-1]))[0-9]{6})$`)
 	re := regexp.MustCompile(`^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[\-\.\ \\\/]?)?((?:\(?\d{1,}\)?[\-\.\ \\\/]?){0,})(?:[\-\.\ \\\/]?(?:#|ext\.?|extension|x)[\-\.\ \\\/]?(\d+))?$`)
-	return re.MatchString(msisdn)
+	if !reKen.MatchString(msisdn) {
+		return re.MatchString(msisdn)
+	}
+	return reKen.MatchString(msisdn)
 }
 
 // NormalizeMSISDN validates the input phone number.
