@@ -1,11 +1,13 @@
-package base
+package base_test
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.slade360emr.com/go/base"
 )
 
 func TestGetOrCreateAnonymousUser(t *testing.T) {
@@ -27,50 +29,10 @@ func TestGetOrCreateAnonymousUser(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetOrCreateAnonymousUser(tt.args.ctx)
+			got, err := base.GetOrCreateAnonymousUser(tt.args.ctx)
 			assert.NotNil(t, got)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CreateAnonymousUser() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-		})
-	}
-}
-func TestGetOrCreatePhoneNumberUser(t *testing.T) {
-	type args struct {
-		ctx    context.Context
-		msisdn string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "Create phone number user happy case",
-			args: args{
-				ctx:    context.Background(),
-				msisdn: "+254711223344",
-			},
-			wantErr: false,
-		},
-		{
-			name: "Create phone number user invalid case",
-			args: args{
-				ctx:    context.Background(),
-				msisdn: "not a phone number",
-			},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetOrCreatePhoneNumberUser(tt.args.ctx, tt.args.msisdn)
-			if err == nil {
-				assert.NotNil(t, got)
-			}
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetOrCreatePhoneNumberUser() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})
@@ -117,7 +79,7 @@ func TestGetAuthenticatedContextFromUID(t *testing.T) {
 				os.Setenv("FIREBASE_WEB_API_KEY", "invalidkey")
 			}
 
-			got, err := GetAuthenticatedContextFromUID(ctx, tt.args.uid)
+			got, err := base.GetAuthenticatedContextFromUID(ctx, tt.args.uid)
 			if got == nil && !tt.wantErr {
 				t.Errorf("invalid auth token")
 			}
@@ -128,6 +90,124 @@ func TestGetAuthenticatedContextFromUID(t *testing.T) {
 
 			os.Setenv("FIREBASE_WEB_API_KEY", initialKey)
 
+		})
+	}
+}
+
+func onboardingISCClient() (*base.InterServiceClient, error) {
+	onboardingClient, err := base.NewInterserviceClient(
+		base.ISCService{
+			Name:       base.OnboardingName,
+			RootDomain: base.OnboardingRootDomain,
+		})
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize onboarding ISC client: %v", err)
+	}
+	return onboardingClient, nil
+}
+
+func TestVerifyTestPhoneNumber(t *testing.T) {
+	onboardingClient, err := onboardingISCClient()
+	if err != nil {
+		t.Errorf("failed to initialize onboarding test ISC client")
+	}
+	type args struct {
+		phone            string
+		onboardingClient *base.InterServiceClient
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "success: verify a phone number does not exist",
+			args: args{
+				phone:            base.TestUserPhoneNumber,
+				onboardingClient: onboardingClient,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			otp, err := base.VerifyTestPhoneNumber(
+				t,
+				tt.args.phone,
+				tt.args.onboardingClient,
+			)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("VerifyTestPhoneNumber() error = %v, wantErr %v",
+					err,
+					tt.wantErr,
+				)
+				return
+			}
+
+			if tt.wantErr && otp != "" {
+				t.Errorf("expected no otp to be sent but got %v, since the error %v occurred",
+					otp,
+					err,
+				)
+				return
+			}
+
+			if !tt.wantErr && otp == "" {
+				t.Errorf("expected an otp to be sent, since no error occurred")
+				return
+			}
+		})
+	}
+}
+
+func TestCreateOrLoginTestPhoneNumberUser(t *testing.T) {
+	onboardingClient, err := onboardingISCClient()
+	if err != nil {
+		t.Errorf("failed to initialize onboarding test ISC client")
+	}
+	type args struct {
+		onboardingClient *base.InterServiceClient
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "success: create a test user successfully",
+			args: args{
+				onboardingClient: onboardingClient,
+			},
+			wantErr: false,
+		},
+		{
+			name: "failure: failed to create a test user successfully",
+			args: args{
+				onboardingClient: nil,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			userResponse, err := base.CreateOrLoginTestPhoneNumberUser(t, tt.args.onboardingClient)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CreateOrLoginTestPhoneNumberUser() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.wantErr && userResponse != nil {
+				t.Errorf("expected nil auth response but got %v, since the error %v occurred",
+					userResponse,
+					err,
+				)
+				return
+			}
+
+			if !tt.wantErr && userResponse == nil {
+				t.Errorf("expected an auth response but got nil, since no error occurred")
+				return
+			}
 		})
 	}
 }

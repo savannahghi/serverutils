@@ -2,7 +2,12 @@ package base
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strconv"
+	"strings"
 	"testing"
 
 	"firebase.google.com/go/auth"
@@ -10,7 +15,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const anonymousUserUID = "AgkGYKUsRifO2O9fTLDuVCMr2hb2" // This is an anonymous user
+const (
+	anonymousUserUID  = "AgkGYKUsRifO2O9fTLDuVCMr2hb2" // This is an anonymous user
+	verifyPhone       = "internal/verify_phone"
+	createUserByPhone = "internal/create_user_by_phone"
+	loginByPhone      = "internal/login_by_phone"
+
+	// OnboardingRootDomain represents onboarding ISC URL
+	OnboardingRootDomain = "https://profile-staging.healthcloud.co.ke"
+
+	// OnboardingName represents the onboarding service ISC name
+	OnboardingName = "onboarding"
+)
 
 // ContextKey is used as a type for the UID key for the Firebase *auth.Token on context.Context.
 // It is a custom type in order to minimize context key collissions on the context
@@ -119,36 +135,175 @@ func getAnonymousAuthToken(ctx context.Context, t *testing.T) *auth.Token {
 	return authToken
 }
 
-// GetOrCreatePhoneNumberUser creates an phone number user
-// For documentation and test purposes only
-func GetOrCreatePhoneNumberUser(ctx context.Context, msisdn string) (*auth.UserRecord, error) {
-	authClient, err := GetFirebaseAuthClient(ctx)
+// VerifyTestPhoneNumber checks if the test `Phone Number` exists as a primary
+// phone number in any user profile record
+func VerifyTestPhoneNumber(
+	t *testing.T,
+	phone string,
+	onboardingClient *InterServiceClient,
+) (string, error) {
+	verifyPhonePayload := map[string]interface{}{
+		"phoneNumber": phone,
+	}
+
+	resp, err := onboardingClient.MakeRequest(
+		http.MethodPost,
+		verifyPhone,
+		verifyPhonePayload,
+	)
+
 	if err != nil {
-		return nil, fmt.Errorf("unable to get or create Firebase client: %w", err)
-	}
-	existingUser, userErr := authClient.GetUserByPhoneNumber(ctx, msisdn)
-
-	if userErr == nil {
-		return existingUser, nil
+		return "", fmt.Errorf("unable to make a verify phone number request: %w", err)
 	}
 
-	params := (&auth.UserToCreate{}).
-		PhoneNumber(msisdn)
-	newUser, createErr := authClient.CreateUser(ctx, params)
-	if createErr != nil {
-		return nil, createErr
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("unable to convert response to string: %v", err)
 	}
-	return newUser, nil
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("%s", string(body))
+	}
+
+	var otp OtpResponse
+	err = json.Unmarshal(body, &otp)
+	if err != nil {
+		return "", fmt.Errorf("failed to unmarshal OTP: %v", err)
+	}
+
+	return otp.OTP, nil
+}
+
+// LoginTestPhoneUser returns user response data for a created test user allowing
+// them to run and access test resources
+func LoginTestPhoneUser(
+	t *testing.T,
+	phone string,
+	PIN string,
+	flavour Flavour,
+	onboardingClient *InterServiceClient,
+) (*UserResponse, error) {
+	loginPayload := map[string]interface{}{
+		"phoneNumber": phone,
+		"pin":         PIN,
+		"flavour":     flavour,
+	}
+
+	resp, err := onboardingClient.MakeRequest(
+		http.MethodPost,
+		loginByPhone,
+		loginPayload,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("unable to make a login request: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unable to login : %s, with status code %v",
+			phone,
+			resp.StatusCode,
+		)
+	}
+	code, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("unable to convert response to string: %v", err)
+	}
+
+	var response *UserResponse
+	err = json.Unmarshal(code, &response)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal OTP: %v", err)
+	}
+
+	return response, nil
+}
+
+// CreateOrLoginTestPhoneNumberUser creates an phone number test user if they
+// do not exist or `Logs them in` if the test user exists to retrieve
+// authenticated user response
+// For documentation and test purposes only
+func CreateOrLoginTestPhoneNumberUser(
+	t *testing.T,
+	onboardingClient *InterServiceClient,
+) (*UserResponse, error) {
+	phone := TestUserPhoneNumber
+	PIN := TestUserPin
+	flavour := FlavourConsumer
+
+	if onboardingClient == nil {
+		return nil, fmt.Errorf("nil ISC client")
+	}
+
+	otp, err := VerifyTestPhoneNumber(t, phone, onboardingClient)
+	if err != nil {
+		if strings.Contains(
+			err.Error(),
+			strconv.Itoa(int(PhoneNumberInUse)),
+		) {
+			return LoginTestPhoneUser(
+				t,
+				phone,
+				PIN,
+				flavour,
+				onboardingClient,
+			)
+		}
+		return nil, fmt.Errorf("failed to verify test phone number: %v", err)
+	}
+	createUserPayload := map[string]interface{}{
+		"phoneNumber": phone,
+		"pin":         PIN,
+		"flavour":     flavour,
+		"otp":         otp,
+	}
+
+	resp, err := onboardingClient.MakeRequest(
+		http.MethodPost,
+		createUserByPhone,
+		createUserPayload,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("unable to make a sign up request: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusCreated {
+		return nil, fmt.Errorf("unable to sign up : %s, with status code %v",
+			phone,
+			resp.StatusCode,
+		)
+	}
+	signUpResp, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("unable to convert response to string: %v", err)
+	}
+
+	var response *UserResponse
+	err = json.Unmarshal(signUpResp, &response)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal OTP: %v", err)
+	}
+
+	return response, nil
+
 }
 
 // GetPhoneNumberAuthenticatedContext returns a phone number logged in context, useful for test purposes
-func GetPhoneNumberAuthenticatedContext(t *testing.T) context.Context {
+func GetPhoneNumberAuthenticatedContext(
+	t *testing.T,
+	onboardingClient *InterServiceClient,
+) (context.Context, error) {
 	ctx := context.Background()
-	authToken, err := CreateFirebasePhoneNumberAuthToken(ctx, TestUserPhoneNumber)
-	assert.Nil(t, err)
-	assert.NotNil(t, authToken)
+	userResponse, err := CreateOrLoginTestPhoneNumberUser(t, onboardingClient)
+	if err != nil {
+		return nil, err
+	}
+	authToken := auth.Token{
+		UID: userResponse.Auth.UID,
+	}
 	authenticatedContext := context.WithValue(ctx, AuthTokenContextKey, authToken)
-	return authenticatedContext
+	return authenticatedContext, nil
 }
 
 // GetDefaultHeaders returns headers used in inter service communication acceptance tests

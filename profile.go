@@ -2,6 +2,9 @@ package base
 
 import (
 	"context"
+	"fmt"
+	"io"
+	"strconv"
 	"time"
 )
 
@@ -62,6 +65,110 @@ const (
 	LoginProviderTypeSocialFacebook LoginProviderType = "SOCIAL_FACEBOOK"
 	LoginProviderTypeAppleFacebook  LoginProviderType = "SOCIAL_APPLE"
 )
+
+// AccountType defines the various supplier account types
+type AccountType string
+
+// AccountTypeIndivdual is an example of a suppiler account type
+const (
+	AccountTypeIndividual   AccountType = "INDIVIDUAL"
+	AccountTypeOrganisation AccountType = "ORGANISATION"
+)
+
+// AllAccountType is a slice that represents all the account types
+var AllAccountType = []AccountType{
+	AccountTypeIndividual,
+	AccountTypeOrganisation,
+}
+
+// IsValid checks if the account type is valid
+func (e AccountType) IsValid() bool {
+	switch e {
+	case AccountTypeIndividual, AccountTypeOrganisation:
+		return true
+	}
+	return false
+}
+
+func (e AccountType) String() string {
+	return string(e)
+}
+
+// UnmarshalGQL converts the input, if valid, into a account type value
+func (e *AccountType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = AccountType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid AccountType", str)
+	}
+	return nil
+}
+
+// MarshalGQL converts AccountType into a valid JSON string
+func (e AccountType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+// PartnerType defines the different partner types we have in Be.Well
+type PartnerType string
+
+// PartnerTypeRider is an example of a partner type who is involved in delivery of goods
+const (
+	PartnerTypeRider          PartnerType = "RIDER"
+	PartnerTypePractitioner   PartnerType = "PRACTITIONER"
+	PartnerTypeProvider       PartnerType = "PROVIDER"
+	PartnerTypePharmaceutical PartnerType = "PHARMACEUTICAL"
+	PartnerTypeCoach          PartnerType = "COACH"
+	PartnerTypeNutrition      PartnerType = "NUTRITION"
+	PartnerTypeConsumer       PartnerType = "CONSUMER"
+)
+
+// AllPartnerType represents a list of the partner types we offer
+var AllPartnerType = []PartnerType{
+	PartnerTypeRider,
+	PartnerTypePractitioner,
+	PartnerTypeProvider,
+	PartnerTypePharmaceutical,
+	PartnerTypeCoach,
+	PartnerTypeNutrition,
+	PartnerTypeConsumer,
+}
+
+// IsValid checks if a partner type is valid or not
+func (e PartnerType) IsValid() bool {
+	switch e {
+	case PartnerTypeRider, PartnerTypePractitioner, PartnerTypeProvider, PartnerTypePharmaceutical, PartnerTypeCoach, PartnerTypeNutrition, PartnerTypeConsumer:
+		return true
+	}
+	return false
+}
+
+func (e PartnerType) String() string {
+	return string(e)
+}
+
+// UnmarshalGQL converts the input, if valid, into an correct partner type value
+func (e *PartnerType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = PartnerType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid PartnerType", str)
+	}
+	return nil
+}
+
+// MarshalGQL converts partner type into a valid JSON string
+func (e PartnerType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
 
 // Cover is used to save a user's insurance details.
 type Cover struct {
@@ -164,61 +271,191 @@ type UserProfile struct {
 func (u UserProfile) IsEntity() {}
 
 // UpdateProfileUserName updates the profiles username attribute
-func (u *UserProfile) UpdateProfileUserName(ctx context.Context, repo UserProfileRepository, userName string) error {
+func (u *UserProfile) UpdateProfileUserName(
+	ctx context.Context,
+	repo UserProfileRepository,
+	userName string,
+) error {
 	return repo.UpdateUserName(ctx, u.ID, userName)
 }
 
 // UpdateProfilePrimaryPhoneNumber update the primary phone number for this user profile
-func (u *UserProfile) UpdateProfilePrimaryPhoneNumber(ctx context.Context, repo UserProfileRepository, phoneNumber string) error {
+func (u *UserProfile) UpdateProfilePrimaryPhoneNumber(
+	ctx context.Context,
+	repo UserProfileRepository,
+	phoneNumber string,
+) error {
 	return repo.UpdatePrimaryPhoneNumber(ctx, u.ID, phoneNumber)
 }
 
 // UpdateProfilePrimaryEmailAddress update the primary phone number for this user profile
-func (u *UserProfile) UpdateProfilePrimaryEmailAddress(ctx context.Context, repo UserProfileRepository, email string) error {
+func (u *UserProfile) UpdateProfilePrimaryEmailAddress(
+	ctx context.Context,
+	repo UserProfileRepository,
+	email string,
+) error {
 	return repo.UpdatePrimaryEmailAddress(ctx, u.ID, email)
 }
 
 // UpdateProfileSecondaryPhoneNumbers update the primary phone number for this user profile
-func (u *UserProfile) UpdateProfileSecondaryPhoneNumbers(ctx context.Context, repo UserProfileRepository, phoneNumbers []string) error {
+func (u *UserProfile) UpdateProfileSecondaryPhoneNumbers(
+	ctx context.Context,
+	repo UserProfileRepository,
+	phoneNumbers []string,
+) error {
 	return repo.UpdateSecondaryPhoneNumbers(ctx, u.ID, phoneNumbers)
 }
 
 // UpdateProfileSecondaryEmailAddresses update the primary phone number for this user profile
-func (u *UserProfile) UpdateProfileSecondaryEmailAddresses(ctx context.Context, repo UserProfileRepository, emailAddresses []string) error {
+func (u *UserProfile) UpdateProfileSecondaryEmailAddresses(
+	ctx context.Context,
+	repo UserProfileRepository,
+	emailAddresses []string,
+) error {
 	return repo.UpdateSecondaryEmailAddresses(ctx, u.ID, emailAddresses)
 }
 
 // UpdateProfileVerifiedIdentifiers updatess profile's verified identifiers
-func (u *UserProfile) UpdateProfileVerifiedIdentifiers(ctx context.Context, repo UserProfileRepository, identifiers []VerifiedIdentifier) error {
+func (u *UserProfile) UpdateProfileVerifiedIdentifiers(
+	ctx context.Context,
+	repo UserProfileRepository,
+	identifiers []VerifiedIdentifier,
+) error {
 	return repo.UpdateVerifiedIdentifiers(ctx, u.ID, identifiers)
 }
 
 // UpdateProfileVerifiedUIDS updatess profile's UIDs
-func (u *UserProfile) UpdateProfileVerifiedUIDS(ctx context.Context, repo UserProfileRepository, uids []string) error {
+func (u *UserProfile) UpdateProfileVerifiedUIDS(
+	ctx context.Context,
+	repo UserProfileRepository,
+	uids []string,
+) error {
 	return repo.UpdateVerifiedUIDS(ctx, u.ID, uids)
 }
 
 // UpdateProfileSuspended update the profiles Suspended attribute
-func (u *UserProfile) UpdateProfileSuspended(ctx context.Context, repo UserProfileRepository, status bool) error {
+func (u *UserProfile) UpdateProfileSuspended(
+	ctx context.Context,
+	repo UserProfileRepository,
+	status bool,
+) error {
 	return repo.UpdateSuspended(ctx, u.ID, status)
 }
 
 // UpdateProfilePhotoUploadID updates the profiles PhotoUploadID attribute
-func (u *UserProfile) UpdateProfilePhotoUploadID(ctx context.Context, repo UserProfileRepository, uploadID string) error {
+func (u *UserProfile) UpdateProfilePhotoUploadID(
+	ctx context.Context,
+	repo UserProfileRepository,
+	uploadID string,
+) error {
 	return repo.UpdatePhotoUploadID(ctx, u.ID, uploadID)
 }
 
 // UpdateProfileCovers updates the profile covers attribute
-func (u *UserProfile) UpdateProfileCovers(ctx context.Context, repo UserProfileRepository, covers []Cover) error {
+func (u *UserProfile) UpdateProfileCovers(
+	ctx context.Context,
+	repo UserProfileRepository,
+	covers []Cover,
+) error {
 	return repo.UpdateCovers(ctx, u.ID, covers)
 }
 
 // UpdateProfilePushTokens updates the profiles pushTokens
-func (u *UserProfile) UpdateProfilePushTokens(ctx context.Context, repo UserProfileRepository, pushToken []string) error {
+func (u *UserProfile) UpdateProfilePushTokens(
+	ctx context.Context,
+	repo UserProfileRepository,
+	pushToken []string,
+) error {
 	return repo.UpdatePushTokens(ctx, u.ID, pushToken)
 }
 
 //UpdateProfileBioData updates the profile biodata
-func (u *UserProfile) UpdateProfileBioData(ctx context.Context, repo UserProfileRepository, data BioData) error {
+func (u *UserProfile) UpdateProfileBioData(
+	ctx context.Context,
+	repo UserProfileRepository,
+	data BioData,
+) error {
 	return repo.UpdateBioData(ctx, u.ID, data)
+}
+
+// UserResponse returns a user's sign up/in response
+type UserResponse struct {
+	Profile         *UserProfile           `json:"profile"`
+	SupplierProfile *Supplier              `json:"supplierProfile"`
+	CustomerProfile *Customer              `json:"customerProfile"`
+	Auth            AuthCredentialResponse `json:"auth"`
+}
+
+// AuthCredentialResponse represents a user login response
+type AuthCredentialResponse struct {
+	CustomToken  *string `json:"customToken"`
+	IDToken      *string `json:"id_token"`
+	ExpiresIn    string  `json:"expires_in"`
+	RefreshToken string  `json:"refresh_token"`
+	UID          string  `json:"uid"`
+	IsAdmin      bool    `json:"is_admin"`
+	IsAnonymous  bool    `json:"is_anonymous"`
+}
+
+// Customer used to create a customer request payload
+type Customer struct {
+	ID                 string             `json:"id" firestore:"id"`
+	ProfileID          *string            `json:"profileID,omitempty" firestore:"profileID"`
+	CustomerID         string             `json:"customerID,omitempty" firestore:"customerID"`
+	ReceivablesAccount ReceivablesAccount `json:"receivablesAccount" firestore:"receivablesAccount"`
+	Active             bool               `json:"active" firestore:"active"`
+}
+
+// ReceivablesAccount stores a customer's receivables account info
+type ReceivablesAccount struct {
+	ID          string `json:"id" firestore:"id"`
+	Name        string `json:"name" firestore:"name"`
+	IsActive    bool   `json:"isActive" firestore:"isActive"`
+	Number      string `json:"number" firestore:"number"`
+	Tag         string `json:"tag" firestore:"tag"`
+	Description string `json:"description" firestore:"description"`
+}
+
+// PayablesAccount stores a supplier's payables account info
+type PayablesAccount struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	IsActive    bool   `json:"is_active"`
+	Number      string `json:"number"`
+	Tag         string `json:"tag"`
+	Description string `json:"description"`
+}
+
+// Supplier used to create a supplier request payload
+type Supplier struct {
+	ID                     string                 `json:"id" firestore:"id"`
+	ProfileID              *string                `json:"profileID" firestore:"profileID"`
+	SupplierID             string                 `json:"supplierID" firestore:"supplierID"`
+	SupplierName           string                 `json:"supplierName" firestore:"supplierName"`
+	PayablesAccount        *PayablesAccount       `json:"payablesAccount"`
+	SupplierKYC            map[string]interface{} `json:"supplierKYC"`
+	Active                 bool                   `json:"active" firestore:"active"`
+	AccountType            AccountType            `json:"accountType"`
+	UnderOrganization      bool                   `json:"underOrganization"`
+	IsOrganizationVerified bool                   `json:"isOrganizationVerified"`
+	SladeCode              string                 `json:"sladeCode"`
+	ParentOrganizationID   string                 `json:"parentOrganizationID"`
+	HasBranches            bool                   `json:"hasBranches,omitempty"`
+	Location               *Location              `json:"location,omitempty"`
+	PartnerType            PartnerType            `json:"partnerType"`
+	EDIUserProfile         *EDIUserProfile        `json:"ediuserprofile" firestore:"ediuserprofile"`
+	PartnerSetupComplete   bool                   `json:"partnerSetupComplete" firestore:"partnerSetupComplete"`
+	KYCSubmitted           bool                   `json:"kycSubmitted" firestore:"kycSubmitted"`
+}
+
+// Location is used to store a user's branch or organisation
+type Location struct {
+	ID              string  `json:"id"`
+	Name            string  `json:"name"`
+	BranchSladeCode *string `json:"branchSladeCode"`
+}
+
+// OtpResponse returns an otp
+type OtpResponse struct {
+	OTP string `json:"otp"`
 }
