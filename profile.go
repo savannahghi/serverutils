@@ -210,6 +210,7 @@ type UserProfileRepository interface {
 	UpdatePhotoUploadID(ctx context.Context, id string, uploadID string) error
 	UpdateCovers(ctx context.Context, id string, covers []Cover) error
 	UpdatePushTokens(ctx context.Context, id string, pushToken []string) error
+	UpdatePermissions(ctx context.Context, id string, perms []PermissionType) error
 	UpdateBioData(ctx context.Context, id string, data BioData) error
 }
 
@@ -369,6 +370,15 @@ func (u *UserProfile) UpdateProfilePushTokens(
 	return repo.UpdatePushTokens(ctx, u.ID, pushToken)
 }
 
+// UpdateProfilePermissions updates the profiles persmissions
+func (u *UserProfile) UpdateProfilePermissions(
+	ctx context.Context,
+	repo UserProfileRepository,
+	perms []PermissionType,
+) error {
+	return repo.UpdatePermissions(ctx, u.ID, perms)
+}
+
 //UpdateProfileBioData updates the profile biodata
 func (u *UserProfile) UpdateProfileBioData(
 	ctx context.Context,
@@ -432,18 +442,18 @@ type Supplier struct {
 	ProfileID              *string                `json:"profileID" firestore:"profileID"`
 	SupplierID             string                 `json:"supplierID" firestore:"supplierID"`
 	SupplierName           string                 `json:"supplierName" firestore:"supplierName"`
-	PayablesAccount        *PayablesAccount       `json:"payablesAccount"`
-	SupplierKYC            map[string]interface{} `json:"supplierKYC"`
+	PayablesAccount        *PayablesAccount       `json:"payablesAccount" firestore:"payablesAccount"`
+	SupplierKYC            map[string]interface{} `json:"supplierKYC" firestore:"supplierKYC"`
 	Active                 bool                   `json:"active" firestore:"active"`
-	AccountType            AccountType            `json:"accountType"`
-	UnderOrganization      bool                   `json:"underOrganization"`
-	IsOrganizationVerified bool                   `json:"isOrganizationVerified"`
-	SladeCode              string                 `json:"sladeCode"`
-	ParentOrganizationID   string                 `json:"parentOrganizationID"`
-	HasBranches            bool                   `json:"hasBranches,omitempty"`
-	Location               *Location              `json:"location,omitempty"`
-	PartnerType            PartnerType            `json:"partnerType"`
-	EDIUserProfile         *EDIUserProfile        `json:"ediuserprofile" firestore:"ediuserprofile"`
+	AccountType            AccountType            `json:"accountType" firestore:"accountType"`
+	UnderOrganization      bool                   `json:"underOrganization" firestore:"underOrganization"`
+	IsOrganizationVerified bool                   `json:"isOrganizationVerified" firestore:"isOrganizationVerified"`
+	SladeCode              string                 `json:"sladeCode" firestore:"sladeCode"`
+	ParentOrganizationID   string                 `json:"parentOrganizationID" firestore:"parentOrganizationID"`
+	HasBranches            bool                   `json:"hasBranches,omitempty" firestore:"hasBranches"`
+	Location               *Location              `json:"location,omitempty" firestore:"location"`
+	PartnerType            PartnerType            `json:"partnerType" firestore:"partnerType"`
+	EDIUserProfile         *EDIUserProfile        `json:"ediuserprofile" firestore:"ediserprofile"`
 	PartnerSetupComplete   bool                   `json:"partnerSetupComplete" firestore:"partnerSetupComplete"`
 	KYCSubmitted           bool                   `json:"kycSubmitted" firestore:"kycSubmitted"`
 }
