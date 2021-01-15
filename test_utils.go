@@ -289,21 +289,22 @@ func CreateOrLoginTestPhoneNumberUser(
 
 }
 
-// GetPhoneNumberAuthenticatedContext returns a phone number logged in context, useful for test purposes
-func GetPhoneNumberAuthenticatedContext(
+// GetPhoneNumberAuthenticatedContextAndToken returns a phone number logged in context
+// and an auth Token that contains the the test user UID useful for test purposes
+func GetPhoneNumberAuthenticatedContextAndToken(
 	t *testing.T,
 	onboardingClient *InterServiceClient,
-) (context.Context, error) {
+) (context.Context, *auth.Token, error) {
 	ctx := context.Background()
 	userResponse, err := CreateOrLoginTestPhoneNumberUser(t, onboardingClient)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	authToken := auth.Token{
+	authToken := &auth.Token{
 		UID: userResponse.Auth.UID,
 	}
 	authenticatedContext := context.WithValue(ctx, AuthTokenContextKey, authToken)
-	return authenticatedContext, nil
+	return authenticatedContext, authToken, nil
 }
 
 // GetDefaultHeaders returns headers used in inter service communication acceptance tests
