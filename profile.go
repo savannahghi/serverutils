@@ -450,6 +450,7 @@ type Supplier struct {
 	IsOrganizationVerified bool                   `json:"isOrganizationVerified" firestore:"isOrganizationVerified"`
 	SladeCode              string                 `json:"sladeCode" firestore:"sladeCode"`
 	ParentOrganizationID   string                 `json:"parentOrganizationID" firestore:"parentOrganizationID"`
+	OrganizationName       string                 `json:"organizationName" firestore:"organizationName"`
 	HasBranches            bool                   `json:"hasBranches,omitempty" firestore:"hasBranches"`
 	Location               *Location              `json:"location,omitempty" firestore:"location"`
 	PartnerType            PartnerType            `json:"partnerType" firestore:"partnerType"`
