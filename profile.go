@@ -244,7 +244,7 @@ type UserProfile struct {
 	// and/or used for account recovery
 	SecondaryPhoneNumbers []string `json:"secondaryPhoneNumbers" firestore:"secondaryPhoneNumbers"`
 
-	SecondaryEmailAddresses []string `json:"secondaryEmailAddresses " firestore:"secondaryEmailAddresses"`
+	SecondaryEmailAddresses []string `json:"secondaryEmailAddresses" firestore:"secondaryEmailAddresses"`
 
 	PushTokens []string `json:"pushTokens,omitempty" firestore:"pushTokens"`
 

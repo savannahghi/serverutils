@@ -123,7 +123,7 @@ func TestVerifyTestPhoneNumber(t *testing.T) {
 		{
 			name: "success: verify a phone number does not exist",
 			args: args{
-				phone:            base.TestUserPhoneNumber,
+				phone:            "+254711999888",
 				onboardingClient: onboardingClient,
 			},
 			wantErr: false,
