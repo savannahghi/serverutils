@@ -532,7 +532,7 @@ func TestComposeAPIURL(t *testing.T) {
 				path:   "/api/branches/workstations",
 				query:  "format=json",
 			},
-			want: "https://erp-api-staging.healthcloud.co.ke/api/branches/workstations?format=json",
+			want: "https://erp-api-testing.healthcloud.co.ke/api/branches/workstations?format=json",
 		},
 	}
 	for _, tt := range tests {

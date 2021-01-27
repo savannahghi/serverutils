@@ -194,6 +194,7 @@ type Dep struct {
 type DepsConfig struct {
 	Staging    []Dep `yaml:"staging"`
 	Testing    []Dep `yaml:"testing"`
+	Demo       []Dep `yaml:"demo"`
 	Production []Dep `yaml:"production"`
 }
 
@@ -242,6 +243,12 @@ func SetupISCclient(config DepsConfig, serviceName string) (*InterServiceClient,
 
 	if GetRunningEnvironment() == TestingEnv {
 		dep := GetDepFromConfig(serviceName, config.Testing)
+		client, err := NewInterserviceClient(ISCService{Name: dep.DepName, RootDomain: dep.DepRootDomain})
+		return client, err
+	}
+
+	if GetRunningEnvironment() == DemoEnv {
+		dep := GetDepFromConfig(serviceName, config.Demo)
 		client, err := NewInterserviceClient(ISCService{Name: dep.DepName, RootDomain: dep.DepRootDomain})
 		return client, err
 	}

@@ -161,6 +161,9 @@ const (
 	// running the service under staging
 	StagingEnv = "staging"
 
+	// running the service under demo
+	DemoEnv = "demo"
+
 	// running the service under testing
 	TestingEnv = "testing"
 
