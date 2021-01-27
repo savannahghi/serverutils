@@ -211,3 +211,50 @@ func TestCreateOrLoginTestPhoneNumberUser(t *testing.T) {
 		})
 	}
 }
+
+func TestRemoveTestPhoneNumberUser(t *testing.T) {
+	onboardingClient, err := onboardingISCClient()
+	if err != nil {
+		t.Errorf("failed to initialize onboarding test ISC client")
+		return
+	}
+
+	TestCreateOrLoginTestPhoneNumberUser(t)
+
+	type args struct {
+		onboardingClient *base.InterServiceClient
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "success: remove the created test user",
+			args: args{
+				onboardingClient: onboardingClient,
+			},
+			wantErr: false,
+		},
+		{
+			name: "failure: failed to remove the created test user",
+			args: args{
+				onboardingClient: nil,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := base.RemoveTestPhoneNumberUser(
+				t,
+				tt.args.onboardingClient,
+			); (err != nil) != tt.wantErr {
+				t.Errorf("RemoveTestPhoneNumberUser() error = %v, wantErr %v",
+					err,
+					tt.wantErr,
+				)
+			}
+		})
+	}
+}

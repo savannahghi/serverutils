@@ -20,6 +20,7 @@ const (
 	verifyPhone       = "internal/verify_phone"
 	createUserByPhone = "internal/create_user_by_phone"
 	loginByPhone      = "internal/login_by_phone"
+	removeUserByPhone = "internal/remove_user"
 
 	// OnboardingRootDomain represents onboarding ISC URL
 	OnboardingRootDomain = "https://profile-staging.healthcloud.co.ke"
@@ -356,4 +357,33 @@ func GetAuthenticatedContextFromUID(ctx context.Context, uid string) (*auth.Toke
 	}
 
 	return authToken, nil
+}
+
+// RemoveTestPhoneNumberUser removes the records created by the
+// test phonenumber user
+func RemoveTestPhoneNumberUser(
+	t *testing.T,
+	onboardingClient *InterServiceClient,
+) error {
+	if onboardingClient == nil {
+		return fmt.Errorf("nil ISC client")
+	}
+
+	payload := map[string]interface{}{
+		"phoneNumber": TestUserPhoneNumber,
+	}
+	resp, err := onboardingClient.MakeRequest(
+		http.MethodPost,
+		removeUserByPhone,
+		payload,
+	)
+	if err != nil {
+		return fmt.Errorf("unable to make a request to remove test user: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("expected a StatusOK (200) status code but instead got %v", resp.StatusCode)
+	}
+
+	return nil
 }
