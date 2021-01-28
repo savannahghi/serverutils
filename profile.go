@@ -398,13 +398,14 @@ type UserResponse struct {
 
 // AuthCredentialResponse represents a user login response
 type AuthCredentialResponse struct {
-	CustomToken  *string `json:"customToken"`
-	IDToken      *string `json:"id_token"`
-	ExpiresIn    string  `json:"expires_in"`
-	RefreshToken string  `json:"refresh_token"`
-	UID          string  `json:"uid"`
-	IsAdmin      bool    `json:"is_admin"`
-	IsAnonymous  bool    `json:"is_anonymous"`
+	CustomToken   *string `json:"customToken"`
+	IDToken       *string `json:"id_token"`
+	ExpiresIn     string  `json:"expires_in"`
+	RefreshToken  string  `json:"refresh_token"`
+	UID           string  `json:"uid"`
+	IsAdmin       bool    `json:"is_admin"`
+	IsAnonymous   bool    `json:"is_anonymous"`
+	CanExperiment bool    `json:"can_experiment"`
 }
 
 // Customer used to create a customer request payload
