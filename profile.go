@@ -172,10 +172,11 @@ func (e PartnerType) MarshalGQL(w io.Writer) {
 
 // Cover is used to save a user's insurance details.
 type Cover struct {
-	PayerName      string `json:"payer_name,omitempty" firestore:"payerName"`
-	PayerSladeCode int    `json:"payer_slade_code,omitempty" firestore:"payerSladeCode"`
-	MemberNumber   string `json:"member_number,omitempty" firestore:"memberNumber"`
-	MemberName     string `json:"member_name,omitempty" firestore:"memberName"`
+	IdentifierHash *string `json:"identifier_hash" firestore:"identifierHash"`
+	PayerName      string  `json:"payer_name,omitempty" firestore:"payerName"`
+	PayerSladeCode int     `json:"payer_slade_code,omitempty" firestore:"payerSladeCode"`
+	MemberNumber   string  `json:"member_number,omitempty" firestore:"memberNumber"`
+	MemberName     string  `json:"member_name,omitempty" firestore:"memberName"`
 }
 
 // IsEntity marks this struct as a GraphQL entity
