@@ -267,6 +267,12 @@ type UserProfile struct {
 
 	// a user's biodata is stored on the profile
 	UserBioData BioData `json:"userBioData,omitempty" firestore:"userBioData"`
+
+	// this is the user's home geo location
+	HomeAddress *Address `json:"homeAddress,omitempty" firestore:"homeAddress"`
+
+	// this is the user's work geo location
+	WorkAddress *Address `json:"workAddress,omitempty" firestore:"workAddress"`
 }
 
 // IsEntity marks a profile as a GraphQL entity
@@ -471,4 +477,14 @@ type Location struct {
 // OtpResponse returns an otp
 type OtpResponse struct {
 	OTP string `json:"otp"`
+}
+
+// Address holds Google Map's location data
+type Address struct {
+	Latitude         int     `json:"latitude"`
+	Longitude        int     `json:"longitude"`
+	Locality         *string `json:"locality"`
+	Name             *string `json:"name"`
+	PlaceID          *string `json:"placeID"`
+	FormattedAddress *string `json:"formattedAddress"`
 }
