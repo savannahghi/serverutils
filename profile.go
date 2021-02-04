@@ -497,8 +497,8 @@ type OtpResponse struct {
 
 // Address holds Google Map's location data
 type Address struct {
-	Latitude         int     `json:"latitude"`
-	Longitude        int     `json:"longitude"`
+	Latitude         string  `json:"latitude"`
+	Longitude        string  `json:"longitude"`
 	Locality         *string `json:"locality"`
 	Name             *string `json:"name"`
 	PlaceID          *string `json:"placeID"`
