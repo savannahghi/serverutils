@@ -213,6 +213,7 @@ type UserProfileRepository interface {
 	UpdatePushTokens(ctx context.Context, id string, pushToken []string) error
 	UpdatePermissions(ctx context.Context, id string, perms []PermissionType) error
 	UpdateBioData(ctx context.Context, id string, data BioData) error
+	UpdateAddresses(ctx context.Context, id string, address Address, addressType AddressType) error
 }
 
 // UserProfile serializes the profile of the logged in user.
@@ -393,6 +394,21 @@ func (u *UserProfile) UpdateProfileBioData(
 	data BioData,
 ) error {
 	return repo.UpdateBioData(ctx, u.ID, data)
+}
+
+//UpdateProfileAddresses updates the profile with a user's addresses
+func (u *UserProfile) UpdateProfileAddresses(
+	ctx context.Context,
+	repo UserProfileRepository,
+	address Address,
+	addressType AddressType,
+) error {
+	return repo.UpdateAddresses(
+		ctx,
+		u.ID,
+		address,
+		addressType,
+	)
 }
 
 // UserResponse returns a user's sign up/in response

@@ -514,3 +514,50 @@ func (e *CalendarView) UnmarshalGQL(v interface{}) error {
 func (e CalendarView) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
+
+// AddressType represents the types of addresses we have
+type AddressType string
+
+// AddressTypeHome is an example of an address type
+const (
+	AddressTypeHome AddressType = "HOME"
+	AddressTypeWork AddressType = "WORK"
+)
+
+// AllAddressType contains a slice of all addresses types
+var AllAddressType = []AddressType{
+	AddressTypeHome,
+	AddressTypeWork,
+}
+
+// IsValid checks if the address type is valid
+func (e AddressType) IsValid() bool {
+	switch e {
+	case AddressTypeHome, AddressTypeWork:
+		return true
+	}
+	return false
+}
+
+func (e AddressType) String() string {
+	return string(e)
+}
+
+// UnmarshalGQL converts the input, if valid, into an address type value
+func (e *AddressType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = AddressType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid AddressType", str)
+	}
+	return nil
+}
+
+// MarshalGQL converts address type into a valid JSON string
+func (e AddressType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
