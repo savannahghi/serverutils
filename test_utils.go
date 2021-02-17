@@ -17,10 +17,10 @@ import (
 
 const (
 	anonymousUserUID  = "AgkGYKUsRifO2O9fTLDuVCMr2hb2" // This is an anonymous user
-	verifyPhone       = "internal/verify_phone"
-	createUserByPhone = "internal/create_user_by_phone"
-	loginByPhone      = "internal/login_by_phone"
-	removeUserByPhone = "internal/remove_user"
+	verifyPhone       = "testing/verify_phone"
+	createUserByPhone = "testing/create_user_by_phone"
+	loginByPhone      = "testing/login_by_phone"
+	removeUserByPhone = "testing/remove_user"
 
 	// OnboardingRootDomain represents onboarding ISC URL
 	OnboardingRootDomain = "https://profile-staging.healthcloud.co.ke"
