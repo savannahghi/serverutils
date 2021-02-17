@@ -433,10 +433,10 @@ type AuthCredentialResponse struct {
 
 // Customer used to create a customer request payload
 type Customer struct {
-	ID                 string             `json:"id" firestore:"id"`
+	ID                 string             `json:"customerID" firestore:"id"`
 	ProfileID          *string            `json:"profileID,omitempty" firestore:"profileID"`
-	CustomerID         string             `json:"customerID,omitempty" firestore:"customerID"`
-	ReceivablesAccount ReceivablesAccount `json:"receivablesAccount" firestore:"receivablesAccount"`
+	CustomerID         string             `json:"id,omitempty" firestore:"erpCustomerID"`
+	ReceivablesAccount ReceivablesAccount `json:"receivables_account" firestore:"receivablesAccount"`
 	Active             bool               `json:"active" firestore:"active"`
 }
 
@@ -444,7 +444,7 @@ type Customer struct {
 type ReceivablesAccount struct {
 	ID          string `json:"id" firestore:"id"`
 	Name        string `json:"name" firestore:"name"`
-	IsActive    bool   `json:"isActive" firestore:"isActive"`
+	IsActive    bool   `json:"is_active" firestore:"isActive"`
 	Number      string `json:"number" firestore:"number"`
 	Tag         string `json:"tag" firestore:"tag"`
 	Description string `json:"description" firestore:"description"`
@@ -462,11 +462,11 @@ type PayablesAccount struct {
 
 // Supplier used to create a supplier request payload
 type Supplier struct {
-	ID                     string                 `json:"id" firestore:"id"`
+	ID                     string                 `json:"supplierID" firestore:"id"`
 	ProfileID              *string                `json:"profileID" firestore:"profileID"`
-	SupplierID             string                 `json:"supplierID" firestore:"supplierID"`
+	SupplierID             string                 `json:"id" firestore:"erpSupplierID"`
 	SupplierName           string                 `json:"supplierName" firestore:"supplierName"`
-	PayablesAccount        *PayablesAccount       `json:"payablesAccount" firestore:"payablesAccount"`
+	PayablesAccount        *PayablesAccount       `json:"payables_account" firestore:"payablesAccount"`
 	SupplierKYC            map[string]interface{} `json:"supplierKYC" firestore:"supplierKYC"`
 	Active                 bool                   `json:"active" firestore:"active"`
 	AccountType            AccountType            `json:"accountType" firestore:"accountType"`
