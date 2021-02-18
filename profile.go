@@ -427,7 +427,7 @@ type UserResponse struct {
 	Profile               *UserProfile               `json:"profile"`
 	SupplierProfile       *Supplier                  `json:"supplierProfile"`
 	CustomerProfile       *Customer                  `json:"customerProfile"`
-	ComminicationSettings *UserCommunicationsSetting `json:"comminicationSettings"`
+	CommunicationSettings *UserCommunicationsSetting `json:"communicationSettings"`
 	Auth                  AuthCredentialResponse     `json:"auth"`
 }
 
