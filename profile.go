@@ -411,12 +411,24 @@ func (u *UserProfile) UpdateProfileAddresses(
 	)
 }
 
+// UserCommunicationsSetting hold information about the user communication's channels.
+// if a channel is true, we will be able to send them marketing or promotional messages
+type UserCommunicationsSetting struct {
+	ID            string `json:"id" firestore:"id"`
+	ProfileID     string `json:"profileID" firestore:"profileID"`
+	AllowWhatsApp bool   `json:"allowWhatsApp" firestore:"allowWhatsApp"`
+	AllowTextSMS  bool   `json:"allowTextSMS" firestore:"allowTextSMS"`
+	AllowPush     bool   `json:"allowPush" firestore:"allowPush"`
+	AllowEmail    bool   `json:"allowEmail" firestore:"allowEmail"`
+}
+
 // UserResponse returns a user's sign up/in response
 type UserResponse struct {
-	Profile         *UserProfile           `json:"profile"`
-	SupplierProfile *Supplier              `json:"supplierProfile"`
-	CustomerProfile *Customer              `json:"customerProfile"`
-	Auth            AuthCredentialResponse `json:"auth"`
+	Profile               *UserProfile               `json:"profile"`
+	SupplierProfile       *Supplier                  `json:"supplierProfile"`
+	CustomerProfile       *Customer                  `json:"customerProfile"`
+	ComminicationSettings *UserCommunicationsSetting `json:"comminicationSettings"`
+	Auth                  AuthCredentialResponse     `json:"auth"`
 }
 
 // AuthCredentialResponse represents a user login response
