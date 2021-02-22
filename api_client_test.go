@@ -532,7 +532,7 @@ func TestComposeAPIURL(t *testing.T) {
 				path:   "/api/branches/workstations",
 				query:  "format=json",
 			},
-			want: "https://erp-api-uat.healthcloud.co.ke/api/branches/workstations?format=json",
+			want: "https://erp-api-testing.healthcloud.co.ke/api/branches/workstations?format=json",
 		},
 	}
 	for _, tt := range tests {
@@ -680,7 +680,7 @@ func TestServerClient_MeURL(t *testing.T) {
 	if goodClient != nil {
 		got, err := goodClient.MeURL()
 		assert.Nil(t, err)
-		assert.Equal(t, "https://accounts.multitenant.slade360.co.ke/v1/user/me/?format=json", got)
+		assert.Equal(t, "https://auth.healthcloud.co.ke/v1/user/me/?format=json", got)
 	}
 }
 

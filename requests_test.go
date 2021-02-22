@@ -237,7 +237,7 @@ func TestReadWriteRequestToTarget(t *testing.T) {
 				apiClient: client,
 				method:    http.MethodPost,
 				path:      "/this/is/not/a/real/path",
-				content:   []byte("some content"),
+				content:   nil,
 				target:    &target,
 			},
 			wantErr: true,
