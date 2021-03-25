@@ -481,7 +481,7 @@ type Supplier struct {
 	PayablesAccount        *PayablesAccount       `json:"payables_account" firestore:"payablesAccount"`
 	SupplierKYC            map[string]interface{} `json:"supplierKYC" firestore:"supplierKYC"`
 	Active                 bool                   `json:"active" firestore:"active"`
-	AccountType            AccountType            `json:"accountType" firestore:"accountType"`
+	AccountType            *AccountType           `json:"accountType" firestore:"accountType"`
 	UnderOrganization      bool                   `json:"underOrganization" firestore:"underOrganization"`
 	IsOrganizationVerified bool                   `json:"isOrganizationVerified" firestore:"isOrganizationVerified"`
 	SladeCode              string                 `json:"sladeCode" firestore:"sladeCode"`
