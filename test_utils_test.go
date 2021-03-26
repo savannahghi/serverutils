@@ -10,6 +10,14 @@ import (
 	"gitlab.slade360emr.com/go/base"
 )
 
+const (
+	// OnboardingRootDomain represents onboarding ISC URL
+	OnboardingRootDomain = "https://profile-staging.healthcloud.co.ke"
+
+	// OnboardingName represents the onboarding service ISC name
+	OnboardingName = "onboarding"
+)
+
 func TestGetOrCreateAnonymousUser(t *testing.T) {
 	type args struct {
 		ctx context.Context
@@ -95,11 +103,11 @@ func TestGetAuthenticatedContextFromUID(t *testing.T) {
 }
 
 func onboardingISCClient() (*base.InterServiceClient, error) {
-	deps, err := base.LoadDepsFromYAML()
-	if err != nil {
-		return nil, fmt.Errorf("unable to load deps")
-	}
-	onboardingClient, err := base.SetupISCclient(*deps, "profile")
+	onboardingClient, err := base.NewInterserviceClient(
+		base.ISCService{
+			Name:       OnboardingName,
+			RootDomain: OnboardingRootDomain,
+		})
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize onboarding ISC client: %v", err)
 	}
@@ -218,7 +226,6 @@ func TestRemoveTestPhoneNumberUser(t *testing.T) {
 		t.Errorf("failed to initialize onboarding test ISC client")
 		return
 	}
-
 	_, err = base.CreateOrLoginTestPhoneNumberUser(t, onboardingClient)
 	if err != nil {
 		t.Errorf("unable to create user %v", err)

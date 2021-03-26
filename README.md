@@ -63,6 +63,79 @@ git push --tags
 Continuous integration tests *must* pass on Gitlab CI. Our coverage threshold
 for small libraries is 90% i.e you *must* keep coverage above 90%.
 
+## Custom Metrics
+
+The standard used for metrics instrumentation is [OpenCensus]('https://opencensus.io/). The [Go Documentation]('https://pkg.go.dev/go.opencensus.io)
+
+[OpenTelemetry]('https://opentelemetry.io/) will become the next major version for OpenCensus. However the status
+for Metrics in OpenTelemetry is **Experimental**. It will provide an easy path for migration from OpenCensus. [Read more here ...]('https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/metrics)
+
+### Brief Overview
+
+1. Create a quantifiable metric/measure
+
+```go
+var GraphqlResolverLatency = stats.Float64(
+  "graphql_resolver_latency",
+  "The Latency in milliseconds per graphql resolver execution",
+  "ms",
+ )
+
+```
+
+2. Create tag(s) associated with the measure
+
+```go
+ // Resolver is the Graphql resolver used when making a GraphQl request
+var ResolverName = tag.MustNewKey("resolver.name")
+
+```
+
+3. Organize metric into a View. Similar to a report
+
+```go
+var GraphqlResolverCountView = &view.View{
+  Name:        "graphql_resolver_request_count",
+  Description: "The number of times a graphql resolver is executed",
+  Measure:     GraphqlResolverLatency,
+  Aggregation: view.Count(),
+  TagKeys:     []tag.Key{ResolverName, ResolverErrorMessage, ResolverStatus},
+ }
+
+```
+
+### Instrumenting - Implementing in a service
+
+In a `resolver.go` file
+
+1. Record the metric.
+
+In a resolver record a measurement
+
+```go
+stats.Record(ctx, GraphqlResolverLatency.M(latency))
+```
+
+In `server.go`
+2. Register the view(s)
+
+- A service can declare it's own additional views
+
+```go
+if err := view.Register(base.DefaultServiceViews...); err != nil {
+  base.LogStartupError(ctx, err)
+ }
+```
+
+3. Enable the backend exporter(s) where collected metrics are sent
+
+```go
+_, err := base.EnableStatsAndTraceExporters(ctx, base.MetricsCollectorService("service-name"))
+ if err != nil {
+  base.LogStartupError(ctx, err)
+ }
+```
+
 ## Environment variables
 
 In order to run tests, you need to have an `env.sh` file similar to this one:
