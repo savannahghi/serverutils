@@ -170,6 +170,9 @@ const (
 	// running the service under production
 	ProdEnv = "prod"
 
+	// running the service under e2e
+	E2eEnv = "e2e"
+
 	//ERP client login env vars
 	ERPHostEnvVarName       = "ERP_HOST"
 	ERPAPISchemeEnvVarName  = "ERP_API_SCHEME"

@@ -269,98 +269,98 @@ func TestEnsureTopicsExist(t *testing.T) {
 	}
 }
 
-// func TestEnsureSubscriptionsExist(t *testing.T) {
-// 	ctx := context.Background()
-// 	projectID := base.MustGetEnvVar(base.GoogleCloudProjectIDEnvVarName)
-// 	pubsubClient, err := pubsub.NewClient(ctx, projectID)
-// 	if err != nil {
-// 		t.Errorf("can't initialize pubsub client: %v", err)
-// 		return
-// 	}
+func TestEnsureSubscriptionsExist(t *testing.T) {
+	ctx := context.Background()
+	projectID := base.MustGetEnvVar(base.GoogleCloudProjectIDEnvVarName)
+	pubsubClient, err := pubsub.NewClient(ctx, projectID)
+	if err != nil {
+		t.Errorf("can't initialize pubsub client: %v", err)
+		return
+	}
 
-// 	environment := "CI"
-// 	serviceName := "test"
-// 	version := "v1"
-// 	validTopic := "test.ci"
-// 	validTopics := []string{
-// 		base.NamespacePubsubIdentifier(
-// 			serviceName,
-// 			validTopic,
-// 			environment,
-// 			version,
-// 		),
-// 	}
-// 	err = base.EnsureTopicsExist(ctx, pubsubClient, validTopics)
-// 	if err != nil {
-// 		t.Errorf("can't create topics: %v", err)
-// 		return
-// 	}
+	environment := "CI"
+	serviceName := "test"
+	version := "v1"
+	validTopic := "test.ci"
+	validTopics := []string{
+		base.NamespacePubsubIdentifier(
+			serviceName,
+			validTopic,
+			environment,
+			version,
+		),
+	}
+	err = base.EnsureTopicsExist(ctx, pubsubClient, validTopics)
+	if err != nil {
+		t.Errorf("can't create topics: %v", err)
+		return
+	}
 
-// 	type args struct {
-// 		ctx                  context.Context
-// 		pubsubClient         *pubsub.Client
-// 		topicSubscriptionMap map[string]string
-// 		callbackURL          string
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		args    args
-// 		wantErr bool
-// 	}{
-// 		{
-// 			name: "topic that does not exist - expect error",
-// 			args: args{
-// 				ctx:          ctx,
-// 				pubsubClient: pubsubClient,
-// 				topicSubscriptionMap: map[string]string{
-// 					"fake-topic-1": "subscription-to-fake-topic",
-// 				},
-// 				callbackURL: "https://dummy.healthcloud.co.ke/pubsub/",
-// 			},
-// 			wantErr: true,
-// 		},
-// 		{
-// 			name: "nil pubsub client",
-// 			args: args{
-// 				ctx:          ctx,
-// 				pubsubClient: nil,
-// 				topicSubscriptionMap: map[string]string{
-// 					"fake-topic-1": "subscription-to-fake-topic",
-// 				},
-// 				callbackURL: "https://dummy.healthcloud.co.ke/pubsub/",
-// 			},
-// 			wantErr: true,
-// 		},
-// 		{
-// 			name: "valid topic and subscription",
-// 			args: args{
-// 				ctx:          ctx,
-// 				pubsubClient: pubsubClient,
-// 				topicSubscriptionMap: map[string]string{
-// 					validTopic: "valid-sub",
-// 				},
-// 				callbackURL: "https://dummy.healthcloud.co.ke/pubsub/",
-// 			},
-// 			wantErr: false,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			if err := base.EnsureSubscriptionsExist(
-// 				tt.args.ctx,
-// 				tt.args.pubsubClient,
-// 				tt.args.topicSubscriptionMap,
-// 				tt.args.callbackURL,
-// 			); (err != nil) != tt.wantErr {
-// 				t.Errorf(
-// 					"EnsureSubscriptionsExist() error = %v, wantErr %v",
-// 					err,
-// 					tt.wantErr,
-// 				)
-// 			}
-// 		})
-// 	}
-// }
+	type args struct {
+		ctx                  context.Context
+		pubsubClient         *pubsub.Client
+		topicSubscriptionMap map[string]string
+		callbackURL          string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "topic that does not exist - expect error",
+			args: args{
+				ctx:          ctx,
+				pubsubClient: pubsubClient,
+				topicSubscriptionMap: map[string]string{
+					"fake-topic-1": "subscription-to-fake-topic",
+				},
+				callbackURL: "https://dummy.healthcloud.co.ke/pubsub/",
+			},
+			wantErr: true,
+		},
+		{
+			name: "nil pubsub client",
+			args: args{
+				ctx:          ctx,
+				pubsubClient: nil,
+				topicSubscriptionMap: map[string]string{
+					"fake-topic-1": "subscription-to-fake-topic",
+				},
+				callbackURL: "https://dummy.healthcloud.co.ke/pubsub/",
+			},
+			wantErr: true,
+		},
+		{
+			name: "valid topic and subscription",
+			args: args{
+				ctx:          ctx,
+				pubsubClient: pubsubClient,
+				topicSubscriptionMap: map[string]string{
+					validTopic: "valid-sub",
+				},
+				callbackURL: "https://dummy.healthcloud.co.ke/pubsub/",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := base.EnsureSubscriptionsExist(
+				tt.args.ctx,
+				tt.args.pubsubClient,
+				tt.args.topicSubscriptionMap,
+				tt.args.callbackURL,
+			); (err != nil) != tt.wantErr {
+				t.Errorf(
+					"EnsureSubscriptionsExist() error = %v, wantErr %v",
+					err,
+					tt.wantErr,
+				)
+			}
+		})
+	}
+}
 
 func TestGetPushSubscriptionConfig(t *testing.T) {
 	ctx := context.Background()

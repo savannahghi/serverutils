@@ -196,6 +196,7 @@ type DepsConfig struct {
 	Testing    []Dep `yaml:"testing"`
 	Demo       []Dep `yaml:"demo"`
 	Production []Dep `yaml:"production"`
+	E2E        []Dep `yaml:"e2e"`
 }
 
 // PathToDepsFile return the path to deps.yaml file
@@ -255,6 +256,12 @@ func SetupISCclient(config DepsConfig, serviceName string) (*InterServiceClient,
 
 	if GetRunningEnvironment() == ProdEnv {
 		dep := GetDepFromConfig(serviceName, config.Production)
+		client, err := NewInterserviceClient(ISCService{Name: dep.DepName, RootDomain: dep.DepRootDomain})
+		return client, err
+	}
+
+	if GetRunningEnvironment() == E2eEnv {
+		dep := GetDepFromConfig(serviceName, config.E2E)
 		client, err := NewInterserviceClient(ISCService{Name: dep.DepName, RootDomain: dep.DepRootDomain})
 		return client, err
 	}

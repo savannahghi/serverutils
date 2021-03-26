@@ -21,12 +21,6 @@ const (
 	createUserByPhone = "testing/create_user_by_phone"
 	loginByPhone      = "testing/login_by_phone"
 	removeUserByPhone = "testing/remove_user"
-
-	// OnboardingRootDomain represents onboarding ISC URL
-	OnboardingRootDomain = "https://profile-staging.healthcloud.co.ke"
-
-	// OnboardingName represents the onboarding service ISC name
-	OnboardingName = "onboarding"
 )
 
 // ContextKey is used as a type for the UID key for the Firebase *auth.Token on context.Context.
@@ -382,7 +376,7 @@ func RemoveTestPhoneNumberUser(
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("expected a StatusOK (200) status code but instead got %v", resp.StatusCode)
+		return nil // This is a test utility. Do not block if the user is not found
 	}
 
 	return nil
