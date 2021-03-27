@@ -217,7 +217,7 @@ func getDepsPath(path string) string {
 	return path
 }
 
-// GetRunningEnvironment returns the environment wheere the service is running. Importannt
+// GetRunningEnvironment returns the environment where the service is running. Important
 // so as to point to the correct deps
 func GetRunningEnvironment() string {
 	return MustGetEnvVar(Environment)

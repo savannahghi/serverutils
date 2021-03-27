@@ -4,7 +4,7 @@ staging:
 testing:
   - depName: profile
     depRootDomain: https://profile-testing.healthcloud.co.ke
-prod:
+production:
   - depName: profile
     depRootDomain: https://profile-prod.healthcloud.co.ke
 demo:

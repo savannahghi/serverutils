@@ -90,6 +90,8 @@ func TestMetricsCollectorService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			initialEnvironment := os.Getenv("ENVIRONMENT")
+
 			if tt.name == "success:staging_env" {
 				os.Setenv("ENVIRONMENT", "staging")
 				if got := base.MetricsCollectorService(tt.args.serviceName); got != tt.want {
@@ -120,6 +122,8 @@ func TestMetricsCollectorService(t *testing.T) {
 					t.Errorf("MetricsCollectorService() = %v, want %v", got, tt.want)
 				}
 			}
+
+			os.Setenv("ENVIRONMENT", initialEnvironment)
 		})
 	}
 }
