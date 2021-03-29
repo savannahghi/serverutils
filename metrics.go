@@ -51,19 +51,11 @@ var (
 		Aggregation: view.Distribution(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100),
 		TagKeys:     []tag.Key{ResolverName, ResolverErrorMessage, ResolverStatus},
 	}
-
-	GraphqlResolverCountView = &view.View{
-		Name:        "graphql_resolver_request_count",
-		Description: "The number of times a graphql resolver is executed",
-		Measure:     GraphqlResolverLatency,
-		Aggregation: view.Count(),
-		TagKeys:     []tag.Key{ResolverName, ResolverErrorMessage, ResolverStatus},
-	}
 )
 
 // DefaultServiceViews are the default/common server views provided by base package
 // The views can be used by the various services
-var DefaultServiceViews = []*view.View{GraphqlResolverLatencyView, GraphqlResolverCountView}
+var DefaultServiceViews = []*view.View{GraphqlResolverLatencyView}
 
 // MetricsCollectorService returns name of service suffixed by it's running environment
 // this helps identify metrics from different services at the backend/metrics viewer.
