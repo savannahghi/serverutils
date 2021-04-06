@@ -47,15 +47,23 @@ var (
 		Description: "Time taken by a graphql resolver",
 		Measure:     GraphqlResolverLatency,
 		// Latency in buckets:
-		// [>=0ms, >=10ms, >=20ms, >=30ms,...]
-		Aggregation: view.Distribution(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100),
+		// [>=0ms, >=10ms, >=20ms, >=30ms,...., >=4s]
+		Aggregation: view.Distribution(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 600, 800, 1000, 2000, 3000, 4000),
+		TagKeys:     []tag.Key{ResolverName, ResolverErrorMessage, ResolverStatus},
+	}
+
+	GraphqlResolverCountView = &view.View{
+		Name:        "graphql_resolver_request_count",
+		Description: "The number of times a graphql resolver is executed",
+		Measure:     GraphqlResolverLatency,
+		Aggregation: view.Count(),
 		TagKeys:     []tag.Key{ResolverName, ResolverErrorMessage, ResolverStatus},
 	}
 )
 
 // DefaultServiceViews are the default/common server views provided by base package
 // The views can be used by the various services
-var DefaultServiceViews = []*view.View{GraphqlResolverLatencyView}
+var DefaultServiceViews = []*view.View{GraphqlResolverLatencyView, GraphqlResolverCountView}
 
 // MetricsCollectorService returns name of service suffixed by it's running environment
 // this helps identify metrics from different services at the backend/metrics viewer.
@@ -124,7 +132,11 @@ func RecordGraphqlResolverMetrics(ctx context.Context, startTime time.Time, name
 		tag.Insert(ResolverStatus, ResolverSuccessValue),
 	)
 
+	// returns a duration - time elapsed
 	duration := time.Since(startTime)
+
+	// duration is in nanoseconds (ns)
+	// 1ms = 1000000 ns
 	latency := float64(duration / 1000000)
 
 	// Record the starts
