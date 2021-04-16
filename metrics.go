@@ -12,10 +12,26 @@ import (
 	"go.opencensus.io/tag"
 )
 
+// GenerateLatencyBounds is used in generating latency bounds
+// The arguments provided should be in millisecond format e.g 1s == 1000ms
+// interval will be used as an increment value
+// [>=0ms, >=100ms, >=200ms, >=300ms,...., >=1000ms]
+func GenerateLatencyBounds(max, interval int) []float64 {
+	bounds := []float64{}
+	for j := 0; j <= max; j += interval {
+		bounds = append(bounds, float64(j))
+	}
+	return bounds
+}
+
 // LatencyBounds used in aggregating latency
 // should be in ms i.e seconds written in ms eg 1s --> 1000ms
 // [>=0ms, >=10ms, >=20ms, >=30ms,...., >=4s, >=5s, >=6s >=7s]
-var LatencyBounds = []float64{0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 600, 800, 1000, 2000, 3000, 4000, 5000, 6000, 7000}
+//
+// Disclaimer: The interval value should be reasonable so as to avoid many
+// buckets. If the distribution metrics has many buckets, it will not export
+// the metrics.
+var LatencyBounds = GenerateLatencyBounds(60000, 200) //1 min in intervals of 200ms
 
 // Server HTTP measures used to record metrics
 var (

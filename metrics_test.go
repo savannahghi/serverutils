@@ -300,3 +300,31 @@ func TestRecordStats(t *testing.T) {
 		})
 	}
 }
+
+func TestGenerateLatencyBounds(t *testing.T) {
+	type args struct {
+		max  int
+		step int
+	}
+	tests := []struct {
+		name string
+		args args
+		want []float64
+	}{
+		{
+			name: "Happy case",
+			args: args{
+				max:  1000,
+				step: 100,
+			},
+			want: []float64{0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := base.GenerateLatencyBounds(tt.args.max, tt.args.step); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GenerateLatencyBounds() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
