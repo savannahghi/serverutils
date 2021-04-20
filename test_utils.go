@@ -21,6 +21,7 @@ const (
 	createUserByPhone = "testing/create_user_by_phone"
 	loginByPhone      = "testing/login_by_phone"
 	removeUserByPhone = "testing/remove_user"
+	addAdmin          = "testing/add_admin_permissions"
 )
 
 // ContextKey is used as a type for the UID key for the Firebase *auth.Token on context.Context.
@@ -214,6 +215,38 @@ func LoginTestPhoneUser(
 	return response, nil
 }
 
+// AddAdminPermissions adds ADMIN permissions to our test user
+func AddAdminPermissions(
+	t *testing.T,
+	onboardingClient *InterServiceClient,
+	phone string,
+) error {
+	phonePayload := map[string]interface{}{
+		"phoneNumber": phone,
+	}
+
+	resp, err := onboardingClient.MakeRequest(
+		http.MethodPost,
+		addAdmin,
+		phonePayload,
+	)
+
+	if err != nil {
+		return fmt.Errorf("unable to make add admin request: %w", err)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("unable to convert response to string: %v", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("got status code %v with resp body: %s", resp.StatusCode, string(body))
+	}
+
+	return nil
+}
+
 // CreateOrLoginTestPhoneNumberUser creates an phone number test user if they
 // do not exist or `Logs them in` if the test user exists to retrieve
 // authenticated user response
@@ -236,6 +269,12 @@ func CreateOrLoginTestPhoneNumberUser(
 			err.Error(),
 			strconv.Itoa(int(PhoneNumberInUse)),
 		) {
+			// enforce perms
+			err = AddAdminPermissions(t, onboardingClient, phone)
+			if err != nil {
+				return nil, fmt.Errorf("unable to add admin permissions: %v", err)
+			}
+
 			return LoginTestPhoneUser(
 				t,
 				phone,
@@ -278,6 +317,11 @@ func CreateOrLoginTestPhoneNumberUser(
 	err = json.Unmarshal(signUpResp, &response)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal OTP: %v", err)
+	}
+
+	err = AddAdminPermissions(t, onboardingClient, phone)
+	if err != nil {
+		return nil, fmt.Errorf("unable to add admin permissions: %v", err)
 	}
 
 	return response, nil

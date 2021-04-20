@@ -216,6 +216,13 @@ func TestCreateOrLoginTestPhoneNumberUser(t *testing.T) {
 				t.Errorf("expected an auth response but got nil, since no error occurred")
 				return
 			}
+			if userResponse != nil {
+				perms := userResponse.Profile.Permissions
+				if len(perms) == 0 {
+					t.Errorf("expected test user to have admin perms")
+					return
+				}
+			}
 		})
 	}
 }
