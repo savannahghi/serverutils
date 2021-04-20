@@ -172,15 +172,15 @@ func (e PartnerType) MarshalGQL(w io.Writer) {
 
 // Cover is used to save a user's insurance details.
 type Cover struct {
-	IdentifierHash        *string `json:"identifier_hash" firestore:"identifierHash"`
-	PayerName             string  `json:"payer_name,omitempty" firestore:"payerName"`
-	PayerSladeCode        int     `json:"payer_slade_code,omitempty" firestore:"payerSladeCode"`
-	MemberNumber          string  `json:"member_number,omitempty" firestore:"memberNumber"`
-	MemberName            string  `json:"member_name,omitempty" firestore:"memberName"`
-	BeneficiaryID         string  `json:"beneficiary_id,omitempty" firestore:"beneficiaryID"`
-	EffectivePolicyNumber string  `json:"effective_policy_number,omitempty" firestore:"effectivePolicyNumber"`
-	ValidFrom             string  `json:"valid_from,omitempty" firestore:"validFrom"`
-	ValidTo               string  `json:"valid_to,omitempty" firestore:"validTo"`
+	IdentifierHash        *string   `json:"identifier_hash" firestore:"identifierHash"`
+	PayerName             string    `json:"payer_name,omitempty" firestore:"payerName"`
+	PayerSladeCode        int       `json:"payer_slade_code,omitempty" firestore:"payerSladeCode"`
+	MemberNumber          string    `json:"member_number,omitempty" firestore:"memberNumber"`
+	MemberName            string    `json:"member_name,omitempty" firestore:"memberName"`
+	BeneficiaryID         int       `json:"beneficiary_id,omitempty" firestore:"beneficiaryID"`
+	EffectivePolicyNumber string    `json:"effective_policy_number,omitempty" firestore:"effectivePolicyNumber"`
+	ValidFrom             time.Time `json:"valid_from,omitempty" firestore:"validFrom"`
+	ValidTo               time.Time `json:"valid_to,omitempty" firestore:"validTo"`
 }
 
 // IsEntity marks this struct as a GraphQL entity
