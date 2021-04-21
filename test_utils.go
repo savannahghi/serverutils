@@ -269,20 +269,28 @@ func CreateOrLoginTestPhoneNumberUser(
 			err.Error(),
 			strconv.Itoa(int(PhoneNumberInUse)),
 		) {
-			// enforce perms
-			err = AddAdminPermissions(t, onboardingClient, phone)
-			if err != nil {
-				return nil, fmt.Errorf("unable to add admin permissions: %v", err)
-			}
-
-			return LoginTestPhoneUser(
+			userResponse, err := LoginTestPhoneUser(
 				t,
 				phone,
 				PIN,
 				flavour,
 				onboardingClient,
 			)
+			if err != nil {
+				return nil, fmt.Errorf("unable to log in the test user: %v", err)
+			}
+
+			perms := userResponse.Profile.Permissions
+			if len(perms) == 0 {
+				err = AddAdminPermissions(t, onboardingClient, phone)
+				if err != nil {
+					return nil, fmt.Errorf("unable to add admin permissions: %v", err)
+				}
+			}
+
+			return userResponse, nil
 		}
+
 		return nil, fmt.Errorf("failed to verify test phone number: %v", err)
 	}
 	createUserPayload := map[string]interface{}{
