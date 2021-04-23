@@ -220,6 +220,7 @@ func TestCreateOrLoginTestPhoneNumberUser(t *testing.T) {
 			if userResponse != nil {
 				perms := userResponse.Profile.Permissions
 				logrus.Print(perms)
+				logrus.Print(userResponse.Profile.UserBioData)
 			}
 		})
 	}
@@ -270,6 +271,107 @@ func TestRemoveTestPhoneNumberUser(t *testing.T) {
 					err,
 					tt.wantErr,
 				)
+			}
+		})
+	}
+}
+
+func TestUpdateBioData(t *testing.T) {
+	onboardingClient, err := onboardingISCClient()
+	if err != nil {
+		t.Errorf("failed to initialize onboarding test ISC client")
+	}
+
+	response, err := base.CreateOrLoginTestPhoneNumberUser(t, onboardingClient)
+	if err != nil {
+		t.Errorf("unable to create user %v", err)
+		return
+	}
+
+	type args struct {
+		t                *testing.T
+		onboardingClient *base.InterServiceClient
+		UID              string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "happy :) update bio data",
+			args: args{
+				t:                t,
+				onboardingClient: onboardingClient,
+				UID:              response.Auth.UID,
+			},
+			wantErr: false,
+		},
+		{
+			name: "sad :( unable to update bio data",
+			args: args{
+				t:                t,
+				onboardingClient: onboardingClient,
+				UID:              "not-a-uid",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := base.UpdateBioData(tt.args.t, tt.args.onboardingClient, tt.args.UID); (err != nil) != tt.wantErr {
+				t.Errorf("UpdateBioData() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestAddAdminPermissions(t *testing.T) {
+	onboardingClient, err := onboardingISCClient()
+	if err != nil {
+		t.Errorf("failed to initialize onboarding test ISC client")
+		return
+	}
+
+	response, err := base.CreateOrLoginTestPhoneNumberUser(t, onboardingClient)
+	if err != nil {
+		t.Errorf("unable to create user %v", err)
+		return
+	}
+
+	type args struct {
+		t                *testing.T
+		onboardingClient *base.InterServiceClient
+		phone            string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "happy case :)",
+			args: args{
+				t:                t,
+				onboardingClient: onboardingClient,
+				phone:            *response.Profile.PrimaryPhone,
+			},
+			wantErr: false,
+		},
+		{
+			name: "sad case :(",
+			args: args{
+				t:                t,
+				onboardingClient: onboardingClient,
+				phone:            "not-a-phone-number",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := base.AddAdminPermissions(tt.args.t, tt.args.onboardingClient, tt.args.phone); (err != nil) != tt.wantErr {
+				t.Errorf("AddAdminPermissions() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

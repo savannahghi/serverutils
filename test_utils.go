@@ -22,6 +22,7 @@ const (
 	loginByPhone      = "testing/login_by_phone"
 	removeUserByPhone = "testing/remove_user"
 	addAdmin          = "testing/add_admin_permissions"
+	updateBioData     = "testing/update_user_profile"
 )
 
 // ContextKey is used as a type for the UID key for the Firebase *auth.Token on context.Context.
@@ -247,6 +248,41 @@ func AddAdminPermissions(
 	return nil
 }
 
+// UpdateBioData adds Bio Data to our test user
+func UpdateBioData(
+	t *testing.T,
+	onboardingClient *InterServiceClient,
+	UID string,
+) error {
+	bioDataPayload := map[string]interface{}{
+		"uid":         UID,
+		"firstName":   "Dumbledore 'the'",
+		"lastName":    "Greatest Test User",
+		"gender":      GenderMale,
+		"dateOfBirth": "2000-01-01",
+	}
+
+	resp, err := onboardingClient.MakeRequest(
+		http.MethodPost,
+		updateBioData,
+		bioDataPayload,
+	)
+
+	if err != nil {
+		return fmt.Errorf("unable to make update user profile request: %w", err)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("unable to convert response to string: %v", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("got status code %v with resp body: %s", resp.StatusCode, string(body))
+	}
+	return nil
+}
+
 // CreateOrLoginTestPhoneNumberUser creates an phone number test user if they
 // do not exist or `Logs them in` if the test user exists to retrieve
 // authenticated user response
@@ -285,6 +321,13 @@ func CreateOrLoginTestPhoneNumberUser(
 				err = AddAdminPermissions(t, onboardingClient, phone)
 				if err != nil {
 					return nil, fmt.Errorf("unable to add admin permissions: %v", err)
+				}
+			}
+
+			if userResponse.Profile.UserBioData.FirstName == nil {
+				err = UpdateBioData(t, onboardingClient, userResponse.Auth.UID)
+				if err != nil {
+					return nil, fmt.Errorf("unable to update user profile: %v", err)
 				}
 			}
 
@@ -327,13 +370,7 @@ func CreateOrLoginTestPhoneNumberUser(
 		return nil, fmt.Errorf("failed to unmarshal OTP: %v", err)
 	}
 
-	err = AddAdminPermissions(t, onboardingClient, phone)
-	if err != nil {
-		return nil, fmt.Errorf("unable to add admin permissions: %v", err)
-	}
-
 	return response, nil
-
 }
 
 // GetPhoneNumberAuthenticatedContextAndToken returns a phone number logged in context
