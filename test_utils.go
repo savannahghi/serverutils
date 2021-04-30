@@ -287,10 +287,7 @@ func UpdateBioData(
 // do not exist or `Logs them in` if the test user exists to retrieve
 // authenticated user response
 // For documentation and test purposes only
-func CreateOrLoginTestPhoneNumberUser(
-	t *testing.T,
-	onboardingClient *InterServiceClient,
-) (*UserResponse, error) {
+func CreateOrLoginTestPhoneNumberUser(t *testing.T, onboardingClient *InterServiceClient) (*UserResponse, error) {
 	phone := TestUserPhoneNumber
 	PIN := TestUserPin
 	flavour := FlavourConsumer
@@ -368,6 +365,21 @@ func CreateOrLoginTestPhoneNumberUser(
 	err = json.Unmarshal(signUpResp, &response)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal OTP: %v", err)
+	}
+
+	perms := response.Profile.Permissions
+	if len(perms) == 0 {
+		err = AddAdminPermissions(t, onboardingClient, phone)
+		if err != nil {
+			return nil, fmt.Errorf("unable to add admin permissions: %v", err)
+		}
+	}
+
+	if response.Profile.UserBioData.FirstName == nil {
+		err = UpdateBioData(t, onboardingClient, response.Auth.UID)
+		if err != nil {
+			return nil, fmt.Errorf("unable to update user profile: %v", err)
+		}
 	}
 
 	return response, nil
