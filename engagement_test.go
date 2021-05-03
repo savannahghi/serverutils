@@ -1574,6 +1574,7 @@ func TestNudge_ValidateAndMarshal(t *testing.T) {
 		Groups               []string
 		Users                []string
 		NotificationChannels []base.Channel
+		NotificationBody     base.NotificationBody
 	}
 	tests := []struct {
 		name    string
@@ -1619,6 +1620,14 @@ func TestNudge_ValidateAndMarshal(t *testing.T) {
 					base.ChannelSms,
 					base.ChannelWhatsapp,
 				},
+				NotificationBody: base.NotificationBody{
+					PublishMessage:   "Your nudge has been successfully published",
+					ResolveMessage:   "Your nudge has been successfully resolved",
+					DeleteMessage:    "Your nudge has been successfully deleted",
+					UnresolveMessage: "Your nudge has been successfully unresolved",
+					ShowMessage:      "Your nudge has been successfully shown",
+					HideMessage:      "Your nudge has been successfully hidden",
+				},
 			},
 			wantErr: false,
 		},
@@ -1641,6 +1650,7 @@ func TestNudge_ValidateAndMarshal(t *testing.T) {
 				Groups:               tt.fields.Groups,
 				Users:                tt.fields.Users,
 				NotificationChannels: tt.fields.NotificationChannels,
+				NotificationBody:     tt.fields.NotificationBody,
 			}
 			got, err := nu.ValidateAndMarshal()
 			if (err != nil) != tt.wantErr {
@@ -2467,6 +2477,98 @@ func TestValidateAndMarshal(t *testing.T) {
 			}
 			if !tt.wantNil && got == nil {
 				t.Errorf("ValidateAndMarshal() got unexpected nil")
+				return
+			}
+		})
+	}
+}
+
+func TestNotificationBody_ValidateAndUnmarshal(t *testing.T) {
+	validNotificationBody := base.NotificationBody{
+		PublishMessage:   "publish message",
+		DeleteMessage:    "delete message",
+		ResolveMessage:   "resolve message",
+		UnresolveMessage: "unresolve message",
+		ShowMessage:      "show message",
+		HideMessage:      "hide message",
+	}
+	validJSONBytes, err := json.Marshal(validNotificationBody)
+	if err != nil {
+		t.Errorf("an error occurred: %v", err)
+		return
+	}
+
+	type args struct {
+		b []byte
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "happy notification body",
+			args: args{
+				b: validJSONBytes,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			nb := &base.NotificationBody{}
+			if err := nb.ValidateAndUnmarshal(tt.args.b); (err != nil) != tt.wantErr {
+				t.Errorf("NotificationBody.ValidateAndUnmarshal() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestNotificationBody_ValidateAndMarshal(t *testing.T) {
+	type fields struct {
+		PublishMessage   string
+		DeleteMessage    string
+		ResolveMessage   string
+		UnresolveMessage string
+		ShowMessage      string
+		HideMessage      string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    []byte
+		wantErr bool
+	}{
+		{
+			name: "happy case",
+			fields: fields{
+				PublishMessage:   "publish message",
+				DeleteMessage:    "delete message",
+				ResolveMessage:   "resolve message",
+				UnresolveMessage: "unresolve message",
+				ShowMessage:      "show message",
+				HideMessage:      "hide message",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			nb := &base.NotificationBody{
+				PublishMessage:   tt.fields.PublishMessage,
+				DeleteMessage:    tt.fields.DeleteMessage,
+				ResolveMessage:   tt.fields.ResolveMessage,
+				UnresolveMessage: tt.fields.UnresolveMessage,
+				ShowMessage:      tt.fields.ShowMessage,
+				HideMessage:      tt.fields.HideMessage,
+			}
+			notificationBody, err := nb.ValidateAndMarshal()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NotificationBody.ValidateAndMarshal() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if notificationBody == nil {
+				t.Errorf("expected notificationBody")
 				return
 			}
 		})

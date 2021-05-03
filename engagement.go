@@ -17,22 +17,23 @@ import (
 
 // defaults
 const (
-	LogoURL              = "https://assets.healthcloud.co.ke/bewell_logo.png"
-	BlankImageURL        = "https://assets.healthcloud.co.ke/1px.png"
-	SampleVideoURL       = "https://www.youtube.com/watch?v=bPiofmZGb8o"
-	FallbackSchemaHost   = "https://schema.healthcloud.co.ke"
-	SchemaHostEnvVarName = "SCHEMA_HOST"
-	LinkSchemaFile       = "link.schema.json"
-	MessageSchemaFile    = "message.schema.json"
-	ActionSchemaFile     = "action.schema.json"
-	NudgeSchemaFile      = "nudge.schema.json"
-	ItemSchemaFile       = "item.schema.json"
-	FeedSchemaFile       = "feed.schema.json"
-	ContextSchemaFile    = "context.schema.json"
-	PayloadSchemaFile    = "payload.schema.json"
-	EventSchemaFile      = "event.schema.json"
-	StatusSchemaFile     = "status.schema.json"
-	VisibilitySchemaFile = "visibility.schema.json"
+	LogoURL                    = "https://assets.healthcloud.co.ke/bewell_logo.png"
+	BlankImageURL              = "https://assets.healthcloud.co.ke/1px.png"
+	SampleVideoURL             = "https://www.youtube.com/watch?v=bPiofmZGb8o"
+	FallbackSchemaHost         = "https://schema.healthcloud.co.ke"
+	SchemaHostEnvVarName       = "SCHEMA_HOST"
+	LinkSchemaFile             = "link.schema.json"
+	MessageSchemaFile          = "message.schema.json"
+	ActionSchemaFile           = "action.schema.json"
+	NudgeSchemaFile            = "nudge.schema.json"
+	ItemSchemaFile             = "item.schema.json"
+	FeedSchemaFile             = "feed.schema.json"
+	ContextSchemaFile          = "context.schema.json"
+	PayloadSchemaFile          = "payload.schema.json"
+	EventSchemaFile            = "event.schema.json"
+	StatusSchemaFile           = "status.schema.json"
+	VisibilitySchemaFile       = "visibility.schema.json"
+	NotificationBodySchemaFile = "notificationbody.schema.json"
 )
 
 // Element is a building block of a feed e.g a nudge, action, feed item etc
@@ -242,6 +243,9 @@ type Nudge struct {
 
 	// How the user should be notified of this new item, if at all
 	NotificationChannels []Channel `json:"notificationChannels,omitempty" firestore:"notificationChannels,omitempty"`
+
+	// Text/Message the user will see in their notifications body when an action is performed on a nudge
+	NotificationBody NotificationBody `json:"notificationBody,omitempty" firestore:"notificationBody,omitempty"`
 }
 
 // ValidateAndUnmarshal checks that the input data is valid as per the
@@ -1092,3 +1096,42 @@ func validateAgainstSchema(sch string, b []byte) error {
 	}
 	return nil
 }
+
+// NotificationBody represents human readable messages sent in notifications
+type NotificationBody struct {
+	// Human readable rich text sent when an item/nudge is published to a user's Feed
+	PublishMessage string `json:"publishMessage" firestore:"publishMessage"`
+
+	// Human readable rich text sent when item/nudge is deleted to a user's Feed
+	DeleteMessage string `json:"deleteMessage" firestore:"deleteMessage"`
+
+	// Human readable rich text sent when a user does a RESOLVE action
+	ResolveMessage string `json:"resolveMessage" firestore:"resolveMessage"`
+
+	// Human readable rich text sent when a user does an UNRESOLVE action
+	UnresolveMessage string `json:"unresolveMessage" firestore:"unresolveMessage"`
+
+	// Human readable rich text sent when a user does a SHOW action
+	ShowMessage string `json:"showMessage" firestore:"showMessage"`
+
+	// Human readable rich text sent when a user does a HIDE action
+	HideMessage string `json:"hideMessage" firestore:"hideMessage"`
+}
+
+// ValidateAndUnmarshal checks that the input data is valid as per the
+// relevant JSON schema and unmarshals it if it is
+func (nb *NotificationBody) ValidateAndUnmarshal(b []byte) error {
+	err := ValidateAndUnmarshal(NotificationBodySchemaFile, b, nb)
+	if err != nil {
+		return fmt.Errorf("invalid notification body JSON: %w", err)
+	}
+	return nil
+}
+
+// ValidateAndMarshal validates against JSON schema then marshals to JSON
+func (nb *NotificationBody) ValidateAndMarshal() ([]byte, error) {
+	return ValidateAndMarshal(NotificationBodySchemaFile, nb)
+}
+
+// IsEntity marks this as an Apollo federation GraphQL entity
+func (nb *NotificationBody) IsEntity() {}
