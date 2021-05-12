@@ -1,6 +1,6 @@
 module gitlab.slade360emr.com/go/base
 
-go 1.15
+go 1.16
 
 require (
 	cloud.google.com/go v0.81.0
@@ -19,7 +19,7 @@ require (
 	github.com/google/pprof v0.0.0-20210406223550-17a10ee72223 // indirect
 	github.com/google/uuid v1.2.0
 	github.com/gorilla/handlers v1.5.1
-	github.com/gorilla/mux v1.7.4
+	github.com/gorilla/mux v1.8.0
 	github.com/imroc/req v0.3.0
 	github.com/kevinburke/go.uuid v1.2.0
 	github.com/kr/pretty v0.2.0 // indirect
@@ -28,6 +28,7 @@ require (
 	github.com/segmentio/ksuid v1.0.3
 	github.com/shopspring/decimal v1.2.0
 	github.com/sirupsen/logrus v1.8.1
+	github.com/spf13/cobra v1.1.3
 	github.com/stretchr/testify v1.7.0
 	github.com/ttacon/builder v0.0.0-20170518171403-c099f663e1c2 // indirect
 	github.com/ttacon/libphonenumber v1.2.1
