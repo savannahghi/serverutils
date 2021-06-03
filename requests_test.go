@@ -55,7 +55,7 @@ func TestReadRequestToTarget(t *testing.T) {
 			args: args{
 				apiClient: client,
 				method:    http.MethodGet,
-				path:      "/api/common/bp_registry/",
+				path:      "/api/common/contacts/",
 				content:   nil,
 				target:    &target,
 			},
@@ -214,7 +214,7 @@ func TestReadWriteRequestToTarget(t *testing.T) {
 			args: args{
 				apiClient: client,
 				method:    http.MethodGet,
-				path:      "/api/common/bp_registry/",
+				path:      "/api/common/contacts/",
 				content:   nil,
 				target:    &target,
 			},

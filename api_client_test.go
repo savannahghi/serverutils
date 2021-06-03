@@ -754,23 +754,56 @@ func TestFetchERPIdenties(t *testing.T) {
 	assert.NotNil(t, m)
 	assert.NotNil(t, w)
 }
+func TestFetchDefaultCurrency(t *testing.T) {
+	c, err := base.NewERPClient()
+	assert.Nil(t, err)
+	assert.NotNil(t, c)
+	y, err := base.FetchDefaultCurrency(c)
+	assert.Nil(t, err)
+	assert.NotNil(t, y)
+	assert.NotNil(t, y.ID)
+}
 
-// func TestFetchDefaultFinancialYear(t *testing.T) {
-// 	c, err := base.NewERPClient()
-// 	assert.Nil(t, err)
-// 	assert.NotNil(t, c)
-// 	y, err := base.FetchDefaultFinancialYear(c)
-// 	assert.Nil(t, err)
-// 	assert.NotNil(t, y)
-// 	assert.NotNil(t, y.ID)
-// }
-
-// func TestFetchDefaultCurrency(t *testing.T) {
-// 	c, err := base.NewERPClient()
-// 	assert.Nil(t, err)
-// 	assert.NotNil(t, c)
-// 	y, err := base.FetchDefaultCurrency(c)
-// 	assert.Nil(t, err)
-// 	assert.NotNil(t, y)
-// 	assert.NotNil(t, y.ID)
-// }
+func TestFetchDefaultFinancialYear(t *testing.T) {
+	c, err := base.NewERPClient()
+	if err != nil {
+		t.Errorf("unable to initialize erp client")
+		return
+	}
+	y, err := base.FetchDefaultFinancialYear(c)
+	if err != nil {
+		t.Errorf("unable to fetch default year")
+		return
+	}
+	type args struct {
+		c base.Client
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *base.FinancialYearAndCurrency
+		wantErr bool
+	}{
+		{
+			name: "happy case",
+			args: args{
+				c: c,
+			},
+			want:    y,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := base.FetchDefaultFinancialYear(tt.args.c)
+			if (err != nil) != tt.wantErr {
+				log.Println(err != nil)
+				t.Errorf("FetchDefaultFinancialYear() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("FetchDefaultFinancialYear() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
