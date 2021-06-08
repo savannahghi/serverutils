@@ -235,6 +235,7 @@ type Dependant struct {
 	MemberNumber string       `json:"memberNumber"`
 	Relationship Relationship `json:"relationship"`
 	PatientID    string       `json:"patientID,omitempty"`
+	DateOfBirth  *time.Time   `json:"dateOfBirth"`
 }
 
 // BenefitType is used to classify benefits for the Be.Well app.
