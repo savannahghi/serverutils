@@ -6,13 +6,13 @@ import (
 	"time"
 )
 
-// MockClient creates a mock EDI client for testing
+// MockClient creates a mock API client for testing
 type MockClient struct {
 
-	// Scheme is used to set up the EDI Scheme
+	// Scheme is used to set up the API Scheme
 	Scheme string
 
-	// Host is used to set up the EDI host
+	// Host is used to set up the API host
 	Host string
 
 	// Initialized is used to mark the mock client as initialized / not

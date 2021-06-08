@@ -414,8 +414,8 @@ func TestCloseRespBody(t *testing.T) {
 	base.CloseRespBody(blowResp)
 }
 
-func TestCheckEDIAPIInitialization(t *testing.T) {
-	msg := "the EDI httpClient is not correctly initialized. Please use the `.Initialize` constructor"
+func TestCheckAPIInitialization(t *testing.T) {
+	msg := "the API httpClient is not correctly initialized. Please use the `.Initialize` constructor"
 	nilErr := base.CheckAPIInitialization(nil)
 	assert.NotNil(t, nilErr)
 	assert.Equal(t, msg, nilErr.Error())
@@ -742,68 +742,4 @@ func TestServerClient_Refresh(t *testing.T) {
 
 	err = c.Refresh()
 	assert.Nil(t, err)
-}
-
-func TestFetchERPIdenties(t *testing.T) {
-	o := base.FetchDefaultOrganisation()
-	c := base.FetchCashAccount()
-	m := base.FetchMpesaAccount()
-	w := base.FetchtWellnessAccount()
-	assert.NotNil(t, o)
-	assert.NotNil(t, c)
-	assert.NotNil(t, m)
-	assert.NotNil(t, w)
-}
-func TestFetchDefaultCurrency(t *testing.T) {
-	c, err := base.NewERPClient()
-	assert.Nil(t, err)
-	assert.NotNil(t, c)
-	y, err := base.FetchDefaultCurrency(c)
-	assert.Nil(t, err)
-	assert.NotNil(t, y)
-	assert.NotNil(t, y.ID)
-}
-
-func TestFetchDefaultFinancialYear(t *testing.T) {
-	c, err := base.NewERPClient()
-	if err != nil {
-		t.Errorf("unable to initialize erp client")
-		return
-	}
-	y, err := base.FetchDefaultFinancialYear(c)
-	if err != nil {
-		t.Errorf("unable to fetch default year")
-		return
-	}
-	type args struct {
-		c base.Client
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *base.FinancialYearAndCurrency
-		wantErr bool
-	}{
-		{
-			name: "happy case",
-			args: args{
-				c: c,
-			},
-			want:    y,
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := base.FetchDefaultFinancialYear(tt.args.c)
-			if (err != nil) != tt.wantErr {
-				log.Println(err != nil)
-				t.Errorf("FetchDefaultFinancialYear() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FetchDefaultFinancialYear() = %v, want %v", got, tt.want)
-			}
-		})
-	}
 }

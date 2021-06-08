@@ -1,15 +1,3 @@
-// Package base provides general purpose facilities for interaction with Slade 360 APIs.
-// These APIs include but are not limited to:
-//
-// - Slade 360 EDI
-// - Slade 360 Charge Master
-// - Slade 360 Authentication Server
-// - Slade 360 ERP
-// - Slade 360 Health Passport
-// etc (any other server that speaks HTTP and uses our auth server)
-//
-// It also provides some shared (cross-server) infrastructure and authentication (auth server)
-// support.
 package base
 
 import (
@@ -20,8 +8,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -39,7 +25,7 @@ type OAUTHResponse struct {
 	TokenType    string `json:"token_type"`
 }
 
-// Client describes the interface that a Slade 360 EDI client should offer
+// Client describes the interface that an API  client should offer
 // It is used extensively in tests (to mock responses)
 type Client interface {
 	IsInitialized() bool
@@ -64,55 +50,6 @@ type Client interface {
 	Password() string
 	UpdateAuth(authResp *OAUTHResponse)
 	SetInitialized(b bool)
-}
-
-// BoolEnv gets and parses a boolean envirpnment variable
-func BoolEnv(envVarName string) bool {
-	envVar, err := GetEnvVar(envVarName)
-	if err != nil {
-		return false
-	}
-	val, err := strconv.ParseBool(envVar)
-	if err != nil {
-		return false
-	}
-	return val
-}
-
-// IsDebug returns true if debug has been turned on in the environment
-func IsDebug() bool {
-	return BoolEnv(DebugEnvVarName)
-}
-
-// IsRunningTests returns true if debug has been turned on in the environment
-func IsRunningTests() bool {
-	return BoolEnv(IsRunningTestsEnvVarName)
-}
-
-// GetEnvVar retrieves the environment variable with the supplied name and fails
-// if it is not able to do so
-func GetEnvVar(envVarName string) (string, error) {
-	envVar := os.Getenv(envVarName)
-	if envVar == "" {
-		envErrMsg := fmt.Sprintf("the environment variable '%s' is not set", envVarName)
-		return "", fmt.Errorf(envErrMsg)
-	}
-	return envVar, nil
-}
-
-// MustGetEnvVar returns the value of the environment variable with the indicated name or panics.
-// It is intended to be used in the INTERNALS of the server when we can guarantee (through orderly
-// coding) that the environment variable was set at server startup.
-// Since the env is required, kill the app if the env is not set. In the event a variable is not super
-// required, set a sensible default or dont call this method
-func MustGetEnvVar(envVarName string) string {
-	val, err := GetEnvVar(envVarName)
-	if err != nil {
-		msg := fmt.Sprintf("mandatory environment variable %s not found", envVarName)
-		log.Panicf(msg)
-		os.Exit(1)
-	}
-	return val
 }
 
 // DefaultServerClient initializes a server client using default environment variables
@@ -207,7 +144,6 @@ func NewServerClient(
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize server client: %w", err)
 	}
-	// used to set e.g Slade 360 ERP's X-Workstation header
 	if extraHeaders != nil {
 		c.extraHeaders = extraHeaders
 	}
@@ -218,17 +154,6 @@ func NewServerClient(
 //
 //  1. Offer a HTTP API (it need not be RESTful)
 //  2. Support OAuth2 authentication with the password grant type
-//
-// Examples of such servers in the Slade 360 ecosystem are:
-//
-//  1. Slade 360 EDI
-//  2. Slade 360 Auth Server
-//  3. Slade 360 ERP
-//  4. Slade 360 Clinical / HealthCloud API
-//  5. Slade 360 Charge Master
-//  6. Slade 360 (Provider) Integration Services
-//  7. Slade 360 Payer Integration Services
-//  ... any other HTTP server that talks OAuth2 and supports the password grant type
 //
 // ServerClient MUST be configured by calling the `Initialize` method.
 type ServerClient struct {
@@ -256,7 +181,7 @@ type ServerClient struct {
 	isInitialized bool
 }
 
-// MeURL calculates and returns the EDI user profile URL
+// MeURL calculates and returns the user profile URL
 func (c *ServerClient) MeURL() (string, error) {
 	parsedTokenURL, parseErr := url.Parse(c.apiTokenURL)
 	if parseErr != nil {
@@ -302,7 +227,7 @@ func (c *ServerClient) Refresh() error {
 	return nil
 }
 
-// UpdateAuth updates the tokens stored on the EDI API client after successful authentication or refreshes
+// UpdateAuth updates the tokens stored on the  API client after successful authentication or refreshes
 func (c *ServerClient) UpdateAuth(authResp *OAUTHResponse) {
 	c.accessToken = authResp.AccessToken
 	c.tokenType = authResp.TokenType
@@ -316,7 +241,7 @@ func (c *ServerClient) UpdateAuth(authResp *OAUTHResponse) {
 	c.isInitialized = true
 }
 
-// Authenticate uses client credentials stored on the client to log in to a Slade 360 authentication server
+// Authenticate uses client credentials stored on the client to log in to OAuth2 authentication server
 // and update stored credentials
 func (c *ServerClient) Authenticate() error {
 	if err := CheckAPIClientPreconditions(c); err != nil {
@@ -355,7 +280,7 @@ func (c *ServerClient) Authenticate() error {
 	return nil // no error
 }
 
-// MakeRequest composes an authenticated EDI request that has the correct content type
+// MakeRequest composes an authenticated  request that has the correct content type
 func (c *ServerClient) MakeRequest(method string, url string, body io.Reader) (*http.Response, error) {
 	if time.Now().UnixNano() > c.refreshAt.UnixNano() {
 		refreshErr := c.Refresh()
@@ -371,7 +296,7 @@ func (c *ServerClient) MakeRequest(method string, url string, body io.Reader) (*
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.accessToken)
 
-	// set extra headers e.g the Slade 360 ERP X-Workstation header
+	// set extra headers e.g X-Workstation header
 	if c.extraHeaders != nil {
 		for k, v := range c.extraHeaders {
 			req.Header.Set(k, v)
@@ -399,7 +324,7 @@ func (c *ServerClient) MakeRequest(method string, url string, body io.Reader) (*
 	return resp, nil
 }
 
-// Initialize MUST be used to set up a working EDI Client
+// Initialize MUST be used to set up a working  Client
 func (c *ServerClient) Initialize() error {
 	err := CheckAPIClientPreconditions(c)
 	if err != nil {
@@ -459,12 +384,12 @@ func (c *ServerClient) RefreshAt() time.Time {
 	return c.refreshAt
 }
 
-// APIScheme exports the configured EDI API scheme
+// APIScheme exports the configured  API scheme
 func (c *ServerClient) APIScheme() string {
 	return c.apiScheme
 }
 
-// APIHost returns the configured EDI API host
+// APIHost returns the configured  API host
 func (c *ServerClient) APIHost() string {
 	return c.apiHost
 }
@@ -499,7 +424,7 @@ func (c *ServerClient) Password() string {
 	return c.password
 }
 
-// IsInitialized returns true if the EDI httpClient is correctly initialized
+// IsInitialized returns true if the  httpClient is correctly initialized
 func (c *ServerClient) IsInitialized() bool {
 	return c.isInitialized
 }
@@ -560,60 +485,50 @@ func CheckAPIClientPreconditions(client Client) error {
 	return nil
 }
 
-// CheckAPIClientPostConditions performs sanity checks on a freshly initialized EDI client
+// CheckAPIClientPostConditions performs sanity checks on a freshly initialized  client
 func CheckAPIClientPostConditions(client Client) error {
 	accessToken := client.AccessToken()
 	if !govalidator.IsAlphanumeric(accessToken) || len(accessToken) < tokenMinLength {
-		return fmt.Errorf("invalid access token after EDIAPIClient initialization")
+		return fmt.Errorf("invalid access token after APIClient initialization")
 	}
 
 	tokenType := client.TokenType()
 	if tokenType != "Bearer" {
-		return fmt.Errorf("invalid token type after EDIAPIClient initialization, expected 'Bearer'")
+		return fmt.Errorf("invalid token type after APIClient initialization, expected 'Bearer'")
 	}
 
 	refreshToken := client.RefreshToken()
 	if !govalidator.IsAlphanumeric(refreshToken) || len(refreshToken) < tokenMinLength {
-		return fmt.Errorf("invalid Refresh token after EDIAPIClient initialization")
+		return fmt.Errorf("invalid Refresh token after APIClient initialization")
 	}
 
 	accessScope := client.AccessScope()
 	if !govalidator.IsASCII(accessScope) || len(accessScope) < tokenMinLength {
-		return fmt.Errorf("invalid access scope text after EDIAPIClient initialization")
+		return fmt.Errorf("invalid access scope text after APIClient initialization")
 	}
 
 	expiresIn := client.ExpiresIn()
 	if expiresIn < 1 {
-		return fmt.Errorf("invalid expiresIn after EDIAPIClient initialization")
+		return fmt.Errorf("invalid expiresIn after APIClient initialization")
 	}
 
 	refreshAt := client.RefreshAt()
 	if refreshAt.UnixNano() < time.Now().UnixNano() {
-		return fmt.Errorf("invalid past refreshAt after EDIAPIClient initialization")
+		return fmt.Errorf("invalid past refreshAt after APIClient initialization")
 	}
 
 	return nil // no errors found
 }
 
-// CheckAPIInitialization returns and error if the EDI httpClient was not correctly initialized by calling `.Initialize()`
+// CheckAPIInitialization returns and error if the  httpClient was not correctly initialized by calling `.Initialize()`
 func CheckAPIInitialization(client Client) error {
 	if client == nil || !client.IsInitialized() {
-		return fmt.Errorf("the EDI httpClient is not correctly initialized. Please use the `.Initialize` constructor")
+		return fmt.Errorf("the API httpClient is not correctly initialized. Please use the `.Initialize` constructor")
 	}
 	return nil
 }
 
-// CloseRespBody closes the body of the supplied HTTP response
-func CloseRespBody(resp *http.Response) {
-	if resp != nil {
-		err := resp.Body.Close()
-		if err != nil {
-			log.Println("unable to close response body for request made to ", resp.Request.RequestURI)
-		}
-	}
-}
-
-// ComposeAPIURL assembles an EDI URL string for the supplied path and query string
+// ComposeAPIURL assembles an  URL string for the supplied path and query string
 func ComposeAPIURL(client Client, path string, query string) string {
 	apiURL := url.URL{
 		Scheme:   client.APIScheme(),
@@ -624,7 +539,7 @@ func ComposeAPIURL(client Client, path string, query string) string {
 	return apiURL.String()
 }
 
-// DecodeOAUTHResponseFromJSON extracts a Slade 360 auth server OAUth response from the supplied HTTP response
+// DecodeOAUTHResponseFromJSON extracts auth server OAUth response from the supplied HTTP response
 func DecodeOAUTHResponseFromJSON(resp *http.Response) (*OAUTHResponse, error) {
 	defer CloseRespBody(resp)
 	var decodedAuthResp OAUTHResponse
@@ -637,60 +552,6 @@ func DecodeOAUTHResponseFromJSON(resp *http.Response) (*OAUTHResponse, error) {
 		return nil, decodeErr
 	}
 	return &decodedAuthResp, nil
-}
-
-// GetAPIPaginationParams composes pagination parameters for use by a REST API that uses
-// offset based pagination e.g Slade 360 APIS
-func GetAPIPaginationParams(pagination *PaginationInput) (url.Values, error) {
-	if pagination == nil {
-		return url.Values{}, nil
-	}
-
-	// Treat first or last, when set, literally as page sizes
-	// We intentionally "demote" `last`; if both `first` and `last` are specified,
-	// `first` will supersede `last`
-	var err error
-	pageSize := DefaultRESTAPIPageSize
-	if pagination.Last > 0 {
-		pageSize = pagination.Last
-	}
-	if pagination.First > 0 {
-		pageSize = pagination.First
-	}
-
-	// For these "pass through APIs", "after" and "before" should be parseable as ints
-	// (literal offsets).
-	// We intentionally demote `before` i.e if both `before` and `after` are set,
-	// `after` will supersede `before`
-	offset := 0
-	if pagination.Before != "" {
-		offset, err = strconv.Atoi(pagination.Before)
-		if err != nil {
-			return url.Values{}, fmt.Errorf("expected `before` to be parseable as an int; got %s", pagination.Before)
-		}
-	}
-	if pagination.After != "" {
-		offset, err = strconv.Atoi(pagination.After)
-		if err != nil {
-			return url.Values{}, fmt.Errorf("expected `after` to be parseable as an int; got %s", pagination.After)
-		}
-	}
-	page := int(offset/pageSize) + 1 // page numbers are one based
-	values := url.Values{}
-	values.Set("page", fmt.Sprintf("%d", page))
-	values.Set("page_size", fmt.Sprintf("%d", pageSize))
-	return values, nil
-}
-
-// MergeURLValues merges > 1 url.Values into one
-func MergeURLValues(values ...url.Values) url.Values {
-	merged := url.Values{}
-	for _, value := range values {
-		for k, v := range value {
-			merged[k] = v
-		}
-	}
-	return merged
 }
 
 //ClientServerOptions - required to compose a server client config payload
@@ -741,57 +602,6 @@ func NewPostRequest(url string, values url.Values, headers map[string]string, ti
 
 	client := &http.Client{Timeout: time.Duration(timeoutDuration) * time.Second}
 	return client.Do(req)
-}
-
-// FetchDefaultOrganisation get the default Organisation from env
-func FetchDefaultOrganisation() *string {
-	o := MustGetEnvVar(ERPOrganisation)
-	return &o
-}
-
-// FetchCashAccount get cash account from env
-func FetchCashAccount() *string {
-	c := MustGetEnvVar(ERPCashAccount)
-	return &c
-}
-
-// FetchMpesaAccount gets mpesa account from env
-func FetchMpesaAccount() *string {
-	m := MustGetEnvVar(ERPMpesaAccount)
-	return &m
-}
-
-// FetchtWellnessAccount get the wellness account from env
-func FetchtWellnessAccount() *string {
-	w := MustGetEnvVar(ERPWellnessAccount)
-	return &w
-}
-
-// FetchDefaultFinancialYear retrieves the default financial year
-func FetchDefaultFinancialYear(c Client) (*FinancialYearAndCurrency, error) {
-	var resp struct {
-		Results []FinancialYearAndCurrency `json:"results"`
-	}
-	params := url.Values{}
-	params.Add("active", "true")
-	if err := ReadRequestToTarget(c, "GET", GetDefaultFinancialYear, params.Encode(), nil, &resp); err != nil {
-		return nil, fmt.Errorf("error %v", err)
-	}
-	return &resp.Results[0], nil
-}
-
-// FetchDefaultCurrency gets the default currency
-func FetchDefaultCurrency(c Client) (*FinancialYearAndCurrency, error) {
-	var resp struct {
-		Results []FinancialYearAndCurrency `json:"results"`
-	}
-	params := url.Values{}
-	params.Add("active", "true")
-	params.Add("is_default", "true")
-	if err := ReadRequestToTarget(c, "GET", GetDefaultCurrency, params.Encode(), nil, &resp); err != nil {
-		return nil, fmt.Errorf("error %v", err)
-	}
-	return &resp.Results[0], nil
 }
 
 // RespondWithError writes an error response

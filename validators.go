@@ -50,7 +50,7 @@ func IsMSISDNValid(msisdn string) bool {
 
 // NormalizeMSISDN validates the input phone number.
 // For valid phone numbers, it normalizes them to international format
-// e.g +254723002959
+// e.g +2547........
 func NormalizeMSISDN(msisdn string) (*string, error) {
 	if !IsMSISDNValid(msisdn) {
 		return nil, fmt.Errorf("invalid phone number: %s", msisdn)

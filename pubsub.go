@@ -19,7 +19,8 @@ import (
 // pubsub constants
 const (
 	PubSubHandlerPath = "/pubsub"
-	Aud               = "bewell.co.ke"
+	// TODO: make this Env Vars
+	Aud = "bewell.co.ke"
 
 	authHeaderName     = "Authorization"
 	googleIss          = "accounts.google.com"

@@ -13,6 +13,7 @@ import (
 
 const (
 	// OnboardingRootDomain represents onboarding ISC URL
+	//TODO: Make this env var
 	OnboardingRootDomain = "https://profile-staging.healthcloud.co.ke"
 
 	// OnboardingName represents the onboarding service ISC name

@@ -22,12 +22,6 @@ import (
 	"gitlab.slade360emr.com/go/base"
 )
 
-const (
-	testUserEmail     = "automated.test.bewell.ediproxy.main@healthcloud.co.ke"
-	listPayersQuery   = `{"query": "query ListPayers() { payers { id, name, slade_code } }"}`
-	listContactsQuery = `{"query": "query ListContacts() { contacts { id, contact, contact_type, is_home, is_personal, is_work } }"}`
-)
-
 func TestSentry(t *testing.T) {
 	tests := []struct {
 		name    string

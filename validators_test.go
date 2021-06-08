@@ -210,7 +210,6 @@ func TestValidateMSISDN(t *testing.T) {
 		})
 	}
 }
-
 func TestValidateEmail(t *testing.T) {
 	fc := &base.FirebaseClient{}
 	firebaseApp, err := fc.InitFirebase()
@@ -233,7 +232,7 @@ func TestValidateEmail(t *testing.T) {
 		{
 			name: "first valid email, opted in",
 			args: args{
-				email:           "ngure.nyaga@savannahinformatics.com",
+				email:           base.TestUserEmail,
 				optIn:           true,
 				firestoreClient: firestoreClient,
 			},
@@ -242,7 +241,7 @@ func TestValidateEmail(t *testing.T) {
 		{
 			name: "second valid email, opted in",
 			args: args{
-				email:           "ngure.nyaga@healthcloud.com",
+				email:           base.TestUserEmail,
 				optIn:           true,
 				firestoreClient: firestoreClient,
 			},
@@ -251,7 +250,7 @@ func TestValidateEmail(t *testing.T) {
 		{
 			name: "third valid email,  notopted in",
 			args: args{
-				email:           "ngurenyaga@gmail.com",
+				email:           base.TestUserEmail,
 				optIn:           true,
 				firestoreClient: firestoreClient,
 			},

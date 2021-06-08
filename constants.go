@@ -16,8 +16,6 @@ const (
 
 	DateTimeFormatLayout = "2006-01-02T15:04:05+03:00"
 
-	introspectionURLEnvVarName = "AUTH_SERVER_INTROSPECTION_URL"
-
 	defaultRegion = "KE"
 
 	// Sep is a separator, used to create "opaque" IDs
@@ -119,18 +117,6 @@ const (
 	// AuthTokenContextKey is used to add/retrieve the Firebase UID on the context
 	AuthTokenContextKey = ContextKey("UID")
 
-	// Default login client settings (env var names)
-	ClientIDEnvVarName     = "CLIENT_ID"
-	ClientSecretEnvVarName = "CLIENT_SECRET"
-	UsernameEnvVarName     = "USERNAME"
-	PasswordEnvVarName     = "PASSWORD"
-	GrantTypeEnvVarName    = "GRANT_TYPE"
-	APISchemeEnvVarName    = "API_SCHEME"
-	TokenURLEnvVarName     = "TOKEN_URL"
-	APIHostEnvVarName      = "HOST"
-	WorkstationEnvVarName  = "DEFAULT_WORKSTATION_ID"
-	WorkstationHeaderName  = "X-WORKSTATION"
-
 	// HTTP client settings
 	HTTPClientTimeoutSecs = 10
 
@@ -173,26 +159,17 @@ const (
 	// running the service under e2e
 	E2eEnv = "e2e"
 
-	//ERP client login env vars
-	ERPHostEnvVarName       = "ERP_HOST"
-	ERPAPISchemeEnvVarName  = "ERP_API_SCHEME"
-	ERPTknURLEnvVarName     = "ERP_TOKEN_URL"
-	ERPClientIDEnvVarName   = "ERP_CLIENT_ID"
-	ERPClientScrtEnvVarName = "ERP_CLIENT_SECRET"
-	ERPUsernameEnvVarName   = "ERP_USERNAME"
-	ERPPasswordEnvVarName   = "ERP_PASSWORD"
-	ERPGrantTypeEnvVarName  = "ERP_GRANT_TYPE"
-	ERPDefaultWorkstationID = "ERP_DEFAULT_WORKSTATION_ID"
-	ERPOrganisation         = "ERP_ORGANISATION"
-	ERPCashAccount          = "ERP_CASH_ACCOUNT"
-	ERPMpesaAccount         = "ERP_MPESA_ACCOUNT"
-	ERPWellnessAccount      = "ERP_WELLNESS_ACCOUNT"
-
-	// GetDefaultFinancialYear gets the default financial year
-	GetDefaultFinancialYear = "/api/common/financialyears/"
-
-	// GetDefaultCurrency gets the default currency
-	GetDefaultCurrency = "/api/common/currencys/"
+	// Default login client settings (env var names)
+	ClientIDEnvVarName     = "CLIENT_ID"
+	ClientSecretEnvVarName = "CLIENT_SECRET"
+	UsernameEnvVarName     = "USERNAME"
+	PasswordEnvVarName     = "PASSWORD"
+	GrantTypeEnvVarName    = "GRANT_TYPE"
+	APISchemeEnvVarName    = "API_SCHEME"
+	TokenURLEnvVarName     = "TOKEN_URL"
+	APIHostEnvVarName      = "HOST"
+	WorkstationEnvVarName  = "DEFAULT_WORKSTATION_ID"
+	WorkstationHeaderName  = "X-WORKSTATION"
 )
 
 var (

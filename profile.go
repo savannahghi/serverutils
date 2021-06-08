@@ -427,7 +427,28 @@ type PayablesAccount struct {
 	Description string `json:"description"`
 }
 
+// EDIUserProfile is used to (de)serialialize the auth server
+// profile of the logged in user.
+type EDIUserProfile struct {
+	ID              int      `json:"id"`
+	GUID            string   `json:"guid"`
+	Email           string   `json:"email"`
+	FirstName       string   `json:"first_name"`
+	LastName        string   `json:"last_name"`
+	OtherNames      string   `json:"other_names"`
+	IsStaff         bool     `json:"is_staff"`
+	IsActive        bool     `json:"is_active"`
+	Organisation    int      `json:"organisation"`
+	BusinessPartner string   `json:"business_partner"`
+	Roles           []string `json:"roles"`
+	BPType          string   `json:"bp_type"`
+}
+
+//IsEntity ...
+func (e EDIUserProfile) IsEntity() {}
+
 // Supplier used to create a supplier request payload
+// You can add more or remove fields to suit your organization/project needs
 type Supplier struct {
 	ID                     string                 `json:"supplierID" firestore:"id"`
 	ProfileID              *string                `json:"profileID" firestore:"profileID"`
@@ -479,9 +500,11 @@ type PermissionInput struct {
 }
 
 // AuthorizedEmails represent emails to check whether they have access to certain resources
+// TODO: make these Env Vars
 var AuthorizedEmails = []string{"apa-dev@healthcloud.co.ke", "apa-prod@healthcloud.co.ke"}
 
 // AuthorizedPhones represent phonenumbers to check whether they have access to certain resources
+// TODO: make these Env Vars
 var AuthorizedPhones = []string{"+254700000000"}
 
 // GetLoggedInUser retrieves logged in user information

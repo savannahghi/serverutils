@@ -14,6 +14,7 @@ func TestSendSMS(t *testing.T) {
 	// Any change to the service urls would probably lead to a failure
 	// There's probably a better way to do this (Mocking *wink wink)
 	// But I (Farad) felt this is the best way of doing it i.e. Acceptance Testing
+	//TODO: Make these env vars
 	newSmsIsc, _ := base.NewInterserviceClient(base.ISCService{
 		Name:       "sms",
 		RootDomain: "https://sms-staging.healthcloud.co.ke",

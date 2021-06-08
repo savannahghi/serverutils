@@ -119,11 +119,6 @@ const (
 	// It's error code is 23
 	AddNewRecordError
 
-	// InvalidSladeCode means that there is a problem with the provide slade code
-	// This may occur when the slade code in the EDI does not match with the chosen provider
-	// It's error code is 24
-	InvalidSladeCode
-
 	// KYCAlreadySubmitted means that there is a problem while submitting KYC
 	// This may happen when the KYC has already been subnmitted
 	// Its error code is 25

@@ -24,7 +24,8 @@ func TestShortenLink(t *testing.T) {
 		{
 			name: "good case",
 			args: args{
-				ctx:      context.Background(),
+				ctx: context.Background(),
+				// TODO: MOVE this to an env var
 				longLink: "https://console.cloud.google.com/run/detail/europe-west1/api-gateway/revisions?project=bewell-app-testing",
 			},
 			wantErr: false,

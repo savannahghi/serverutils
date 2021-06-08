@@ -1,14 +1,12 @@
 package base
 
 import (
-	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 
 	"crypto/sha256"
 	"encoding/base64"
-	"encoding/gob"
 	"fmt"
 	"io"
 	"os"
@@ -94,21 +92,4 @@ func decryptAES(key, data []byte) ([]byte, error) {
 	stream := cipher.NewCFBDecrypter(block, iv)
 	stream.XORKeyStream(data, data)
 	return data, nil
-}
-
-// CreateCoverHash returns a hash to the cover. This hash will be used  internally to uniquely identify it.
-// To understand why this is necessary, please go to onboarding, UpdateCovers method, where only unique covers
-// have to added. The tests for this method should tell the full story if in doubt.
-// Inspiration for this implementation is from -> https://www.ee.columbia.edu/~dpwe/papers/Wang03-shazam.pdf
-func CreateCoverHash(cover Cover) *string {
-	var bf bytes.Buffer
-	enc := gob.NewEncoder(&bf)
-	_ = enc.Encode(cover)
-	hasher := sha256.New()
-	_, err := hasher.Write(bf.Bytes())
-	if err != nil {
-		return nil
-	}
-	hash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
-	return &hash
 }

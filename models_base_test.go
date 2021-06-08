@@ -200,20 +200,6 @@ func TestModel_IsNode(t *testing.T) {
 }
 
 func TestModelsIsEntity(t *testing.T) {
-	t6 := base.EDIUserProfile{}
-	t6.IsEntity()
-
-	t7 := base.LogoutRequest{}
-	t7.IsEntity()
-
-	t8 := base.RefreshCreds{}
-	t8.IsEntity()
-
-	t9 := base.LoginResponse{}
-	t9.IsEntity()
-
-	t10 := base.LoginCreds{}
-	t10.IsEntity()
 
 	t11 := base.EmailOptIn{}
 	t11.IsEntity()
