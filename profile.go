@@ -28,6 +28,22 @@ const (
 	PermissionTypeUnSuspendSupplier PermissionType = "UNSUSPEND_SUPPLIER"
 	// whether an admin can view and process(approve/reject) kyc requests
 	PermissionTypeProcessKYC PermissionType = "PROCESS_KYC"
+
+	// partner management permissions
+	PermissionTypeCreatePartner PermissionType = "CREATE_PARTNER"
+	PermissionTypeUpdatePartner PermissionType = "UPDATE_PARTNER"
+	PermissionTypeDeletePartner PermissionType = "DELETE_PARTNER"
+
+	// consumer management permissions
+	PermissionTypeCreateConsumer PermissionType = "CREATE_CONSUMER"
+	PermissionTypeUpdateConsumer PermissionType = "UPDATE_CONSUMER"
+	PermissionTypeDeleteConsumer PermissionType = "DELETE_CONSUMER"
+
+	// patient management permissions
+	PermissionTypeCreatePatient   PermissionType = "CREATE_PATIENT"
+	PermissionTypeUpdatePatient   PermissionType = "UPDATE_PATIENT"
+	PermissionTypeDeletePatient   PermissionType = "DELETE_PATIENT"
+	PermissionTypeIdentifyPatient PermissionType = "IDENTIFY_PATIENT"
 )
 
 // DefaultSuperAdminPermissions generic permissions for super admins.
@@ -53,6 +69,60 @@ var DefaultAdminPermissions []PermissionType = []PermissionType{
 	PermissionTypeSuspendSupplier,
 	PermissionTypeUnSuspendSupplier,
 	PermissionTypeProcessKYC,
+}
+
+//DefaultEmployeePermissions generic permissions for field agents
+// These permissions should be given to SIL field agents
+var DefaultEmployeePermissions []PermissionType = []PermissionType{
+	PermissionTypeCreateConsumer,
+	PermissionTypeUpdateConsumer,
+	PermissionTypeDeleteConsumer,
+	PermissionTypeCreatePatient,
+	PermissionTypeUpdatePatient,
+	PermissionTypeDeletePatient,
+	PermissionTypeIdentifyPatient,
+}
+
+//DefaultAgentPermissions generic permissions for field agents.
+// These permissions should be given to SIL field agents
+var DefaultAgentPermissions []PermissionType = []PermissionType{
+	PermissionTypeCreatePartner,
+	PermissionTypeUpdatePartner,
+	PermissionTypeCreateConsumer,
+	PermissionTypeUpdateConsumer,
+}
+
+// RoleType defines the type of role a subject has
+// and the associated permissions
+type RoleType string
+
+// Various roles in bewell
+const (
+	RoleTypeEmployee RoleType = "EMPLOYEE"
+	RoleTypeAgent    RoleType = "AGENT"
+)
+
+// IsValid checks if the role type is valid
+func (r RoleType) IsValid() bool {
+	switch r {
+	case RoleTypeEmployee, RoleTypeAgent:
+		return true
+	default:
+		return false
+	}
+}
+
+// Permissions returns permissions for a certain role
+func (r RoleType) Permissions() []PermissionType {
+	switch r {
+	case RoleTypeEmployee:
+		return DefaultEmployeePermissions
+
+	case RoleTypeAgent:
+		return DefaultAgentPermissions
+	default:
+		return []PermissionType{}
+	}
 }
 
 // LoginProviderType defines the method of used to login to bewell
