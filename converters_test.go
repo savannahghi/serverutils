@@ -1,4 +1,4 @@
-package base_test
+package go_utils_test
 
 import (
 	"encoding/json"
@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
+	base "github.com/savannahghi/go_utils"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/base"
 )
 
 type SampleStruct struct {

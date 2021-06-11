@@ -1,4 +1,4 @@
-package base_test
+package go_utils_test
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"gitlab.slade360emr.com/go/base"
+	base "github.com/savannahghi/go_utils"
 )
 
 func TestMain(m *testing.M) {

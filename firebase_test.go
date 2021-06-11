@@ -1,4 +1,4 @@
-package base_test
+package go_utils_test
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 	"cloud.google.com/go/firestore"
 	"firebase.google.com/go/auth"
 	"github.com/google/uuid"
+	base "github.com/savannahghi/go_utils"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/base"
 )
 
 func TestInitFirebase(t *testing.T) {

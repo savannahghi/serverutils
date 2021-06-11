@@ -1,4 +1,4 @@
-package base_test
+package go_utils_test
 
 import (
 	"math/rand"
@@ -8,8 +8,8 @@ import (
 
 	"cloud.google.com/go/firestore"
 	uuid "github.com/kevinburke/go.uuid"
+	base "github.com/savannahghi/go_utils"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/base"
 )
 
 func GetFirestoreClient(t *testing.T) *firestore.Client {

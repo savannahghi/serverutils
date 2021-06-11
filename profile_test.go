@@ -1,10 +1,10 @@
-package base_test
+package go_utils_test
 
 import (
 	"reflect"
 	"testing"
 
-	"gitlab.slade360emr.com/go/base"
+	base "github.com/savannahghi/go_utils"
 )
 
 func TestUserProfile_IsEntity(t *testing.T) {

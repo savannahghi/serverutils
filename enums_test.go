@@ -1,4 +1,4 @@
-package base_test
+package go_utils_test
 
 import (
 	"bytes"
@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"testing"
 
+	base "github.com/savannahghi/go_utils"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/base"
 )
 
 func TestGender_String(t *testing.T) {

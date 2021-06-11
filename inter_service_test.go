@@ -1,4 +1,4 @@
-package base_test
+package go_utils_test
 
 import (
 	"bytes"
@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	base "github.com/savannahghi/go_utils"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/base"
 )
 
 func TestGetJWTKey(t *testing.T) {

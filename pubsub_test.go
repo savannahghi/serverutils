@@ -1,4 +1,4 @@
-package base_test
+package go_utils_test
 
 import (
 	"bytes"
@@ -12,8 +12,8 @@ import (
 
 	"cloud.google.com/go/pubsub"
 	"github.com/rs/xid"
+	base "github.com/savannahghi/go_utils"
 	"github.com/segmentio/ksuid"
-	"gitlab.slade360emr.com/go/base"
 	"google.golang.org/api/idtoken"
 )
 

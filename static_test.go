@@ -1,12 +1,12 @@
-package base_test
+package go_utils_test
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	base "github.com/savannahghi/go_utils"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/base"
 )
 
 func TestCSS(t *testing.T) {

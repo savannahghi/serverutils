@@ -1,4 +1,4 @@
-package base_test
+package go_utils_test
 
 import (
 	"bytes"
@@ -17,9 +17,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/imroc/req"
 
+	base "github.com/savannahghi/go_utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/base"
 )
 
 func TestSentry(t *testing.T) {
