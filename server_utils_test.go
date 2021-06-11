@@ -1,4 +1,4 @@
-package go_utils_test
+package server_utils_test
 
 import (
 	"bytes"
@@ -15,9 +15,9 @@ import (
 	"cloud.google.com/go/logging"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/imroc/req"
 
 	base "github.com/savannahghi/go_utils"
+	"github.com/savannahghi/server_utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -34,7 +34,7 @@ func TestSentry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := base.Sentry(); (err != nil) != tt.wantErr {
+			if err := server_utils.Sentry(); (err != nil) != tt.wantErr {
 				t.Errorf("Sentry() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -43,7 +43,7 @@ func TestSentry(t *testing.T) {
 
 func TestErrorMap(t *testing.T) {
 	err := fmt.Errorf("test error")
-	errMap := base.ErrorMap(err)
+	errMap := server_utils.ErrorMap(err)
 	if errMap["error"] == "" {
 		t.Errorf("empty error key in errMap")
 	}
@@ -55,7 +55,7 @@ func TestErrorMap(t *testing.T) {
 func TestRequestDebugMiddleware(t *testing.T) {
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
 
-	mw := base.RequestDebugMiddleware()
+	mw := server_utils.RequestDebugMiddleware()
 	h := mw(next)
 
 	rw := httptest.NewRecorder()
@@ -97,7 +97,7 @@ func TestLogStartupError(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			base.LogStartupError(tt.args.ctx, tt.args.err)
+			server_utils.LogStartupError(tt.args.ctx, tt.args.err)
 		})
 	}
 }
@@ -146,7 +146,7 @@ func TestDecodeJSONToTargetStruct(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			base.DecodeJSONToTargetStruct(tt.args.w, tt.args.r, tt.args.targetStruct)
+			server_utils.DecodeJSONToTargetStruct(tt.args.w, tt.args.r, tt.args.targetStruct)
 		})
 	}
 }
@@ -172,7 +172,7 @@ func Test_convertStringToInt(t *testing.T) {
 	}
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			base.ConvertStringToInt(tc.rw, tc.val)
+			server_utils.ConvertStringToInt(tc.rw, tc.val)
 			assert.Equal(t, tc.expectedStatusCode, tc.rw.Code)
 			assert.Equal(t, tc.expectedResponse, tc.rw.Body.String())
 		})
@@ -180,7 +180,7 @@ func Test_convertStringToInt(t *testing.T) {
 }
 
 func Test_StackDriver_Setup(t *testing.T) {
-	errorClient := base.StackDriver(context.Background())
+	errorClient := server_utils.StackDriver(context.Background())
 	err := fmt.Errorf("test error")
 	if errorClient != nil {
 		errorClient.Report(errorreporting.Entry{
@@ -207,7 +207,7 @@ func TestStackDriver(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := base.StackDriver(tt.args.ctx)
+			got := server_utils.StackDriver(tt.args.ctx)
 			assert.NotNil(t, got)
 		})
 	}
@@ -257,7 +257,7 @@ func TestWriteJSONResponse(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			base.WriteJSONResponse(tt.args.w, tt.args.source, tt.args.status)
+			server_utils.WriteJSONResponse(tt.args.w, tt.args.source, tt.args.status)
 
 			rec, ok := tt.args.w.(*httptest.ResponseRecorder)
 			if ok {
@@ -274,7 +274,7 @@ func TestWriteJSONResponse(t *testing.T) {
 }
 
 func Test_closeStackDriverLoggingClient(t *testing.T) {
-	projectID := base.MustGetEnvVar(base.GoogleCloudProjectIDEnvVarName)
+	projectID := base.MustGetEnvVar(server_utils.GoogleCloudProjectIDEnvVarName)
 	loggingClient, err := logging.NewClient(context.Background(), projectID)
 	assert.Nil(t, err)
 
@@ -294,19 +294,19 @@ func Test_closeStackDriverLoggingClient(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			base.CloseStackDriverLoggingClient(tt.args.loggingClient)
+			server_utils.CloseStackDriverLoggingClient(tt.args.loggingClient)
 		})
 	}
 }
 
 func Test_closeStackDriverErrorClient(t *testing.T) {
-	projectID := base.MustGetEnvVar(base.GoogleCloudProjectIDEnvVarName)
+	projectID := base.MustGetEnvVar(server_utils.GoogleCloudProjectIDEnvVarName)
 	errorClient, err := errorreporting.NewClient(context.Background(), projectID, errorreporting.Config{
-		ServiceName: base.AppName,
+		ServiceName: server_utils.AppName,
 		OnError: func(err error) {
 			log.WithFields(log.Fields{
 				"project ID":   projectID,
-				"service name": base.AppName,
+				"service name": server_utils.AppName,
 				"error":        err,
 			}).Info("Unable to initialize error client")
 		},
@@ -329,80 +329,7 @@ func Test_closeStackDriverErrorClient(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			base.CloseStackDriverErrorClient(tt.args.errorClient)
-		})
-	}
-}
-
-func TestGetGraphQLHeaders(t *testing.T) {
-
-	authenticatedContext, bearerToken := base.GetAuthenticatedContextAndBearerToken(t)
-	authHeader := fmt.Sprintf("Bearer %s", bearerToken)
-
-	type args struct {
-		ctx context.Context
-	}
-
-	tests := []struct {
-		name    string
-		args    args
-		want    map[string]string
-		wantErr bool
-	}{
-		{
-			name: "context with authorization header",
-			args: args{
-				ctx: authenticatedContext,
-			},
-			want: req.Header{
-				"Accept":        "application/json",
-				"Content-Type":  "application/json",
-				"Authorization": authHeader,
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := base.GetGraphQLHeaders(tt.args.ctx)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetGraphQLHeaders() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			assert.NotEmpty(t, got)
-		})
-	}
-}
-
-func TestGetBearerTokenHeader(t *testing.T) {
-
-	ctx := context.Background()
-
-	type args struct {
-		ctx context.Context
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
-		{
-			name: "Good Test Case",
-			args: args{
-				ctx: ctx,
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := base.GetBearerTokenHeader(tt.args.ctx)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetBearerTokenHeader() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			assert.NotEqual(t, got, "")
+			server_utils.CloseStackDriverErrorClient(tt.args.errorClient)
 		})
 	}
 }
@@ -410,7 +337,7 @@ func TestGetBearerTokenHeader(t *testing.T) {
 func TestStartTestServer(t *testing.T) {
 
 	ctx := context.Background()
-	srv, baseURL, serverErr := base.StartTestServer(ctx, healthCheckServer, []string{
+	srv, baseURL, serverErr := server_utils.StartTestServer(ctx, healthCheckServer, []string{
 		"http://localhost:5000",
 	})
 	if serverErr != nil {
@@ -437,8 +364,8 @@ func healthCheckRouter() (*mux.Router, error) {
 		),
 	) // recover from panics by writing a HTTP error
 
-	r.Use(base.RequestDebugMiddleware())
-	r.Path("/health").HandlerFunc(base.HealthStatusCheck)
+	r.Use(server_utils.RequestDebugMiddleware())
+	r.Path("/health").HandlerFunc(server_utils.HealthStatusCheck)
 
 	return r, nil
 }
@@ -447,7 +374,7 @@ func healthCheckServer(ctx context.Context, port int, allowedOrigins []string) *
 	// start up the router
 	r, err := healthCheckRouter()
 	if err != nil {
-		base.LogStartupError(ctx, err)
+		server_utils.LogStartupError(ctx, err)
 	}
 
 	// start the server

@@ -1,4 +1,4 @@
-package go_utils
+package server_utils
 
 import (
 	"bytes"
@@ -12,7 +12,6 @@ import (
 	"net/http/httputil"
 	"os"
 	"strconv"
-	"testing"
 	"time"
 
 	"cloud.google.com/go/errorreporting"
@@ -20,14 +19,14 @@ import (
 	"cloud.google.com/go/profiler"
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"github.com/getsentry/sentry-go"
-	"github.com/imroc/req"
+	"github.com/savannahghi/go_utils"
 	log "github.com/sirupsen/logrus"
 	"go.opencensus.io/trace"
 )
 
 // Sentry initializes Sentry, for error reporting
 func Sentry() error {
-	dsn, err := GetEnvVar(DSNEnvVarName)
+	dsn, err := go_utils.GetEnvVar(DSNEnvVarName)
 	if err != nil {
 		return err
 	}
@@ -88,6 +87,7 @@ func LogStartupError(ctx context.Context, err error) {
 }
 
 // DecodeJSONToTargetStruct maps JSON from a HTTP request to a struct.
+// TODO: Move to common helpers
 func DecodeJSONToTargetStruct(w http.ResponseWriter, r *http.Request, targetStruct interface{}) {
 	err := json.NewDecoder(r.Body).Decode(targetStruct)
 	if err != nil {
@@ -110,7 +110,7 @@ func ConvertStringToInt(w http.ResponseWriter, val string) int {
 // StackDriver initializes StackDriver logging, error reporting, profiling etc
 func StackDriver(ctx context.Context) *errorreporting.Client {
 	// project setup
-	projectID, err := GetEnvVar(GoogleCloudProjectIDEnvVarName)
+	projectID, err := go_utils.GetEnvVar(GoogleCloudProjectIDEnvVarName)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"environment variable name": GoogleCloudProjectIDEnvVarName,
@@ -184,6 +184,7 @@ func StackDriver(ctx context.Context) *errorreporting.Client {
 // WriteJSONResponse writes the content supplied via the `source` parameter to
 // the supplied http ResponseWriter. The response is returned with the indicated
 // status.
+// TODO: Move to common helpers
 func WriteJSONResponse(w http.ResponseWriter, source interface{}, status int) {
 	w.WriteHeader(status) // must come first...otherwise the first call to Write... sets an implicit 200
 	content, errMap := json.Marshal(source)
@@ -223,89 +224,8 @@ func CloseStackDriverErrorClient(errorClient *errorreporting.Client) {
 	}
 }
 
-// =========================
-// TEST SERVER UTILS
-// =========================
-
-// GetGraphQLHeaders gets relevant GraphQLHeaders
-// TODO: Depreciate these once all the services conform to the new standards @mathenge
-// !This is being replaced by `GetTestGraphQLHeaders`
-func GetGraphQLHeaders(ctx context.Context) (map[string]string, error) {
-	authorization, err := GetBearerTokenHeader(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("can't Generate Bearer Token: %s", err)
-	}
-	return req.Header{
-		"Accept":        "application/json",
-		"Content-Type":  "application/json",
-		"Authorization": authorization,
-	}, nil
-}
-
-// GetBearerTokenHeader gets bearer Token Header
-// TODO: Depreciate these once all the services conform to the new standards @mathenge
-// !This is being replaced by `GetTestBearerTokenHeader`
-func GetBearerTokenHeader(ctx context.Context) (string, error) {
-
-	user, err := GetOrCreateFirebaseUser(ctx, TestUserEmail)
-	if err != nil {
-		return "", fmt.Errorf("can't get or create firebase user: %s", err)
-	}
-
-	if user == nil {
-		return "", fmt.Errorf("nil firebase user")
-	}
-
-	customToken, err := CreateFirebaseCustomToken(ctx, user.UID)
-	if err != nil {
-		return "", fmt.Errorf("can't create custom token: %s", err)
-	}
-
-	if customToken == "" {
-		return "", fmt.Errorf("blank custom token: %s", err)
-	}
-
-	idTokens, err := AuthenticateCustomFirebaseToken(customToken)
-	if err != nil {
-		return "", fmt.Errorf("can't authenticate custom token: %s", err)
-	}
-	if idTokens == nil {
-		return "", fmt.Errorf("nil idTokens")
-	}
-
-	return fmt.Sprintf("Bearer %s", idTokens.IDToken), nil
-}
-
-// GetTestGraphQLHeaders gets relevant GraphQLHeaders for running
-// GraphQL acceptance tests
-func GetTestGraphQLHeaders(
-	t *testing.T,
-	onboardingClient *InterServiceClient,
-) (map[string]string, error) {
-	authorization, err := GetTestBearerTokenHeader(t, onboardingClient)
-	if err != nil {
-		return nil, fmt.Errorf("can't Generate Bearer Token: %s", err)
-	}
-	return req.Header{
-		"Accept":        "application/json",
-		"Content-Type":  "application/json",
-		"Authorization": authorization,
-	}, nil
-}
-
-// GetTestBearerTokenHeader gets bearer Token Header for running
-// GraphQL acceptance tests
-func GetTestBearerTokenHeader(
-	t *testing.T,
-	onboardingClient *InterServiceClient,
-) (string, error) {
-	user, err := CreateOrLoginTestPhoneNumberUser(t, onboardingClient)
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("Bearer %s", *user.Auth.IDToken), nil
-}
+// PrepareServer is the signature of a function that Knows how to prepare & initialise the server
+type PrepareServer func(ctx context.Context, port int, allowedOrigins []string) *http.Server
 
 func randomPort() int {
 	rand.Seed(time.Now().Unix())
@@ -315,9 +235,6 @@ func randomPort() int {
 	port := rand.Intn(max-min+1) + min
 	return port
 }
-
-// PrepareServer is the signature of a function that Knows how to prepare & initialise the server
-type PrepareServer func(ctx context.Context, port int, allowedOrigins []string) *http.Server
 
 // StartTestServer starts up test server
 func StartTestServer(ctx context.Context, prepareServer PrepareServer, allowedOrigins []string) (*http.Server, string, error) {
