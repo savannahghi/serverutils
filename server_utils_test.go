@@ -15,8 +15,6 @@ import (
 	"cloud.google.com/go/logging"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-
-	base "github.com/savannahghi/go_utils"
 	"github.com/savannahghi/server_utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -215,7 +213,7 @@ func TestStackDriver(t *testing.T) {
 
 func TestWriteJSONResponse(t *testing.T) {
 	unmarshallable := make(chan string) // can't be marshalled to JSON
-	errReq := base.NewErrorResponseWriter(fmt.Errorf("ka-boom"))
+	errReq := server_utils.NewErrorResponseWriter(fmt.Errorf("ka-boom"))
 
 	type args struct {
 		w      http.ResponseWriter
@@ -265,7 +263,7 @@ func TestWriteJSONResponse(t *testing.T) {
 				assert.Equal(t, tt.wantStatus, rec.Code)
 			}
 			if !ok {
-				rec, ok := tt.args.w.(*base.ErrorResponseWriter)
+				rec, ok := tt.args.w.(*server_utils.ErrorResponseWriter)
 				assert.True(t, ok)
 				assert.NotNil(t, rec)
 			}
@@ -274,7 +272,7 @@ func TestWriteJSONResponse(t *testing.T) {
 }
 
 func Test_closeStackDriverLoggingClient(t *testing.T) {
-	projectID := base.MustGetEnvVar(server_utils.GoogleCloudProjectIDEnvVarName)
+	projectID := server_utils.MustGetEnvVar(server_utils.GoogleCloudProjectIDEnvVarName)
 	loggingClient, err := logging.NewClient(context.Background(), projectID)
 	assert.Nil(t, err)
 
@@ -300,7 +298,7 @@ func Test_closeStackDriverLoggingClient(t *testing.T) {
 }
 
 func Test_closeStackDriverErrorClient(t *testing.T) {
-	projectID := base.MustGetEnvVar(server_utils.GoogleCloudProjectIDEnvVarName)
+	projectID := server_utils.MustGetEnvVar(server_utils.GoogleCloudProjectIDEnvVarName)
 	errorClient, err := errorreporting.NewClient(context.Background(), projectID, errorreporting.Config{
 		ServiceName: server_utils.AppName,
 		OnError: func(err error) {

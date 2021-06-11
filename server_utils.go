@@ -19,14 +19,13 @@ import (
 	"cloud.google.com/go/profiler"
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"github.com/getsentry/sentry-go"
-	"github.com/savannahghi/go_utils"
 	log "github.com/sirupsen/logrus"
 	"go.opencensus.io/trace"
 )
 
 // Sentry initializes Sentry, for error reporting
 func Sentry() error {
-	dsn, err := go_utils.GetEnvVar(DSNEnvVarName)
+	dsn, err := GetEnvVar(DSNEnvVarName)
 	if err != nil {
 		return err
 	}
@@ -110,7 +109,7 @@ func ConvertStringToInt(w http.ResponseWriter, val string) int {
 // StackDriver initializes StackDriver logging, error reporting, profiling etc
 func StackDriver(ctx context.Context) *errorreporting.Client {
 	// project setup
-	projectID, err := go_utils.GetEnvVar(GoogleCloudProjectIDEnvVarName)
+	projectID, err := GetEnvVar(GoogleCloudProjectIDEnvVarName)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"environment variable name": GoogleCloudProjectIDEnvVarName,

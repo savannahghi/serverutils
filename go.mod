@@ -9,8 +9,8 @@ require (
 	github.com/getsentry/sentry-go v0.11.0
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
-	github.com/savannahghi/go_utils v0.0.0-20210611063720-89bde79ee2c1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	go.opencensus.io v0.23.0
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
