@@ -1,9 +1,9 @@
-package base_test
+package go_utils_test
 
 import (
 	"testing"
 
-	"gitlab.slade360emr.com/go/base"
+	base "github.com/savannahghi/go_utils"
 )
 
 func TestGetConsumerTerms(t *testing.T) {

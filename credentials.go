@@ -1,4 +1,4 @@
-package base
+package go_utils
 
 // GPGEncryptedJSONGoogleApplicationCredentials contains encrypted
 // Google Application Credentials JSON data for the test environment.

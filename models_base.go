@@ -1,4 +1,4 @@
-package base
+package go_utils
 
 import (
 	"encoding/base64"

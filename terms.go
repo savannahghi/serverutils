@@ -1,4 +1,4 @@
-package base
+package go_utils
 
 // ConsumerTerms is the text of the consumer terms of service
 const ConsumerTerms = `

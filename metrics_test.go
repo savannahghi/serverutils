@@ -1,4 +1,4 @@
-package base_test
+package go_utils_test
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.slade360emr.com/go/base"
+	base "github.com/savannahghi/go_utils"
 )
 
 func TestRecordGraphqlResolverMetrics(t *testing.T) {

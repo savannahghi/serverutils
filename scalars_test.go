@@ -1,4 +1,4 @@
-package base_test
+package go_utils_test
 
 import (
 	"bytes"
@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	base "github.com/savannahghi/go_utils"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/base"
 )
 
 func TestNewDate(t *testing.T) {
