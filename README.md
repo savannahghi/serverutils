@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/savannahghi/serverutils.svg?branch=main)](https://travis-ci.com/savannahghi/serverutils)
+[![Build Status](https://travis-ci.com/savannahghi/server_utils.svg?branch=main)](https://travis-ci.com/savannahghi/server_utils)
 [![Maintained](https://img.shields.io/badge/Maintained-Actively-informational.svg?style=for-the-badge)](https://shields.io/)
 # Server Utils Library
 serverutils are utilities used by several backend services. These includes starting up and running the server.
