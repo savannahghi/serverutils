@@ -1,4 +1,4 @@
-package server_utils_test
+package serverutils_test
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/savannahghi/server_utils"
+	"github.com/savannahghi/serverutils"
 )
 
 func TestRecordGraphqlResolverMetrics(t *testing.T) {
@@ -48,7 +48,7 @@ func TestRecordGraphqlResolverMetrics(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			server_utils.RecordGraphqlResolverMetrics(tt.args.ctx, tt.args.startTime, tt.args.name, tt.args.e)
+			serverutils.RecordGraphqlResolverMetrics(tt.args.ctx, tt.args.startTime, tt.args.name, tt.args.e)
 		})
 	}
 }
@@ -98,31 +98,31 @@ func TestMetricsCollectorService(t *testing.T) {
 
 			if tt.name == "success:staging_env" {
 				os.Setenv("ENVIRONMENT", "staging")
-				if got := server_utils.MetricsCollectorService(tt.args.serviceName); got != tt.want {
+				if got := serverutils.MetricsCollectorService(tt.args.serviceName); got != tt.want {
 					t.Errorf("MetricsCollectorService() = %v, want %v", got, tt.want)
 				}
 			}
 			if tt.name == "success:staging_env" {
 				os.Setenv("ENVIRONMENT", "staging")
-				if got := server_utils.MetricsCollectorService(tt.args.serviceName); got != tt.want {
+				if got := serverutils.MetricsCollectorService(tt.args.serviceName); got != tt.want {
 					t.Errorf("MetricsCollectorService() = %v, want %v", got, tt.want)
 				}
 			}
 			if tt.name == "success:testing_env" {
 				os.Setenv("ENVIRONMENT", "testing")
-				if got := server_utils.MetricsCollectorService(tt.args.serviceName); got != tt.want {
+				if got := serverutils.MetricsCollectorService(tt.args.serviceName); got != tt.want {
 					t.Errorf("MetricsCollectorService() = %v, want %v", got, tt.want)
 				}
 			}
 			if tt.name == "success:demo_env" {
 				os.Setenv("ENVIRONMENT", "demo")
-				if got := server_utils.MetricsCollectorService(tt.args.serviceName); got != tt.want {
+				if got := serverutils.MetricsCollectorService(tt.args.serviceName); got != tt.want {
 					t.Errorf("MetricsCollectorService() = %v, want %v", got, tt.want)
 				}
 			}
 			if tt.name == "success:prod_env" {
 				os.Setenv("ENVIRONMENT", "prod")
-				if got := server_utils.MetricsCollectorService(tt.args.serviceName); got != tt.want {
+				if got := serverutils.MetricsCollectorService(tt.args.serviceName); got != tt.want {
 					t.Errorf("MetricsCollectorService() = %v, want %v", got, tt.want)
 				}
 			}
@@ -153,7 +153,7 @@ func TestEnableStatsAndTraceExporters(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := server_utils.EnableStatsAndTraceExporters(tt.args.ctx, tt.args.service)
+			_, err := serverutils.EnableStatsAndTraceExporters(tt.args.ctx, tt.args.service)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("EnableStatsAndTraceExporters() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -164,7 +164,7 @@ func TestEnableStatsAndTraceExporters(t *testing.T) {
 
 func TestMetricsResponseWriter_Header(t *testing.T) {
 	rw := httptest.NewRecorder()
-	m := server_utils.NewMetricsResponseWriter(rw)
+	m := serverutils.NewMetricsResponseWriter(rw)
 
 	emptyHeader := map[string][]string{}
 
@@ -188,7 +188,7 @@ func TestMetricsResponseWriter_Header(t *testing.T) {
 
 func TestMetricsResponseWriter_WriteHeader(t *testing.T) {
 	rw := httptest.NewRecorder()
-	m := server_utils.NewMetricsResponseWriter(rw)
+	m := serverutils.NewMetricsResponseWriter(rw)
 
 	type args struct {
 		code int
@@ -214,7 +214,7 @@ func TestMetricsResponseWriter_WriteHeader(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			m.WriteHeader(tt.args.code)
 			if m.StatusCode != tt.args.code {
-				t.Errorf("server_utils.MetricsResponseWriter.WriteHeader() = %v, want %v", rw.Code, tt.args.code)
+				t.Errorf("serverutils.MetricsResponseWriter.WriteHeader() = %v, want %v", rw.Code, tt.args.code)
 			}
 		})
 	}
@@ -222,7 +222,7 @@ func TestMetricsResponseWriter_WriteHeader(t *testing.T) {
 
 func TestMetricsResponseWriter_Write(t *testing.T) {
 	rw := httptest.NewRecorder()
-	m := server_utils.NewMetricsResponseWriter(rw)
+	m := serverutils.NewMetricsResponseWriter(rw)
 
 	sample := []byte("four")
 
@@ -261,7 +261,7 @@ func TestMetricsResponseWriter_Write(t *testing.T) {
 
 func TestCustomRequestMetricsMiddleware(t *testing.T) {
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
-	mw := server_utils.CustomHTTPRequestMetricsMiddleware()
+	mw := serverutils.CustomHTTPRequestMetricsMiddleware()
 	h := mw(next)
 
 	rw := httptest.NewRecorder()
@@ -274,12 +274,12 @@ func TestCustomRequestMetricsMiddleware(t *testing.T) {
 
 func TestRecordStats(t *testing.T) {
 	rw := httptest.NewRecorder()
-	w := server_utils.NewMetricsResponseWriter(rw)
+	w := serverutils.NewMetricsResponseWriter(rw)
 	reader := bytes.NewBuffer([]byte("sample"))
 	req := httptest.NewRequest(http.MethodPost, "/", reader)
 
 	type args struct {
-		w *server_utils.MetricsResponseWriter
+		w *serverutils.MetricsResponseWriter
 		r *http.Request
 	}
 	tests := []struct {
@@ -296,7 +296,7 @@ func TestRecordStats(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			server_utils.RecordHTTPStats(tt.args.w, tt.args.r)
+			serverutils.RecordHTTPStats(tt.args.w, tt.args.r)
 		})
 	}
 }
@@ -322,7 +322,7 @@ func TestGenerateLatencyBounds(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := server_utils.GenerateLatencyBounds(tt.args.max, tt.args.step); !reflect.DeepEqual(got, tt.want) {
+			if got := serverutils.GenerateLatencyBounds(tt.args.max, tt.args.step); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GenerateLatencyBounds() = %v, want %v", got, tt.want)
 			}
 		})

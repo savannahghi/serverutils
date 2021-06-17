@@ -4,4 +4,3 @@ env.sh
 venv/
 coverage.*
 .gitmessage.txt
-bewell-app-*

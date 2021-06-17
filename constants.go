@@ -1,10 +1,6 @@
-package server_utils
+package serverutils
 
 const (
-	// TestUserPhoneNumber is used by integration tests
-	TestUserPhoneNumber        = "+254711223344"
-	TestUserPhoneNumberWithPin = "+254778990088"
-	TestUserPin                = "1234"
 	// AppName is the name of "this server"
 	AppName = "api-gateway"
 
@@ -29,21 +25,21 @@ const (
 	// to the console
 	DebugEnvVarName = "DEBUG"
 
-	// TestsEnvVarName is used to determine if we are running in a test environment
+	// IsRunningTestsEnvVarName is used to determine if we are running in a test environment
 	IsRunningTestsEnvVarName = "IS_RUNNING_TESTS"
 
-	// env variable pointing to where this service is running e.g staging, testing, prod
+	// Environment points to where this service is running e.g staging, testing, prod
 	Environment = "ENVIRONMENT"
 
-	// running the service under staging
+	// StagingEnv runs the service under staging
 	StagingEnv = "staging"
 
-	// running the service under demo
+	// DemoEnv runs the service under demo
 	DemoEnv = "demo"
 
-	// running the service under testing
+	// TestingEnv runs the service under testing
 	TestingEnv = "testing"
 
-	// running the service under production
+	// ProdEnv runs the service under production
 	ProdEnv = "prod"
 )

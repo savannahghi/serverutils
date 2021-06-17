@@ -1,4 +1,4 @@
-module github.com/savannahghi/server_utils
+module github.com/savannahghi/serverutils
 
 go 1.16
 
