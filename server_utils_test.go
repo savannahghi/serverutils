@@ -1,4 +1,4 @@
-package server_utils_test
+package serverutils_test
 
 import (
 	"bytes"
@@ -15,7 +15,7 @@ import (
 	"cloud.google.com/go/logging"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/savannahghi/server_utils"
+	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -32,7 +32,7 @@ func TestSentry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := server_utils.Sentry(); (err != nil) != tt.wantErr {
+			if err := serverutils.Sentry(); (err != nil) != tt.wantErr {
 				t.Errorf("Sentry() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -41,7 +41,7 @@ func TestSentry(t *testing.T) {
 
 func TestErrorMap(t *testing.T) {
 	err := fmt.Errorf("test error")
-	errMap := server_utils.ErrorMap(err)
+	errMap := serverutils.ErrorMap(err)
 	if errMap["error"] == "" {
 		t.Errorf("empty error key in errMap")
 	}
@@ -53,7 +53,7 @@ func TestErrorMap(t *testing.T) {
 func TestRequestDebugMiddleware(t *testing.T) {
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
 
-	mw := server_utils.RequestDebugMiddleware()
+	mw := serverutils.RequestDebugMiddleware()
 	h := mw(next)
 
 	rw := httptest.NewRecorder()
@@ -95,7 +95,7 @@ func TestLogStartupError(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			server_utils.LogStartupError(tt.args.ctx, tt.args.err)
+			serverutils.LogStartupError(tt.args.ctx, tt.args.err)
 		})
 	}
 }
@@ -144,7 +144,7 @@ func TestDecodeJSONToTargetStruct(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			server_utils.DecodeJSONToTargetStruct(tt.args.w, tt.args.r, tt.args.targetStruct)
+			serverutils.DecodeJSONToTargetStruct(tt.args.w, tt.args.r, tt.args.targetStruct)
 		})
 	}
 }
@@ -170,7 +170,7 @@ func Test_convertStringToInt(t *testing.T) {
 	}
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			server_utils.ConvertStringToInt(tc.rw, tc.val)
+			serverutils.ConvertStringToInt(tc.rw, tc.val)
 			assert.Equal(t, tc.expectedStatusCode, tc.rw.Code)
 			assert.Equal(t, tc.expectedResponse, tc.rw.Body.String())
 		})
@@ -178,7 +178,7 @@ func Test_convertStringToInt(t *testing.T) {
 }
 
 func Test_StackDriver_Setup(t *testing.T) {
-	errorClient := server_utils.StackDriver(context.Background())
+	errorClient := serverutils.StackDriver(context.Background())
 	err := fmt.Errorf("test error")
 	if errorClient != nil {
 		errorClient.Report(errorreporting.Entry{
@@ -205,7 +205,7 @@ func TestStackDriver(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := server_utils.StackDriver(tt.args.ctx)
+			got := serverutils.StackDriver(tt.args.ctx)
 			assert.NotNil(t, got)
 		})
 	}
@@ -213,7 +213,7 @@ func TestStackDriver(t *testing.T) {
 
 func TestWriteJSONResponse(t *testing.T) {
 	unmarshallable := make(chan string) // can't be marshalled to JSON
-	errReq := server_utils.NewErrorResponseWriter(fmt.Errorf("ka-boom"))
+	errReq := serverutils.NewErrorResponseWriter(fmt.Errorf("ka-boom"))
 
 	type args struct {
 		w      http.ResponseWriter
@@ -255,7 +255,7 @@ func TestWriteJSONResponse(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			server_utils.WriteJSONResponse(tt.args.w, tt.args.source, tt.args.status)
+			serverutils.WriteJSONResponse(tt.args.w, tt.args.source, tt.args.status)
 
 			rec, ok := tt.args.w.(*httptest.ResponseRecorder)
 			if ok {
@@ -263,7 +263,7 @@ func TestWriteJSONResponse(t *testing.T) {
 				assert.Equal(t, tt.wantStatus, rec.Code)
 			}
 			if !ok {
-				rec, ok := tt.args.w.(*server_utils.ErrorResponseWriter)
+				rec, ok := tt.args.w.(*serverutils.ErrorResponseWriter)
 				assert.True(t, ok)
 				assert.NotNil(t, rec)
 			}
@@ -272,7 +272,7 @@ func TestWriteJSONResponse(t *testing.T) {
 }
 
 func Test_closeStackDriverLoggingClient(t *testing.T) {
-	projectID := server_utils.MustGetEnvVar(server_utils.GoogleCloudProjectIDEnvVarName)
+	projectID := serverutils.MustGetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
 	loggingClient, err := logging.NewClient(context.Background(), projectID)
 	assert.Nil(t, err)
 
@@ -292,19 +292,19 @@ func Test_closeStackDriverLoggingClient(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			server_utils.CloseStackDriverLoggingClient(tt.args.loggingClient)
+			serverutils.CloseStackDriverLoggingClient(tt.args.loggingClient)
 		})
 	}
 }
 
 func Test_closeStackDriverErrorClient(t *testing.T) {
-	projectID := server_utils.MustGetEnvVar(server_utils.GoogleCloudProjectIDEnvVarName)
+	projectID := serverutils.MustGetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
 	errorClient, err := errorreporting.NewClient(context.Background(), projectID, errorreporting.Config{
-		ServiceName: server_utils.AppName,
+		ServiceName: serverutils.AppName,
 		OnError: func(err error) {
 			log.WithFields(log.Fields{
 				"project ID":   projectID,
-				"service name": server_utils.AppName,
+				"service name": serverutils.AppName,
 				"error":        err,
 			}).Info("Unable to initialize error client")
 		},
@@ -327,7 +327,7 @@ func Test_closeStackDriverErrorClient(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			server_utils.CloseStackDriverErrorClient(tt.args.errorClient)
+			serverutils.CloseStackDriverErrorClient(tt.args.errorClient)
 		})
 	}
 }
@@ -335,7 +335,7 @@ func Test_closeStackDriverErrorClient(t *testing.T) {
 func TestStartTestServer(t *testing.T) {
 
 	ctx := context.Background()
-	srv, baseURL, serverErr := server_utils.StartTestServer(ctx, healthCheckServer, []string{
+	srv, baseURL, serverErr := serverutils.StartTestServer(ctx, healthCheckServer, []string{
 		"http://localhost:5000",
 	})
 	if serverErr != nil {
@@ -362,8 +362,8 @@ func healthCheckRouter() (*mux.Router, error) {
 		),
 	) // recover from panics by writing a HTTP error
 
-	r.Use(server_utils.RequestDebugMiddleware())
-	r.Path("/health").HandlerFunc(server_utils.HealthStatusCheck)
+	r.Use(serverutils.RequestDebugMiddleware())
+	r.Path("/health").HandlerFunc(serverutils.HealthStatusCheck)
 
 	return r, nil
 }
@@ -372,7 +372,7 @@ func healthCheckServer(ctx context.Context, port int, allowedOrigins []string) *
 	// start up the router
 	r, err := healthCheckRouter()
 	if err != nil {
-		server_utils.LogStartupError(ctx, err)
+		serverutils.LogStartupError(ctx, err)
 	}
 
 	// start the server
