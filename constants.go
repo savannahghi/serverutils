@@ -27,4 +27,19 @@ const (
 
 	// IsRunningTestsEnvVarName is used to determine if we are running in a test environment
 	IsRunningTestsEnvVarName = "IS_RUNNING_TESTS"
+
+	// Environment points to where this service is running e.g staging, testing, prod
+	Environment = "ENVIRONMENT"
+
+	// StagingEnv runs the service under staging
+	StagingEnv = "staging"
+
+	// DemoEnv runs the service under demo
+	DemoEnv = "demo"
+
+	// TestingEnv runs the service under testing
+	TestingEnv = "testing"
+
+	// ProdEnv runs the service under production
+	ProdEnv = "prod"
 )
