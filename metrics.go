@@ -10,6 +10,13 @@ import (
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
 // GenerateLatencyBounds is used in generating latency bounds
@@ -270,4 +277,58 @@ func (m *MetricsResponseWriter) WriteHeader(code int) {
 func (m *MetricsResponseWriter) Write(b []byte) (int, error) {
 	size, err := m.w.Write(b)
 	return size, err
+}
+
+// InitOtelSDK returns an OpenTelemetry TracerProvider configured to use
+// the Jaeger exporter for sending traces/spans. The returned
+// TracerProvider will also use a Resource configured with all the information
+// about the service deployment.
+func InitOtelSDK(ctx context.Context, serviceName string) (*tracesdk.TracerProvider, error) {
+	// Jaeger Exporter initialization
+	jaegerURL := MustGetEnvVar("JAEGER_URL")
+
+	exporter, err := jaeger.New(
+		jaeger.WithCollectorEndpoint(
+			jaeger.WithEndpoint(jaegerURL),
+		),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// Environment variables automatically added to the running containers in cloud run
+	// K_SERVICE	The name of the Cloud Run service being run.
+	service, _ := GetEnvVar("K_SERVICE")
+
+	// K_REVISION	The name of the Cloud Run revision being run.
+	revision, _ := GetEnvVar("K_REVISION")
+
+	// K_CONFIGURATION	The name of the Cloud Run configuration that created the revision.
+	configuration, _ := GetEnvVar("K_CONFIGURATION")
+
+	resource := resource.NewWithAttributes(
+		semconv.SchemaURL,
+		semconv.ServiceNameKey.String(MetricsCollectorService(serviceName)),
+		attribute.String("cloudrun.service", service),
+		attribute.String("cloudrun.revision", revision),
+		attribute.String("cloudrun.configuration", configuration),
+	)
+
+	tp := tracesdk.NewTracerProvider(
+		// Always be sure to batch in production.
+		tracesdk.WithBatcher(exporter),
+		tracesdk.WithResource(resource),
+	)
+
+	// Register the TracerProvider as the global so any imported
+	// instrumentation will default to using it
+	otel.SetTracerProvider(tp)
+
+	propagator := propagation.NewCompositeTextMapPropagator(
+		propagation.Baggage{},
+		propagation.TraceContext{},
+	)
+	otel.SetTextMapPropagator(propagator)
+
+	return tp, nil
 }

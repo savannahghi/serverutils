@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/savannahghi/serverutils"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 )
 
 func TestRecordGraphqlResolverMetrics(t *testing.T) {
@@ -325,6 +326,83 @@ func TestGenerateLatencyBounds(t *testing.T) {
 			if got := serverutils.GenerateLatencyBounds(tt.args.max, tt.args.step); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GenerateLatencyBounds() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestInitOtelSDK(t *testing.T) {
+	type args struct {
+		ctx         context.Context
+		serviceName string
+	}
+	tests := []struct {
+		name      string
+		args      args
+		want      *tracesdk.TracerProvider
+		wantErr   bool
+		wantPanic bool
+	}{
+		{
+			name: "success:initialize otel sdk",
+			args: args{
+				ctx:         context.Background(),
+				serviceName: "test",
+			},
+			wantErr:   false,
+			wantPanic: false,
+		},
+		{
+			name: "fail:initialize otel sdk missing environment",
+			args: args{
+				ctx:         context.Background(),
+				serviceName: "test",
+			},
+			wantErr:   true,
+			wantPanic: true,
+		},
+		{
+			name: "fail:initialize otel sdk missing jaeger env",
+			args: args{
+				ctx:         context.Background(),
+				serviceName: "test",
+			},
+			wantErr:   true,
+			wantPanic: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				r := recover()
+				if (r != nil) != tt.wantPanic {
+					t.Errorf("InitOtelSDK() recover = %v, wantPanic = %v", r, tt.wantPanic)
+				}
+			}()
+
+			initialEnvironment := os.Getenv("ENVIRONMENT")
+			initialJaegerEnv := os.Getenv("JAEGER_URL")
+			if tt.name == "success:initialize otel sdk" {
+				os.Setenv("JAEGER_URL", "http://jaeger")
+				os.Setenv("ENVIRONMENT", "staging")
+			}
+
+			if tt.name == "fail:initialize otel sdk missing environment" {
+				os.Setenv("JAEGER_URL", "http://jaeger")
+				os.Setenv("ENVIRONMENT", "")
+			}
+
+			if tt.name == "fail:initialize otel sdk missing jaeger env" {
+				os.Setenv("JAEGER_URL", "")
+			}
+
+			_, err := serverutils.InitOtelSDK(tt.args.ctx, tt.args.serviceName)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("InitOtelSDK() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			os.Setenv("ENVIRONMENT", initialEnvironment)
+			os.Setenv("JAEGER_URL", initialJaegerEnv)
 		})
 	}
 }
