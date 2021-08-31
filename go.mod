@@ -13,7 +13,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/objx v0.3.0 // indirect
 	github.com/stretchr/testify v1.7.0
-	github.com/vektah/gqlparser/v2 v2.2.0
+	github.com/vektah/gqlparser/v2 v2.1.0
 	go.opencensus.io v0.23.0
 	go.opentelemetry.io/otel v1.0.0-RC1
 	go.opentelemetry.io/otel/exporters/jaeger v1.0.0-RC1
