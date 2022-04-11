@@ -29,7 +29,14 @@ func Sentry() error {
 	if err != nil {
 		return err
 	}
-	return sentry.Init(sentry.ClientOptions{Dsn: dsn})
+	environment, err := GetEnvVar(Environment)
+	if err != nil {
+		return err
+	}
+	return sentry.Init(sentry.ClientOptions{
+		Dsn:         dsn,
+		Environment: environment,
+	})
 }
 
 // ListenAddress determines what port to listen on and falls back to a default
