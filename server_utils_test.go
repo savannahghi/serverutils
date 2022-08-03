@@ -32,9 +32,12 @@ func TestSentry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			initialEnvironment := os.Getenv("ENVIRONMENT")
+			os.Setenv("ENVIRONMENT", "staging")
 			if err := serverutils.Sentry(); (err != nil) != tt.wantErr {
 				t.Errorf("Sentry() error = %v, wantErr %v", err, tt.wantErr)
 			}
+			os.Setenv("ENVIRONMENT", initialEnvironment)
 		})
 	}
 }
