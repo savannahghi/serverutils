@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/99designs/gqlgen/plugin"
 
@@ -68,7 +69,7 @@ func (m *ImportPlugin) InjectSourceEarly() *ast.Source {
 	for _, source := range m.earlySources {
 		// federation directives and entities are already provided using the federation plugin
 		// They should be skipped to avoid conflict with/from the federation plugin
-		if source.Name == "federation/directives.graphql" || source.Name == "federation/entity.graphql" {
+		if strings.Contains(source.Name, "federation/directives.graphql") || strings.Contains(source.Name, "federation/entity.graphql") {
 			continue
 		}
 		// Contents of the source file
@@ -100,7 +101,7 @@ func (m *ImportPlugin) InjectSourceLate(schema *ast.Schema) *ast.Source {
 	for _, source := range m.earlySources {
 		// federation directives and entities are already provided using the federation plugin
 		// They should be skipped to avoid conflict with the federation one
-		if source.Name == "federation/directives.graphql" || source.Name == "federation/entity.graphql" {
+		if strings.Contains(source.Name, "federation/directives.graphql") || strings.Contains(source.Name, "federation/entity.graphql") {
 			continue
 		}
 		// Contents of the source file
