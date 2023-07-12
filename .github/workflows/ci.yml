@@ -24,19 +24,19 @@ jobs:
   lint_and_test:
     strategy:
       matrix:
-        go-version: [1.18.x]
+        go-version: [1.19.x]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 80
     steps:
       - uses: actions/checkout@v3
-      - uses: google-github-actions/setup-gcloud@v0
+      - uses: "google-github-actions/auth@v0"
         with:
-            project_id: ${{ secrets.GOOGLE_CLOUD_PROJECT }}
-            service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-            export_default_credentials: true
+          credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          project_id: ${{ secrets.GOOGLE_CLOUD_PROJECT }}
+
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
 
@@ -44,7 +44,7 @@ jobs:
         run: |
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.37.1
           curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.13.1
-          go install honnef.co/go/tools/cmd/staticcheck@2022.1
+          go install honnef.co/go/tools/cmd/staticcheck@latest
           go install github.com/ory/go-acc@latest
           go install github.com/axw/gocov/gocov@latest
           go install github.com/kisielk/errcheck@latest

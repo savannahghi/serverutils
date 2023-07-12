@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"net"
 	"net/http"
@@ -34,8 +34,10 @@ func Sentry() error {
 		return err
 	}
 	return sentry.Init(sentry.ClientOptions{
-		Dsn:         dsn,
-		Environment: environment,
+		Dsn:              dsn,
+		Environment:      environment,
+		EnableTracing:    true,
+		TracesSampleRate: 0.5,
 	})
 }
 
@@ -62,7 +64,7 @@ func RequestDebugMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
-				body, err := ioutil.ReadAll(r.Body)
+				body, err := io.ReadAll(r.Body)
 				if err != nil {
 					log.Errorf("Unable to read request body for debugging: error %#v", err)
 				}
@@ -73,7 +75,7 @@ func RequestDebugMiddleware() func(http.Handler) http.Handler {
 					}
 					log.Printf("Raw request: %v", string(req))
 				}
-				r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+				r.Body = io.NopCloser(bytes.NewBuffer(body))
 				next.ServeHTTP(w, r)
 			},
 		)
@@ -279,7 +281,7 @@ func StartTestServer(ctx context.Context, prepareServer PrepareServer, allowedOr
 	return srv, baseURL, nil
 }
 
-//HealthStatusCheck endpoint to check if the server is working.
+// HealthStatusCheck endpoint to check if the server is working.
 func HealthStatusCheck(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewEncoder(w).Encode(true)
