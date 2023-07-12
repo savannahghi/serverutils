@@ -5,7 +5,7 @@ import (
 	"compress/gzip"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -65,7 +65,7 @@ func TestRequestDebugMiddleware(t *testing.T) {
 	h.ServeHTTP(rw, request)
 
 	rw1 := httptest.NewRecorder()
-	reader1 := ioutil.NopCloser(bytes.NewBuffer([]byte("will be closed")))
+	reader1 := io.NopCloser(bytes.NewBuffer([]byte("will be closed")))
 	err := reader1.Close()
 	assert.Nil(t, err)
 	req1 := httptest.NewRequest(http.MethodPost, "/", reader1)
