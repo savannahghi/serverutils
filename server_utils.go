@@ -33,11 +33,25 @@ func Sentry() error {
 	if err != nil {
 		return err
 	}
+	traceSampleRate, err := GetEnvVar(TraceSampleRateEnvVarName)
+	if err != nil {
+		return err
+	}
+
+	if traceSampleRate == "" {
+		traceSampleRate = "1.0"
+	}
+
+	sampleRate, err := strconv.ParseFloat(traceSampleRate, 64)
+	if err != nil {
+		return err
+	}
+
 	return sentry.Init(sentry.ClientOptions{
 		Dsn:              dsn,
 		Environment:      environment,
 		EnableTracing:    true,
-		TracesSampleRate: 0.5,
+		TracesSampleRate: sampleRate,
 	})
 }
 
