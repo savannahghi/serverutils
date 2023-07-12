@@ -19,6 +19,7 @@ env:
   ROOT_COLLECTION_SUFFIX: ${{ secrets.ROOT_COLLECTION_SUFFIX }}
   ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
   JAEGER_URL: ${{ secrets.JAEGER_URL }}
+  SENTRY_TRACE_SAMPLE_RATE: ${{ secrets.SENTRY_TRACE_SAMPLE_RATE }}
 
 jobs:
   lint_and_test:

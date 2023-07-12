@@ -42,4 +42,7 @@ const (
 
 	// ProdEnv runs the service under production
 	ProdEnv = "prod"
+
+	// TraceSampleRateEnvVarName indicates the percentage of transactions to be captured when doing performance monitoring
+	TraceSampleRateEnvVarName = "SENTRY_TRACE_SAMPLE_RATE"
 )
