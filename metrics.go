@@ -4,44 +4,48 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"strings"
 	"time"
 
-	"contrib.go.opencensus.io/exporter/stackdriver"
+	"github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric"
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/propagation"
+	metricsdk "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
+	"google.golang.org/api/option"
 )
 
 // GenerateLatencyBounds is used in generating latency bounds
 // The arguments provided should be in millisecond format e.g 1s == 1000ms
 // interval will be used as an increment value
 // [>=0ms, >=100ms, >=200ms, >=300ms,...., >=1000ms]
-func GenerateLatencyBounds(max, interval int) []float64 {
+func GenerateLatencyBounds(maxVal, interval int) []float64 {
 	bounds := []float64{}
-	for j := 0; j <= max; j += interval {
+	for j := 0; j <= maxVal; j += interval {
 		bounds = append(bounds, float64(j))
 	}
+
 	return bounds
 }
 
-// LatencyBounds used in aggregating latency
-// should be in ms i.e seconds written in ms eg 1s --> 1000ms
-// [>=0ms, >=10ms, >=20ms, >=30ms,...., >=4s, >=5s, >=6s >=7s]
-//
-// Disclaimer: The interval value should be reasonable so as to avoid many
-// buckets. If the distribution metrics has many buckets, it will not export
-// the metrics.
-var LatencyBounds = GenerateLatencyBounds(60000, 200) //1 min in intervals of 200ms
-
-// Server HTTP measures used to record metrics
 var (
+	// LatencyBounds used in aggregating latency
+	// should be in ms i.e seconds written in ms eg 1s --> 1000ms
+	// [>=0ms, >=10ms, >=20ms, >=30ms,...., >=4s, >=5s, >=6s >=7s]
+	//
+	// Disclaimer: The interval value should be reasonable so as to avoid many
+	// buckets. If the distribution metrics has many buckets, it will not export
+	// the metrics.
+	LatencyBounds = GenerateLatencyBounds(60000, 200) // 1 min in intervals of 200ms
+
 	// Measure
 
 	GraphqlResolverLatency = stats.Float64(
@@ -81,16 +85,8 @@ var (
 		Aggregation: view.Count(),
 		TagKeys:     []tag.Key{ResolverName, ResolverErrorMessage, ResolverStatus},
 	}
-)
 
-// Resolver status values
-const (
-	ResolverSuccessValue = "OK"
-	ResolverFailureValue = "FAILED"
-)
-
-// Views for the collected metrics i.e how they are exported to the various backends
-var (
+	// Following are views for the collected metrics i.e how they are exported to the various backends
 	HTTPRequestLatency = stats.Float64(
 		"http_request_latency",
 		"The Latency in milliseconds per http request execution",
@@ -123,11 +119,17 @@ var (
 		Aggregation: view.Count(),
 		TagKeys:     []tag.Key{HTTPPath, HTTPStatusCode, HTTPMethod},
 	}
+
+	// DefaultServiceViews are the default/common server views provided by base package
+	// The views can be used by the various services
+	DefaultServiceViews = []*view.View{GraphqlResolverLatencyView, GraphqlResolverCountView, ServerRequestLatencyView, ServerRequestCountView}
 )
 
-// DefaultServiceViews are the default/common server views provided by base package
-// The views can be used by the various services
-var DefaultServiceViews = []*view.View{GraphqlResolverLatencyView, GraphqlResolverCountView, ServerRequestLatencyView, ServerRequestCountView}
+// Resolver status values
+const (
+	ResolverSuccessValue = "OK"
+	ResolverFailureValue = "FAILED"
+)
 
 // GetRunningEnvironment returns the environment where the service is running. Important
 // so as to point to the correct deps
@@ -160,30 +162,53 @@ func MetricsCollectorService(serviceName string) string {
 	return fmt.Sprintf("%s-%s", serviceName, environment)
 }
 
-// EnableStatsAndTraceExporters a wrapper for initializing metrics exporters
-// TODO:Look into improvements
+// EnableStatsAndTraceExporters creates Google Cloud Monitoring exporter
 func EnableStatsAndTraceExporters(ctx context.Context, service string) (func(), error) {
-	// Enable OpenCensus exporters to export metrics
-	// to Stackdriver Monitoring.
-	exporter, err := stackdriver.NewExporter(stackdriver.Options{
-		MetricPrefix: service,
-	})
+	exporter, err := metric.New(
+		metric.WithProjectID(os.Getenv("GOOGLE_CLOUD_PROJECT")),
+		metric.WithMonitoringClientOptions(
+			option.WithCredentialsFile(os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")),
+		),
+	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create the stackdriver exporter: %v", err)
+		return nil, fmt.Errorf("failed to create the Google Cloud Monitoring exporter: %w", err)
 	}
 
-	// Start the metrics exporter
-	if err := exporter.StartMetricsExporter(); err != nil {
-		return nil, fmt.Errorf("error starting metric exporter: %v", err)
-	}
+	k8sService, _ := GetEnvVar("K_SERVICE")
+	k8sRevision, _ := GetEnvVar("K_REVISION")
+	k8sConfiguration, _ := GetEnvVar("K_CONFIGURATION")
+
+	res := resource.NewWithAttributes(
+		semconv.SchemaURL,
+		semconv.ServiceNameKey.String(service),
+		attribute.String("cloudrun.service", k8sService),
+		attribute.String("cloudrun.revision", k8sRevision),
+		attribute.String("cloudrun.configuration", k8sConfiguration),
+	)
+
+	meterProvider := metricsdk.NewMeterProvider(
+		metricsdk.WithReader(
+			metricsdk.NewPeriodicReader(
+				exporter,
+				metricsdk.WithInterval(60*time.Second),
+			),
+		),
+		metricsdk.WithResource(res),
+	)
+
+	otel.SetMeterProvider(meterProvider)
 
 	deferFuncs := func() {
-		exporter.Flush()
-		exporter.StopMetricsExporter()
+		if err := meterProvider.ForceFlush(ctx); err != nil {
+			fmt.Printf("Error flushing metrics: %v\n", err)
+		}
+
+		if err := meterProvider.Shutdown(ctx); err != nil {
+			fmt.Printf("Error shutting down meter provider: %v\n", err)
+		}
 	}
 
 	return deferFuncs, nil
-
 }
 
 // RecordGraphqlResolverMetrics records the metrics for a specific graphql resolver
@@ -220,7 +245,6 @@ func CustomHTTPRequestMetricsMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
-
 				newResponseWriter := NewMetricsResponseWriter(w)
 
 				next.ServeHTTP(newResponseWriter, r)
@@ -233,7 +257,6 @@ func CustomHTTPRequestMetricsMiddleware() func(http.Handler) http.Handler {
 
 // RecordHTTPStats adds tags and records the metrics for a request
 func RecordHTTPStats(w *MetricsResponseWriter, r *http.Request) {
-
 	ctx, _ := tag.New(r.Context(),
 		tag.Insert(HTTPPath, r.URL.Path),
 		tag.Insert(HTTPMethod, r.Method),
@@ -280,18 +303,17 @@ func (m *MetricsResponseWriter) Write(b []byte) (int, error) {
 }
 
 // InitOtelSDK returns an OpenTelemetry TracerProvider configured to use
-// the Jaeger exporter for sending traces/spans. The returned
+// the OTLP HTTP exporter. The returned
 // TracerProvider will also use a Resource configured with all the information
 // about the service deployment.
 func InitOtelSDK(ctx context.Context, serviceName string) (*tracesdk.TracerProvider, error) {
-	// Jaeger Exporter initialization
-	jaegerURL := MustGetEnvVar("JAEGER_URL")
+	otlpEndpoint := MustGetEnvVar("JAEGER_URL")
 
-	exporter, err := jaeger.New(
-		jaeger.WithCollectorEndpoint(
-			jaeger.WithEndpoint(jaegerURL),
-		),
-	)
+	if !strings.Contains(otlpEndpoint, "/v1/traces") {
+		otlpEndpoint = strings.TrimSuffix(otlpEndpoint, "/") + "/v1/traces"
+	}
+
+	exporter, err := otlptracehttp.New(ctx, otlptracehttp.WithEndpoint(otlpEndpoint))
 	if err != nil {
 		return nil, err
 	}

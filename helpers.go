@@ -15,10 +15,12 @@ func BoolEnv(envVarName string) bool {
 	if err != nil {
 		return false
 	}
+
 	val, err := strconv.ParseBool(envVar)
 	if err != nil {
 		return false
 	}
+
 	return val
 }
 
@@ -37,9 +39,9 @@ func IsRunningTests() bool {
 func GetEnvVar(envVarName string) (string, error) {
 	envVar := os.Getenv(envVarName)
 	if envVar == "" {
-		envErrMsg := fmt.Sprintf("the environment variable '%s' is not set", envVarName)
-		return "", fmt.Errorf(envErrMsg)
+		return "", fmt.Errorf("the environment variable '%s' is not set", envVarName)
 	}
+
 	return envVar, nil
 }
 
@@ -83,8 +85,8 @@ func MustGetEnvVar(envVarName string) string {
 	val, err := GetEnvVar(envVarName)
 	if err != nil {
 		msg := fmt.Sprintf("mandatory environment variable %s not found", envVarName)
-		log.Panicf(msg)
-		os.Exit(1)
+		log.Panic(msg)
 	}
+
 	return val
 }

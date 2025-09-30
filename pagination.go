@@ -53,7 +53,7 @@ type PageInfo struct {
 	StartCursor     string
 }
 
-// Pagination represents paging parameters
+// PaginationInput represents paging parameters
 type PaginationInput struct {
 	// Forward pagination arguments
 	First *int
@@ -218,7 +218,7 @@ func (p *PaginationInput) Validate() error {
 	return nil
 }
 
-// Represents interface for a Node
+// Node is an interface for a Node
 type Node interface {
 	NodeID() string
 }
