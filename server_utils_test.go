@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
 	"cloud.google.com/go/errorreporting"
 	"cloud.google.com/go/logging"
@@ -33,10 +34,13 @@ func TestSentry(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			initialEnvironment := os.Getenv("ENVIRONMENT")
+
 			os.Setenv("ENVIRONMENT", "staging")
+
 			if err := serverutils.Sentry(); (err != nil) != tt.wantErr {
 				t.Errorf("Sentry() error = %v, wantErr %v", err, tt.wantErr)
 			}
+
 			os.Setenv("ENVIRONMENT", initialEnvironment)
 		})
 	}
@@ -45,16 +49,18 @@ func TestSentry(t *testing.T) {
 func TestErrorMap(t *testing.T) {
 	err := fmt.Errorf("test error")
 	errMap := serverutils.ErrorMap(err)
+
 	if errMap["error"] == "" {
 		t.Errorf("empty error key in errMap")
 	}
+
 	if errMap["error"] != "test error" {
 		t.Errorf("expected the error value to be '%s', got '%s'", "test error", errMap["error"])
 	}
 }
 
 func TestRequestDebugMiddleware(t *testing.T) {
-	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
+	next := http.HandlerFunc(func(http.ResponseWriter, *http.Request) {})
 
 	mw := serverutils.RequestDebugMiddleware()
 	h := mw(next)
@@ -68,6 +74,7 @@ func TestRequestDebugMiddleware(t *testing.T) {
 	reader1 := io.NopCloser(bytes.NewBuffer([]byte("will be closed")))
 	err := reader1.Close()
 	assert.Nil(t, err)
+
 	req1 := httptest.NewRequest(http.MethodPost, "/", reader1)
 	h.ServeHTTP(rw1, req1)
 }
@@ -77,6 +84,7 @@ func TestLogStartupError(t *testing.T) {
 		ctx context.Context
 		err error
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -96,8 +104,9 @@ func TestLogStartupError(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(_ *testing.T) {
 			serverutils.LogStartupError(tt.args.ctx, tt.args.err)
 		})
 	}
@@ -107,6 +116,7 @@ func TestDecodeJSONToTargetStruct(t *testing.T) {
 	type target struct {
 		A string `json:"a,omitempty"`
 	}
+
 	targetStruct := target{}
 
 	type args struct {
@@ -114,6 +124,7 @@ func TestDecodeJSONToTargetStruct(t *testing.T) {
 		r            *http.Request
 		targetStruct interface{}
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -145,8 +156,9 @@ func TestDecodeJSONToTargetStruct(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(_ *testing.T) {
 			serverutils.DecodeJSONToTargetStruct(tt.args.w, tt.args.r, tt.args.targetStruct)
 		})
 	}
@@ -180,21 +192,22 @@ func Test_convertStringToInt(t *testing.T) {
 	}
 }
 
-func Test_StackDriver_Setup(t *testing.T) {
+func Test_StackDriver_Setup(_ *testing.T) {
 	errorClient := serverutils.StackDriver(context.Background())
-	err := fmt.Errorf("test error")
 	if errorClient != nil {
 		errorClient.Report(errorreporting.Entry{
-			Error: err,
+			Error: fmt.Errorf("test error"),
 		})
 	}
 }
 
 func TestStackDriver(t *testing.T) {
 	ctx := context.Background()
+
 	type args struct {
 		ctx context.Context
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -206,6 +219,7 @@ func TestStackDriver(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := serverutils.StackDriver(tt.args.ctx)
@@ -223,6 +237,7 @@ func TestWriteJSONResponse(t *testing.T) {
 		source interface{}
 		status int
 	}
+
 	tests := []struct {
 		name       string
 		args       args
@@ -256,6 +271,7 @@ func TestWriteJSONResponse(t *testing.T) {
 			wantStatus: http.StatusInternalServerError,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			serverutils.WriteJSONResponse(tt.args.w, tt.args.source, tt.args.status)
@@ -265,6 +281,7 @@ func TestWriteJSONResponse(t *testing.T) {
 				assert.NotNil(t, rec)
 				assert.Equal(t, tt.wantStatus, rec.Code)
 			}
+
 			if !ok {
 				rec, ok := tt.args.w.(*serverutils.ErrorResponseWriter)
 				assert.True(t, ok)
@@ -282,6 +299,7 @@ func Test_closeStackDriverLoggingClient(t *testing.T) {
 	type args struct {
 		loggingClient *logging.Client
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -293,8 +311,9 @@ func Test_closeStackDriverLoggingClient(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(_ *testing.T) {
 			serverutils.CloseStackDriverLoggingClient(tt.args.loggingClient)
 		})
 	}
@@ -317,6 +336,7 @@ func Test_closeStackDriverErrorClient(t *testing.T) {
 	type args struct {
 		errorClient *errorreporting.Client
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -328,16 +348,17 @@ func Test_closeStackDriverErrorClient(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(_ *testing.T) {
 			serverutils.CloseStackDriverErrorClient(tt.args.errorClient)
 		})
 	}
 }
 
 func TestStartTestServer(t *testing.T) {
-
 	ctx := context.Background()
+
 	srv, baseURL, serverErr := serverutils.StartTestServer(ctx, healthCheckServer, []string{
 		"http://localhost:5000",
 	})
@@ -345,18 +366,21 @@ func TestStartTestServer(t *testing.T) {
 		t.Errorf("Unable to start test server %s", serverErr)
 		return
 	}
+
 	defer srv.Close()
+
 	if srv == nil {
 		t.Errorf("nil test server %s", serverErr)
 		return
 	}
+
 	if baseURL == "" {
 		t.Errorf("empty base url %s", serverErr)
 		return
 	}
 }
 
-func healthCheckRouter() (*mux.Router, error) {
+func healthCheckRouter() (*mux.Router, error) { //nolint
 	r := mux.NewRouter() // gorilla mux
 	r.Use(
 		handlers.RecoveryHandler(
@@ -389,10 +413,13 @@ func healthCheckServer(ctx context.Context, port int, allowedOrigins []string) *
 	h = handlers.CombinedLoggingHandler(os.Stdout, h)
 	h = handlers.ContentTypeHandler(h, "application/json")
 	srv := &http.Server{
-		Handler: h,
-		Addr:    addr,
+		Handler:      h,
+		Addr:         addr,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
-	log.Infof("Server running at port %v", addr)
-	return srv
 
+	log.Infof("Server running at port %v", addr)
+
+	return srv
 }

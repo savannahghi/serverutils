@@ -24,6 +24,7 @@ func TestRecordGraphqlResolverMetrics(t *testing.T) {
 		name      string
 		e         error
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -47,18 +48,19 @@ func TestRecordGraphqlResolverMetrics(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(_ *testing.T) {
 			serverutils.RecordGraphqlResolverMetrics(tt.args.ctx, tt.args.startTime, tt.args.name, tt.args.e)
 		})
 	}
 }
 
 func TestMetricsCollectorService(t *testing.T) {
-
 	type args struct {
 		serviceName string
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -93,36 +95,46 @@ func TestMetricsCollectorService(t *testing.T) {
 			want: "base-prod",
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			initialEnvironment := os.Getenv("ENVIRONMENT")
 
 			if tt.name == "success:staging_env" {
 				os.Setenv("ENVIRONMENT", "staging")
+
 				if got := serverutils.MetricsCollectorService(tt.args.serviceName); got != tt.want {
 					t.Errorf("MetricsCollectorService() = %v, want %v", got, tt.want)
 				}
 			}
+
 			if tt.name == "success:staging_env" {
 				os.Setenv("ENVIRONMENT", "staging")
+
 				if got := serverutils.MetricsCollectorService(tt.args.serviceName); got != tt.want {
 					t.Errorf("MetricsCollectorService() = %v, want %v", got, tt.want)
 				}
 			}
+
 			if tt.name == "success:testing_env" {
 				os.Setenv("ENVIRONMENT", "testing")
+
 				if got := serverutils.MetricsCollectorService(tt.args.serviceName); got != tt.want {
 					t.Errorf("MetricsCollectorService() = %v, want %v", got, tt.want)
 				}
 			}
+
 			if tt.name == "success:demo_env" {
 				os.Setenv("ENVIRONMENT", "demo")
+
 				if got := serverutils.MetricsCollectorService(tt.args.serviceName); got != tt.want {
 					t.Errorf("MetricsCollectorService() = %v, want %v", got, tt.want)
 				}
 			}
+
 			if tt.name == "success:prod_env" {
 				os.Setenv("ENVIRONMENT", "prod")
+
 				if got := serverutils.MetricsCollectorService(tt.args.serviceName); got != tt.want {
 					t.Errorf("MetricsCollectorService() = %v, want %v", got, tt.want)
 				}
@@ -138,6 +150,7 @@ func TestEnableStatsAndTraceExporters(t *testing.T) {
 		ctx     context.Context
 		service string
 	}
+
 	tests := []struct {
 		name    string
 		args    args
@@ -152,6 +165,7 @@ func TestEnableStatsAndTraceExporters(t *testing.T) {
 			wantErr: false,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := serverutils.EnableStatsAndTraceExporters(tt.args.ctx, tt.args.service)
@@ -194,6 +208,7 @@ func TestMetricsResponseWriter_WriteHeader(t *testing.T) {
 	type args struct {
 		code int
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -211,9 +226,11 @@ func TestMetricsResponseWriter_WriteHeader(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m.WriteHeader(tt.args.code)
+
 			if m.StatusCode != tt.args.code {
 				t.Errorf("serverutils.MetricsResponseWriter.WriteHeader() = %v, want %v", rw.Code, tt.args.code)
 			}
@@ -230,6 +247,7 @@ func TestMetricsResponseWriter_Write(t *testing.T) {
 	type args struct {
 		b []byte
 	}
+
 	tests := []struct {
 		name    string
 		args    args
@@ -245,14 +263,15 @@ func TestMetricsResponseWriter_Write(t *testing.T) {
 			wantErr: false,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
 
+	for _, tt := range tests {
+		t.Run(tt.name, func(_ *testing.T) {
 			got, err := m.Write(tt.args.b)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("MetricsResponseWriter.Write() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
 			if got != tt.want {
 				t.Errorf("MetricsResponseWriter.Write() = %v, want %v", got, tt.want)
 			}
@@ -260,8 +279,8 @@ func TestMetricsResponseWriter_Write(t *testing.T) {
 	}
 }
 
-func TestCustomRequestMetricsMiddleware(t *testing.T) {
-	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
+func TestCustomRequestMetricsMiddleware(_ *testing.T) {
+	next := http.HandlerFunc(func(http.ResponseWriter, *http.Request) {})
 	mw := serverutils.CustomHTTPRequestMetricsMiddleware()
 	h := mw(next)
 
@@ -270,7 +289,6 @@ func TestCustomRequestMetricsMiddleware(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/", reader)
 	h.ServeHTTP(rw, req)
-
 }
 
 func TestRecordStats(t *testing.T) {
@@ -283,6 +301,7 @@ func TestRecordStats(t *testing.T) {
 		w *serverutils.MetricsResponseWriter
 		r *http.Request
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -295,8 +314,9 @@ func TestRecordStats(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(_ *testing.T) {
 			serverutils.RecordHTTPStats(tt.args.w, tt.args.r)
 		})
 	}
@@ -307,6 +327,7 @@ func TestGenerateLatencyBounds(t *testing.T) {
 		max  int
 		step int
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -321,6 +342,7 @@ func TestGenerateLatencyBounds(t *testing.T) {
 			want: []float64{0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := serverutils.GenerateLatencyBounds(tt.args.max, tt.args.step); !reflect.DeepEqual(got, tt.want) {
@@ -335,6 +357,7 @@ func TestInitOtelSDK(t *testing.T) {
 		ctx         context.Context
 		serviceName string
 	}
+
 	tests := []struct {
 		name      string
 		args      args
@@ -370,6 +393,7 @@ func TestInitOtelSDK(t *testing.T) {
 			wantPanic: true,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {
@@ -381,6 +405,7 @@ func TestInitOtelSDK(t *testing.T) {
 
 			initialEnvironment := os.Getenv("ENVIRONMENT")
 			initialJaegerEnv := os.Getenv("JAEGER_URL")
+
 			if tt.name == "success:initialize otel sdk" {
 				os.Setenv("JAEGER_URL", "http://jaeger")
 				os.Setenv("ENVIRONMENT", "staging")

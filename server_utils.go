@@ -17,10 +17,14 @@ import (
 	"cloud.google.com/go/errorreporting"
 	"cloud.google.com/go/logging"
 	"cloud.google.com/go/profiler"
-	"contrib.go.opencensus.io/exporter/stackdriver"
+	"github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace"
 	"github.com/getsentry/sentry-go"
 	log "github.com/sirupsen/logrus"
-	"go.opencensus.io/trace"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/sdk/resource"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 )
 
 // Sentry initializes Sentry, for error reporting
@@ -29,10 +33,12 @@ func Sentry() error {
 	if err != nil {
 		return err
 	}
+
 	environment, err := GetEnvVar(Environment)
 	if err != nil {
 		return err
 	}
+
 	traceSampleRate, err := GetEnvVar(TraceSampleRateEnvVarName)
 	if err != nil {
 		return err
@@ -62,7 +68,9 @@ func ListenAddress() string {
 	if port == "" {
 		port = DefaultPort
 	}
+
 	address := fmt.Sprintf(":%s", port)
+
 	return address
 }
 
@@ -70,6 +78,7 @@ func ListenAddress() string {
 func ErrorMap(err error) map[string]string {
 	errMap := make(map[string]string)
 	errMap["error"] = err.Error()
+
 	return errMap
 }
 
@@ -82,14 +91,18 @@ func RequestDebugMiddleware() func(http.Handler) http.Handler {
 				if err != nil {
 					log.Errorf("Unable to read request body for debugging: error %#v", err)
 				}
+
 				if IsDebug() {
 					req, err := httputil.DumpRequest(r, true)
 					if err != nil {
 						log.Errorf("Unable to dump cloned request for debugging: error %#v", err)
 					}
+
 					log.Printf("Raw request: %v", string(req))
 				}
+
 				r.Body = io.NopCloser(bytes.NewBuffer(body))
+
 				next.ServeHTTP(w, r)
 			},
 		)
@@ -104,6 +117,7 @@ func LogStartupError(ctx context.Context, err error) {
 		if errorClient != nil {
 			errorClient.Report(errorreporting.Entry{Error: err})
 		}
+
 		log.WithFields(log.Fields{"error": err}).Error("Server startup error")
 	}
 }
@@ -126,6 +140,7 @@ func ConvertStringToInt(w http.ResponseWriter, val string) int {
 		WriteJSONResponse(w, ErrorMap(err), http.StatusInternalServerError)
 		return -1 // sentinel value
 	}
+
 	return converted
 }
 
@@ -138,6 +153,7 @@ func StackDriver(ctx context.Context) *errorreporting.Client {
 			"environment variable name": GoogleCloudProjectIDEnvVarName,
 			"error":                     err,
 		}).Error("Unable to determine the Google Cloud Project, can't set up StackDriver")
+
 		return nil
 	}
 
@@ -148,6 +164,7 @@ func StackDriver(ctx context.Context) *errorreporting.Client {
 			"project ID": projectID,
 			"error":      err,
 		}).Error("Unable to initialize logging client")
+
 		return nil
 	}
 	defer CloseStackDriverLoggingClient(loggingClient)
@@ -167,22 +184,38 @@ func StackDriver(ctx context.Context) *errorreporting.Client {
 		log.WithFields(log.Fields{
 			"error": err,
 		}).Error("Unable to initialize error client")
+
 		return nil
 	}
 	defer CloseStackDriverErrorClient(errorClient)
 
 	// tracing
-	exporter, err := stackdriver.NewExporter(stackdriver.Options{
-		ProjectID: projectID,
-	})
+	exporter, err := trace.New(
+		trace.WithProjectID(os.Getenv("GOOGLE_CLOUD_PROJECT")),
+	)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"project ID": projectID,
 			"error":      err,
 		}).Info("Unable to initialize tracing")
+
 		return errorClient // the error client is already initialized, return it
 	}
-	trace.RegisterExporter(exporter)
+
+	res := resource.NewWithAttributes(
+		semconv.SchemaURL,
+		semconv.ServiceNameKey.String(AppName),
+		semconv.ServiceVersionKey.String(AppVersion),
+		attribute.String("environment", os.Getenv("ENVIRONMENT")),
+	)
+
+	tp := tracesdk.NewTracerProvider(
+		tracesdk.WithBatcher(exporter),
+		tracesdk.WithResource(res),
+		tracesdk.WithSampler(tracesdk.AlwaysSample()),
+	)
+
+	otel.SetTracerProvider(tp)
 
 	// profiler
 	err = profiler.Start(profiler.Config{
@@ -197,6 +230,7 @@ func StackDriver(ctx context.Context) *errorreporting.Client {
 			"service version": AppVersion,
 			"error":           err,
 		}).Info("Unable to initialize profiling")
+
 		return errorClient // the error client is already initialized, return it
 	}
 
@@ -209,19 +243,23 @@ func StackDriver(ctx context.Context) *errorreporting.Client {
 // TODO: Move to common helpers
 func WriteJSONResponse(w http.ResponseWriter, source interface{}, status int) {
 	w.WriteHeader(status) // must come first...otherwise the first call to Write... sets an implicit 200
+
 	content, errMap := json.Marshal(source)
 	if errMap != nil {
 		msg := fmt.Sprintf("error when marshalling %#v to JSON bytes: %#v", source, errMap)
 		http.Error(w, msg, http.StatusInternalServerError)
+
 		return
 	}
 
 	w.Header().Add("Content-Type", "application/json")
+
 	_, errMap = w.Write(content)
 	if errMap != nil {
 		msg := fmt.Sprintf(
 			"error when writing JSON %s to http.ResponseWriter: %#v", string(content), errMap)
 		http.Error(w, msg, http.StatusInternalServerError)
+
 		return
 	}
 }
@@ -250,11 +288,14 @@ func CloseStackDriverErrorClient(errorClient *errorreporting.Client) {
 type PrepareServer func(ctx context.Context, port int, allowedOrigins []string) *http.Server
 
 func randomPort() int {
-	rand.Seed(time.Now().Unix())
-	min := 32768
-	max := 60999
 	/* #nosec G404 */
-	port := rand.Intn(max-min+1) + min
+	rng := rand.New(rand.NewSource(time.Now().Unix()))
+
+	minVal := 32768
+	maxVal := 60999
+	/* #nosec G404 */
+	port := rng.Intn(maxVal-minVal+1) + minVal
+
 	return port
 }
 
@@ -264,6 +305,7 @@ func StartTestServer(ctx context.Context, prepareServer PrepareServer, allowedOr
 	port := randomPort()
 	srv := prepareServer(ctx, port, allowedOrigins)
 	baseURL := fmt.Sprintf("http://localhost:%d", port)
+
 	if srv == nil {
 		return nil, "", fmt.Errorf("nil test server")
 	}
@@ -296,11 +338,9 @@ func StartTestServer(ctx context.Context, prepareServer PrepareServer, allowedOr
 }
 
 // HealthStatusCheck endpoint to check if the server is working.
-func HealthStatusCheck(w http.ResponseWriter, r *http.Request) {
-
+func HealthStatusCheck(w http.ResponseWriter, _ *http.Request) {
 	err := json.NewEncoder(w).Encode(true)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }

@@ -18,8 +18,7 @@ import (
 // late sources are the source files to add after loading the service schema
 // generate is a flag to determine whether to generate schema files or not
 // path represents the path to store the imported schema files the folder name is `exported`
-func NewImportPlugin(earlySources, lateSources []*ast.Source, generate bool, path string) plugin.Plugin {
-
+func NewImportPlugin(earlySources, lateSources []*ast.Source, generate bool, path string) plugin.Plugin { //nolint
 	p := &ImportPlugin{
 		earlySources: earlySources,
 		lateSources:  lateSources,
@@ -48,7 +47,7 @@ func (m *ImportPlugin) Name() string {
 }
 
 // MutateConfig implements the ConfigMutator interface
-func (m *ImportPlugin) MutateConfig(cfg *config.Config) error {
+func (m *ImportPlugin) MutateConfig(_ *config.Config) error {
 	return nil
 }
 
@@ -78,14 +77,13 @@ func (m *ImportPlugin) InjectSourceEarly() *ast.Source {
 		if m.generate {
 			m.GenerateSchemaFile(m.directory, source)
 		}
-
 	}
 
 	return &o
 }
 
 // InjectSourceLate is used to inject more sources after loading the service souces
-func (m *ImportPlugin) InjectSourceLate(schema *ast.Schema) *ast.Source {
+func (m *ImportPlugin) InjectSourceLate(_ *ast.Schema) *ast.Source {
 	// check if there are late sources
 	if m.lateSources == nil {
 		return nil
@@ -134,7 +132,7 @@ func (m *ImportPlugin) CreateSourceDirectory(path string) string {
 	}
 
 	// create a new generated folder
-	err = os.Mkdir(dir, 0750)
+	err = os.Mkdir(dir, 0o750)
 	if err != nil {
 		log.Println(err)
 	}
@@ -144,7 +142,6 @@ func (m *ImportPlugin) CreateSourceDirectory(path string) string {
 
 // GenerateSchemaFile generates the associated schema file from ast source
 func (m *ImportPlugin) GenerateSchemaFile(dir string, source *ast.Source) {
-
 	fileName := filepath.Base(source.Name)
 	file := filepath.Join(dir, fileName)
 
@@ -163,6 +160,5 @@ func (m *ImportPlugin) GenerateSchemaFile(dir string, source *ast.Source) {
 	_, err = f.WriteString(source.Input)
 	if err != nil {
 		log.Println(err)
-
 	}
 }
