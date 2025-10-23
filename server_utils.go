@@ -58,6 +58,7 @@ func Sentry() error {
 		Environment:      environment,
 		EnableTracing:    true,
 		TracesSampleRate: sampleRate,
+		SampleRate:       sampleRate,
 	})
 }
 
